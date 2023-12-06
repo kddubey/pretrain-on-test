@@ -33,6 +33,10 @@ See work in progress
 
 ## Usage
 
+On a T4 GPU:
+
 ```
 python run.py --model_type bert
 ```
+
+TODO: input batch sizes as args for larger GPUs.
