@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 import shutil
 
 from IPython.display import clear_output
@@ -55,7 +56,7 @@ def _split(
     return df_train, df_extra, df_test
 
 
-def _run(
+def _experiment(
     df: pd.DataFrame,
     config: Config,
     num_train: int = 100,
@@ -70,7 +71,6 @@ def _run(
         stratified_train=stratified_train,
         random_state=random_state,
     )
-
     num_labels = len(set(df["label"]))  # configure output dim of linear layer
 
     # Run the methodology which does no pretraining. We'll compare to this data
@@ -89,39 +89,41 @@ def _run(
         df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier
     )
 
-    # Run the (presumably) fair pretraining methodology
+    # Run the fair pretraining methodology
     print("Extra - pretraining")
-    pretrain(df_extra["text"].tolist(), config)  # saved in config.pretrained_model_path
+    pretrain(df_extra["text"].tolist(), config)  # saved in config.model_path_pretrained
     print("Extra - training")
     trained_classifier = train.classification(
         df_train["text"].tolist(),
         df_train["label"].tolist(),
         num_labels=num_labels,
         config=config,
-        pretrained_model_name_or_path=config.pretrained_model_path,
+        pretrained_model_name_or_path=config.model_path_pretrained,
     )
-    shutil.rmtree(config.pretrained_model_path)
+    shutil.rmtree(config.model_path_pretrained)
     print("Extra - testing")
     extra_accuracy = train.accuracy(
         df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier
     )
+    shutil.rmtree(config.model_path_classification)
 
     # Run the (presumably) unfair pretraining methodology
     print("Test - pretraining")
-    pretrain(df_test["text"].tolist(), config)  # saved in config.pretrained_model_path
+    pretrain(df_test["text"].tolist(), config)  # saved in config.model_path_pretrained
     print("Test - training")
     trained_classifier = train.classification(
         df_train["text"].tolist(),
         df_train["label"].tolist(),
         num_labels=num_labels,
         config=config,
-        pretrained_model_name_or_path=config.pretrained_model_path,
+        pretrained_model_name_or_path=config.model_path_pretrained,
     )
-    shutil.rmtree(config.pretrained_model_path)
+    shutil.rmtree(config.model_path_pretrained)
     print("Test - testing")
     test_accuracy = train.accuracy(
         df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier
     )
+    shutil.rmtree(config.model_path_classification)
 
     # Paired data
     return {
@@ -134,7 +136,7 @@ def _run(
 
 def replicate(
     df: pd.DataFrame,
-    dataset_name: str,
+    file_path: str,
     config: Config,
     num_replications: int = 50,
     num_train: int = 100,
@@ -145,7 +147,7 @@ def replicate(
     for i in range(num_replications):
         clear_output(wait=True)
         print(f"Running trial {i+1} of {num_replications}\n")
-        accuracies_replication = _run(
+        accuracies_replication = _experiment(
             df,
             config,
             num_train=num_train,
@@ -157,8 +159,7 @@ def replicate(
     # Add some useful metadata. This is static across all replications/subsamples
     accuracies_df["num_classes"] = len(df["label"].unique())
     accuracies_df["majority_all"] = df["label"].value_counts(normalize=True).max()
-    # Save to local CSV
-    dataset_name = dataset_name.split("/")[-1]  # remove owner
-    file_name = f"{dataset_name}.csv"
-    accuracies_df.to_csv(file_name, index=False)
+    # Save to local as CSV
+    os.makedirs(file_path, exist_ok=True)
+    accuracies_df.to_csv(file_path, index=False)
     return accuracies_df

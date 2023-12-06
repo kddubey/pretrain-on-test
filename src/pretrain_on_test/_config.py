@@ -13,14 +13,15 @@ from transformers import (
 
 @dataclass(frozen=True)
 class Config:
-    model_class_pretrain: Type[PreTrainedModel]
     model_id: str
+    model_class_pretrain: Type[PreTrainedModel]
     model_class_classification: Type[PreTrainedModel]
     mlm: bool | None = None
     tokenizer: PreTrainedTokenizerBase | None = None
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     mlm_probability: float | None = None
-    pretrained_model_path: str = "./pretrained"
+    model_path_pretrained: str = "_pretrained"
+    model_path_classification: str = "_classifier"
 
     def __post_init__(self):
         if self.tokenizer is None:

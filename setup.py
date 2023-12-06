@@ -16,6 +16,7 @@ requirements_meta_analysis = [
     "bambi>=0.13.0",
     "jupyter>=1.0.0",
     "seaborn>=0.13.0",
+    "statsmodels>=0.14.0",
 ]
 
 

@@ -39,13 +39,13 @@ def pretrain(
 ):
     """
     Saves a fresh model which is pretrained on `texts` to
-    `config.pretrained_model_path`.
+    `config.model_path_pretrained`.
 
     It can be loaded for other tasks using, for example::
 
         from transformers import GPT2ForSequenceClassification
         model = GPT2ForSequenceClassification.from_pretrained(
-            config.pretrained_model_path
+            config.model_path_pretrained
         )
     """
     # Set up data
@@ -57,7 +57,7 @@ def pretrain(
     )
     # Set up Trainer
     training_args = TrainingArguments(
-        output_dir=config.pretrained_model_path,
+        output_dir=config.model_path_pretrained,
         overwrite_output_dir=True,
         learning_rate=1e-4,
         num_train_epochs=2,

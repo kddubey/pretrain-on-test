@@ -45,14 +45,14 @@ def classification(
 ) -> Trainer:
     """
     Returns a model `Trainer` which was finetuned on classification data `texts,
-    labels`.
+    labels`. The model is saved in `config.model_path_classification`.
 
     If `pretrained_model_name_or_path is None`, then the model at
-    `config.pretrained_model_path` is finetuned.
+    `config.model_path_pretrained` is finetuned.
     """
     train_dataset = _classification_dataset(texts, labels)
     classifier_args = TrainingArguments(
-        output_dir="./results",
+        output_dir=config.model_path_classification,
         num_train_epochs=3,
         per_device_train_batch_size=16,
         per_device_eval_batch_size=64,
@@ -61,7 +61,7 @@ def classification(
         disable_tqdm=False,
     )
     pretrained_model_name_or_path = (
-        pretrained_model_name_or_path or config.pretrained_model_path
+        pretrained_model_name_or_path or config.model_path_pretrained
     )
     classifier_trainer = Trainer(
         model=(
