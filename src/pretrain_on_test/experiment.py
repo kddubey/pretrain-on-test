@@ -135,14 +135,23 @@ def _run(
 def replicate(
     df: pd.DataFrame,
     dataset_name: str,
+    config: Config,
     num_replications: int = 50,
+    num_train: int = 100,
+    num_test: int = 200,
     random_state: int = 42,
 ) -> pd.DataFrame:
     accuracies: list[dict[str, float]] = []
     for i in range(num_replications):
         clear_output(wait=True)
         print(f"Running trial {i+1} of {num_replications}\n")
-        accuracies_replication = _run(df, random_state=random_state + i)
+        accuracies_replication = _run(
+            df,
+            config,
+            num_train=num_train,
+            num_test=num_test,
+            random_state=random_state + i,
+        )
         accuracies.append(accuracies_replication)
     accuracies_df = pd.DataFrame(accuracies)
     # Add some useful metadata. This is static across all replications/subsamples
