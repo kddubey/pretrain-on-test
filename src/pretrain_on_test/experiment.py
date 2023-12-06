@@ -91,11 +91,11 @@ def _experiment(
         pretrained_model_name_or_path=config.model_path_pretrained,
     )
     shutil.rmtree(config.model_path_pretrained)
+    shutil.rmtree(config.model_path_classification)
     print("Extra - testing")
     extra_accuracy = train.accuracy(
         df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier
     )
-    shutil.rmtree(config.model_path_classification)
 
     # Run the (presumably) unfair pretraining methodology
     print("Test - pretraining")
@@ -109,11 +109,11 @@ def _experiment(
         pretrained_model_name_or_path=config.model_path_pretrained,
     )
     shutil.rmtree(config.model_path_pretrained)
+    shutil.rmtree(config.model_path_classification)
     print("Test - testing")
     test_accuracy = train.accuracy(
         df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier
     )
-    shutil.rmtree(config.model_path_classification)
 
     # Paired data
     return {
