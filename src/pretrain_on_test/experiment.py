@@ -6,9 +6,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from transformers import logging
 
-from pretrain_on_test.config import Config
-from pretrain_on_test import pretrain
-from pretrain_on_test import train
+from pretrain_on_test import Config, pretrain, train
 
 
 logging.set_verbosity_error()

@@ -9,7 +9,7 @@ from transformers import (
     TrainingArguments,
 )
 
-from pretrain_on_test.config import Config
+from pretrain_on_test import Config
 
 
 class _TextClassificationDataset(torch.utils.data.Dataset):
