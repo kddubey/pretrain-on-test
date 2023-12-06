@@ -34,18 +34,13 @@ def _split(
     num_train: int = 100,
     num_test: int = 200,
     random_state: int = None,
-    stratified_train: bool = True,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Returns 3 (non-overlapping) dataframes which are randomly subsampled from
     `df`. The first has `num_train` rows, and the last two have `num_test` rows
     each.
     """
-    if stratified_train:
-        df_train = _stratified_sample(df, num_train, random_state=random_state)
-    else:
-        df_train = df.sample(num_train, random_state=random_state)
-
+    df_train = _stratified_sample(df, num_train, random_state=random_state)
     random_state = None if random_state is None else random_state + 1
     df_extra, df_test = train_test_split(
         df.drop(df_train.index),
@@ -61,15 +56,10 @@ def _experiment(
     config: Config,
     num_train: int = 100,
     num_test: int = 200,
-    stratified_train: bool = True,
     random_state: int = None,
 ) -> dict[str, float]:
     df_train, df_extra, df_test = _split(
-        df,
-        num_train=num_train,
-        num_test=num_test,
-        stratified_train=stratified_train,
-        random_state=random_state,
+        df, num_train=num_train, num_test=num_test, random_state=random_state
     )
     num_labels = len(set(df["label"]))  # configure output dim of linear layer
 
