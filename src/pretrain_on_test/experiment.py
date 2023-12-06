@@ -6,7 +6,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from transformers import logging
 
-from pretrain_on_test import Config, pretrain, train
+from pretrain_on_test import Config, train
+from pretrain_on_test.pretrain import pretrain
 
 
 logging.set_verbosity_error()
@@ -81,7 +82,7 @@ def _run(
         df_train["label"].tolist(),
         num_labels=num_labels,
         config=config,
-        pretrained_model_name_or_path="bert-base-uncased",
+        pretrained_model_name_or_path=config.model_id,
     )
     print("Base - testing")
     base_accuracy = train.accuracy(
@@ -90,13 +91,14 @@ def _run(
 
     # Run the (presumably) fair pretraining methodology
     print("Extra - pretraining")
-    pretrain.pretrain(df_extra["text"].tolist(), config)
+    pretrain(df_extra["text"].tolist(), config)  # saved in config.pretrained_model_path
     print("Extra - training")
     trained_classifier = train.classification(
         df_train["text"].tolist(),
         df_train["label"].tolist(),
         num_labels=num_labels,
         config=config,
+        pretrained_model_name_or_path=config.pretrained_model_path,
     )
     shutil.rmtree(config.pretrained_model_path)
     print("Extra - testing")
@@ -106,13 +108,14 @@ def _run(
 
     # Run the (presumably) unfair pretraining methodology
     print("Test - pretraining")
-    pretrain.pretrain(df_test["text"].tolist(), config)
+    pretrain(df_test["text"].tolist(), config)  # saved in config.pretrained_model_path
     print("Test - training")
     trained_classifier = train.classification(
         df_train["text"].tolist(),
         df_train["label"].tolist(),
         num_labels=num_labels,
         config=config,
+        pretrained_model_name_or_path=config.pretrained_model_path,
     )
     shutil.rmtree(config.pretrained_model_path)
     print("Test - testing")
