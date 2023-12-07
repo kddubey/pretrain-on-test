@@ -91,6 +91,7 @@ def _experiment(
     # Run the methodology which does no pretraining. We'll compare to this data
     # to demonstrate that pretraining/domain adaptation helps, so that there's an effect
     # to detect
+    print("\n\n")
     print("Base - training classifier")
     trained_classifier = classification.train(
         df_train["text"].tolist(),
@@ -105,6 +106,7 @@ def _experiment(
     )
 
     # Run the fair pretraining methodology
+    print("\n\n")
     print("Extra - pretraining")
     pretrain.train(
         df_extra["text"].tolist(), config
@@ -125,6 +127,7 @@ def _experiment(
     )
 
     # Run the (presumably) unfair pretraining methodology
+    print("\n\n")
     print("Test - pretraining")
     pretrain.train(
         df_test["text"].tolist(), config

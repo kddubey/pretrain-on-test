@@ -42,8 +42,8 @@ class ExperimentArgParser(Tap):
         ]
         if len(set(dataset_names_without_owners)) < len(self.dataset_names):
             raise ValueError(
-                "Some datasets have different owners but the same name. This currently "
-                "isn't allowed."
+                "Some datasets have the same name. (They may have different owners. "
+                "But that's still not allowed.)"
             )
 
 
