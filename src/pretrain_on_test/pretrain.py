@@ -69,10 +69,13 @@ def train(
     )
     # Trainer will modify the model, so need to re-load a fresh one every time this
     # function is called
+    model = config.model_class_pretrain.from_pretrained(config.model_id).to(
+        config.device
+    )
+    if model.config.pad_token_id is None:
+        model.config.pad_token_id = model.config.eos_token_id
     trainer = Trainer(
-        model=config.model_class_pretrain.from_pretrained(config.model_id).to(
-            config.device
-        ),
+        model=model,
         args=training_args,
         data_collator=data_collator,
         train_dataset=train_dataset,

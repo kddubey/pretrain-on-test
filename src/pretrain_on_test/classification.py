@@ -64,16 +64,17 @@ def train(
     pretrained_model_name_or_path = (
         pretrained_model_name_or_path or config.model_path_pretrained
     )
+    model = config.model_class_classification.from_pretrained(
+        pretrained_model_name_or_path,
+        num_labels=num_labels,
+        output_attentions=False,
+        output_hidden_states=False,
+        ignore_mismatched_sizes=False,
+    ).to(config.device)
+    if model.config.pad_token_id is None:
+        model.config.pad_token_id = model.config.eos_token_id
     classifier_trainer = Trainer(
-        model=(
-            config.model_class_classification.from_pretrained(
-                pretrained_model_name_or_path,
-                num_labels=num_labels,
-                output_attentions=False,
-                output_hidden_states=False,
-                ignore_mismatched_sizes=False,
-            ).to(config.device)
-        ),
+        model=model,
         args=classifier_args,
         train_dataset=train_dataset,
     )
