@@ -3,16 +3,21 @@ import os
 import shutil
 
 from IPython.display import clear_output
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
+import torch
 from transformers import logging
 
-from pretrain_on_test import Config, train
-from pretrain_on_test.pretrain import pretrain
+from pretrain_on_test import classification, Config, pretrain
 
 
-logging.set_verbosity_error()
-# Ignore the HF warning about untrained weights
+# logging.set_verbosity_error()
+# Ignore the HF warning about untrained weights. We always train them
+
+
+torch.manual_seed(123)
+torch.cuda.manual_seed_all(123)
 
 
 def _stratified_sample(
@@ -41,7 +46,6 @@ def _split(
     each.
     """
     df_train = _stratified_sample(df, num_train, random_state=random_state)
-    random_state = None if random_state is None else random_state + 1
     df_extra, df_test = train_test_split(
         df.drop(df_train.index),
         train_size=num_test,
@@ -51,23 +55,44 @@ def _split(
     return df_train, df_extra, df_test
 
 
+def _add_pred_probs(
+    df: pd.DataFrame, model_type_to_pred_probs: dict[str, np.ndarray]
+) -> pd.DataFrame:
+    """
+    Returns a new dataframe with a column of predicted probabilities for each class and
+    each model type.
+    """
+    df = df.copy()
+    for model_type, pred_probs in model_type_to_pred_probs.items():
+        if pred_probs.ndim != 2:
+            raise ValueError(
+                f"Expected 2-D predicted probabilities. Got a {pred_probs.ndim}-D "
+                f"array for {model_type}"
+            )
+        for class_idx, class_pred_probs in enumerate(pred_probs.T):
+            df[f"pred_prob_{class_idx}_{model_type}"] = class_pred_probs
+    return df
+
+
 def _experiment(
     df: pd.DataFrame,
     config: Config,
     num_train: int = 100,
     num_test: int = 200,
-    random_state: int = None,
-) -> dict[str, float]:
+    random_state_subsamples: int = None,
+) -> tuple[pd.DataFrame, dict[str, float]]:
     df_train, df_extra, df_test = _split(
-        df, num_train=num_train, num_test=num_test, random_state=random_state
+        df, num_train=num_train, num_test=num_test, random_state=random_state_subsamples
     )
-    num_labels = len(set(df["label"]))  # configure output dim of linear layer
+    num_labels = len(set(df["label"]))  # configure output dimension of linear layer
+
+    model_type_to_test_probs: dict[str, np.ndarray] = {}
 
     # Run the methodology which does no pretraining. We'll compare to this data
     # to demonstrate that pretraining/domain adaptation helps, so that there's an effect
     # to detect
     print("Base - training classifier")
-    trained_classifier = train.classification(
+    trained_classifier = classification.train(
         df_train["text"].tolist(),
         df_train["label"].tolist(),
         num_labels=num_labels,
@@ -75,15 +100,17 @@ def _experiment(
         pretrained_model_name_or_path=config.model_id,
     )
     print("Base - testing")
-    base_accuracy = train.accuracy(
-        df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier
+    model_type_to_test_probs["base"] = classification.predict_proba(
+        df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier, config
     )
 
     # Run the fair pretraining methodology
     print("Extra - pretraining")
-    pretrain(df_extra["text"].tolist(), config)  # saved in config.model_path_pretrained
+    pretrain.train(
+        df_extra["text"].tolist(), config
+    )  # saved pretrained model in config.model_path_pretrained
     print("Extra - training")
-    trained_classifier = train.classification(
+    trained_classifier = classification.train(
         df_train["text"].tolist(),
         df_train["label"].tolist(),
         num_labels=num_labels,
@@ -93,15 +120,17 @@ def _experiment(
     shutil.rmtree(config.model_path_pretrained)
     shutil.rmtree(config.model_path_classification)
     print("Extra - testing")
-    extra_accuracy = train.accuracy(
-        df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier
+    model_type_to_test_probs["extra"] = classification.predict_proba(
+        df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier, config
     )
 
     # Run the (presumably) unfair pretraining methodology
     print("Test - pretraining")
-    pretrain(df_test["text"].tolist(), config)  # saved in config.model_path_pretrained
+    pretrain.train(
+        df_test["text"].tolist(), config
+    )  # saved pretrained model in config.model_path_pretrained
     print("Test - training")
-    trained_classifier = train.classification(
+    trained_classifier = classification.train(
         df_train["text"].tolist(),
         df_train["label"].tolist(),
         num_labels=num_labels,
@@ -111,45 +140,66 @@ def _experiment(
     shutil.rmtree(config.model_path_pretrained)
     shutil.rmtree(config.model_path_classification)
     print("Test - testing")
-    test_accuracy = train.accuracy(
-        df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier
+    model_type_to_test_probs["test"] = classification.predict_proba(
+        df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier, config
     )
 
-    # Paired data
-    return {
-        "base": base_accuracy,
-        "extra": extra_accuracy,
-        "test": test_accuracy,
-        "majority": df_test["label"].value_counts(normalize=True).max(),
+    # Compute accuracies on test
+    accuracy = lambda test_probs: np.mean(
+        df_test["label"] == np.argmax(test_probs, axis=1)
+    )
+    model_type_to_accuracy: dict[str, float] = {
+        model_type: accuracy(test_probs)
+        for model_type, test_probs in model_type_to_test_probs.items()
     }
+    model_type_to_accuracy["majority"] = (
+        df_test["label"].value_counts(normalize=True).max()
+    )
+    return (
+        _add_pred_probs(df_test, model_type_to_test_probs),
+        model_type_to_accuracy,
+    )
 
 
 def replicate(
     df: pd.DataFrame,
-    file_path: str,
+    dataset_name: str,
+    results_dir: str,
     config: Config,
     num_replications: int = 50,
     num_train: int = 100,
     num_test: int = 200,
-    random_state: int = 42,
+    random_state_subsamples: int = 42,
 ) -> pd.DataFrame:
-    accuracies: list[dict[str, float]] = []
-    for i in range(num_replications):
+    """
+    Runs the main experiment, and saves results as CSVs locally.
+    """
+    dataset_dir = os.path.join(results_dir, dataset_name.split("/")[-1])  # drop owner
+
+    # Repeat experiment on num_replications random subsamples of df
+    accuracy_records: list[dict[str, float]] = []
+    for replication in range(1, num_replications + 1):  # 1-indexed
         clear_output(wait=True)
-        print(f"Running trial {i+1} of {num_replications}\n")
-        accuracies_replication = _experiment(
+        print(f"Running replication {replication} of {num_replications}\n")
+        df_test_with_pred_probs, accuracies_replication = _experiment(
             df,
             config,
             num_train=num_train,
             num_test=num_test,
-            random_state=random_state + i,
+            random_state_subsamples=random_state_subsamples + replication,
         )
-        accuracies.append(accuracies_replication)
-    accuracies_df = pd.DataFrame(accuracies)
+        accuracy_records.append(accuracies_replication)
+        # Save df_test_with_pred_probs
+        file_path_replication = os.path.join(
+            dataset_dir, f"subsample_test{replication}.csv"
+        )
+        os.makedirs(file_path_replication)
+        df_test_with_pred_probs.to_csv(file_path_replication, index=True)
+
+    # Save accuracies for each replication
+    accuracies_df = pd.DataFrame(accuracy_records)
     # Add some useful metadata. This is static across all replications/subsamples
     accuracies_df["num_classes"] = len(df["label"].unique())
     accuracies_df["majority_all"] = df["label"].value_counts(normalize=True).max()
-    # Save to local as CSV
-    os.makedirs(file_path, exist_ok=True)
-    accuracies_df.to_csv(file_path, index=False)
-    return accuracies_df
+    file_path_accuracies = os.path.join(dataset_dir, "accuracies.csv")
+    accuracies_df.to_csv(file_path_accuracies, index=False)

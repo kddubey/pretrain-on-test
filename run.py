@@ -36,8 +36,15 @@ class ExperimentArgParser(Tap):
     "Number of observations for pretraining and classification evaluation"
 
     def process_args(self):
-        if isinstance(self.dataset_names, str):
-            delim = ", " if " " in self.dataset_names else ","
+        if self.dataset_names is None:
+            dataset_names: tuple[str] = get_args(
+                pretrain_on_test.HuggingFaceDatasetNames
+            )
+        elif isinstance(self.dataset_names, str):
+            if " " in self.dataset_names and "," not in self.dataset_names:
+                delim = " "
+            else:
+                delim = ", " if " " in self.dataset_names else ","
             self.dataset_names = sorted(set(self.dataset_names.split(delim)))
             dataset_names_without_owners = [
                 dataset_name.split("/")[-1] for dataset_name in self.dataset_names
@@ -47,6 +54,8 @@ class ExperimentArgParser(Tap):
                     "Some datasets have different owners but the same name. "
                     "This currently isn't allowed."
                 )
+            if isinstance(dataset_names, str):
+                dataset_names = (dataset_names,)
 
 
 # The values are lambdas so that evaluation (downloading the tokenizer) is done only
@@ -70,23 +79,18 @@ model_type_to_config = {
 def run(
     model_type: Literal["bert", "gpt2"],
     results_dir: str = "accuracies",
-    dataset_names: str | Collection[str] | None = None,
+    dataset_names: Collection[str] | None = None,
     num_replications: int = 50,
     num_train: int = 100,
     num_test: int = 200,
 ):
-    if dataset_names is None:
-        dataset_names: tuple[str] = get_args(pretrain_on_test.HuggingFaceDatasetNames)
-    if isinstance(dataset_names, str):
-        dataset_names = (dataset_names,)
     config = model_type_to_config[model_type]()
     for dataset_name in dataset_names:
-        df = pretrain_on_test.load_data(dataset_name)
-        dataset_name_no_owner = dataset_name.split("/")[-1]
-        file_path = os.path.join(results_dir, f"{dataset_name_no_owner}.csv")
+        df = pretrain_on_test.load_classification_data_from_hf(dataset_name)
         pretrain_on_test.experiment.replicate(
             df,
-            file_path,
+            dataset_name,
+            results_dir,
             config,
             num_replications=num_replications,
             num_train=num_train,

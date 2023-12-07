@@ -2,6 +2,7 @@ from setuptools import setup, find_packages
 
 
 requirements_base = [
+    "accelerate>=0.25.0",
     "datasets>=2.10.0",
     "pandas>=1.5.3",
     "scikit-learn>=1.2.2",
