@@ -1,5 +1,5 @@
 """
-Main script to run experiments.
+Main script to run experiments
 
 Help::
 

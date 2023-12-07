@@ -1,5 +1,5 @@
 """
-Train a pretrained LM using categorical cross entropy loss.
+Train a pretrained LM using categorical cross entropy loss
 """
 from __future__ import annotations
 
