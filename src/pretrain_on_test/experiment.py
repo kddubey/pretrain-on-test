@@ -23,13 +23,17 @@ from pretrain_on_test import classification, Config, pretrain
 
 hf_logging.set_verbosity_error()
 # Ignore the HF warning about untrained weights. We always train them
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)-8s %(filename)-17s %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    stream=sys.stdout,
-)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+_stream_handler = logging.StreamHandler(stream=sys.stdout)
+_stream_handler.setLevel(logging.INFO)
+_stream_handler.setFormatter(
+    logging.Formatter(
+        "%(asctime)s %(levelname)-8s %(filename)-17s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+)
+logger.addHandler(_stream_handler)
 
 
 _ = torch.manual_seed(123)

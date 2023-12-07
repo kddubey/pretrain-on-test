@@ -35,6 +35,8 @@ See work in progress
 
 ## Usage
 
+By default, results are saved to `./accuracies`.
+
 Batch sizes are currently hardcoded for running on a single T4 GPU.
 TODO: input batch sizes as args for larger GPUs.
 
@@ -57,7 +59,7 @@ python run.py \
 
 ### Notebook
 
-For nicer logs
+For shorter logs
 
 ```python
 from run import run

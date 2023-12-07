@@ -27,6 +27,7 @@ class Config:
     mlm_probability: float | None = None
     model_path_pretrained: str = "_pretrained"
     model_path_classification: str = "_classifier"
+    max_length: int | None = None
 
     def __post_init__(self):
         if self.tokenizer is None:
@@ -41,3 +42,6 @@ class Config:
         if self.device is None:
             default_device = "cuda" if torch.cuda.is_available() else "cpu"
             object.__setattr__(self, "device", default_device)
+        if self.max_length is None:  # be explicit about the default
+            default_max_length = self.tokenizer.model_max_length
+            object.__setattr__(self, "max_length", default_max_length)

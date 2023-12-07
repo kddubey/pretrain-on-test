@@ -17,7 +17,10 @@ from pretrain_on_test import Config
 
 class _Dataset(torch.utils.data.Dataset):
     def __init__(
-        self, sentences, tokenizer: PreTrainedTokenizerBase, max_length: int = 128
+        self,
+        sentences,
+        tokenizer: PreTrainedTokenizerBase,
+        max_length: int | None = None,
     ):
         self.tokenizer = tokenizer
         self.sentences = sentences
@@ -36,11 +39,7 @@ class _Dataset(torch.utils.data.Dataset):
         return len(self.sentences)
 
 
-def train(
-    texts: list[str],
-    config: Config,
-    max_length: int = 128,
-):
+def train(texts: list[str], config: Config):
     """
     Saves a fresh model which is pretrained on `texts` to
     `config.model_path_pretrained`.
@@ -53,7 +52,7 @@ def train(
         )
     """
     # Set up data
-    train_dataset = _Dataset(texts, config.tokenizer, max_length=max_length)
+    train_dataset = _Dataset(texts, config.tokenizer, config.max_length)
     data_collator = DataCollatorForLanguageModeling(
         config.tokenizer,
         mlm=config.mlm,
@@ -65,7 +64,7 @@ def train(
         overwrite_output_dir=True,
         learning_rate=1e-4,
         num_train_epochs=2,
-        per_device_train_batch_size=64,
+        per_device_train_batch_size=32,
         save_strategy="no",
         optim="adamw_torch",
         prediction_loss_only=True,
