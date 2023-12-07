@@ -25,17 +25,22 @@ import pretrain_on_test
 
 class ExperimentArgParser(Tap):
     model_type: Literal["bert", "gpt2"]
+
     results_dir: str = "accuracies"
     "Directory to store experiment results"
+
     dataset_names: list[str] | None = None
     """
     Space-separated list of HuggingFace datasets, e.g.,
     ag_news dair-ai/emotion SetFit/enron_spam. By default, 14 datasets are used
     """
+
     num_subsamples: int = 50
     "Number of subsamples to draw from the dataset"
+
     num_train: int = 100
     "Number of classification training observations"
+
     num_test: int = 200
     "Number of observations for pretraining and classification evaluation"
 
