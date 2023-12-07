@@ -42,7 +42,7 @@ class ExperimentArgParser(Tap):
     "Number of classification training observations"
 
     num_test: int = 200
-    "Number of observations for pretraining and classification evaluation"
+    "Number of observations for pretraining and for evaluation"
 
     def process_args(self) -> None:
         if self.dataset_names is None:

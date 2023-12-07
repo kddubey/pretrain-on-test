@@ -1,3 +1,6 @@
+"""
+Run the experiment on random subsamples of a classification dataset.
+"""
 from __future__ import annotations
 import logging
 import os
