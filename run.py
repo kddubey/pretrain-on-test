@@ -23,10 +23,10 @@ class ExperimentArgParser(Tap):
     model_type: Literal["bert", "gpt2"]
     results_dir: str = "accuracies"
     "Directory to store experiment results"
-    dataset_names: str | None = None
+    dataset_names: list[str] | None = None
     """
-    Comma-separated list of HuggingFace datasets, e.g.,
-    "ag_news,dair-ai/emotion,SetFit/enron_spam". By default, all datasets are used
+    Space-separated list of HuggingFace datasets, e.g.,
+    "ag_news dair-ai/emotion SetFit/enron_spam". By default, all datasets are used
     """
     num_replications: int = 50
     "Number of subsamples to draw from the dataset"
@@ -34,28 +34,6 @@ class ExperimentArgParser(Tap):
     "Number of classification training observations"
     num_test: int = 200
     "Number of observations for pretraining and classification evaluation"
-
-    def process_args(self):
-        if self.dataset_names is None:
-            dataset_names: tuple[str] = get_args(
-                pretrain_on_test.HuggingFaceDatasetNames
-            )
-        elif isinstance(self.dataset_names, str):
-            if " " in self.dataset_names and "," not in self.dataset_names:
-                delim = " "
-            else:
-                delim = ", " if " " in self.dataset_names else ","
-            self.dataset_names = sorted(set(self.dataset_names.split(delim)))
-            dataset_names_without_owners = [
-                dataset_name.split("/")[-1] for dataset_name in self.dataset_names
-            ]
-            if len(set(dataset_names_without_owners)) < len(self.dataset_names):
-                raise ValueError(
-                    "Some datasets have different owners but the same name. "
-                    "This currently isn't allowed."
-                )
-            if isinstance(dataset_names, str):
-                dataset_names = (dataset_names,)
 
 
 # The values are lambdas so that evaluation (downloading the tokenizer) is done only
