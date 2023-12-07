@@ -198,8 +198,6 @@ def replicate(
         raise ValueError(
             f"Results for this dataset already exist in {dataset_dir}. Please move it"
         )
-    else:
-        os.makedirs(dataset_dir)
 
     # Repeat experiment on num_subsamples random subsamples of df
     accuracy_records: list[dict[str, float]] = []
@@ -219,6 +217,8 @@ def replicate(
         )
         accuracy_records.append(accuracies_subsample)
         # Save df_test_with_pred_probs
+        if not os.path.exists(dataset_dir):
+            os.makedirs(dataset_dir)
         file_path_subsample = os.path.join(
             dataset_dir, f"subsample_test{subsample_idx}.csv"
         )
