@@ -1,24 +1,20 @@
 from __future__ import annotations
-from typing import Sequence
 
 import numpy as np
 import torch
-from transformers import (
-    BatchEncoding,
-    PreTrainedTokenizerBase,
-    Trainer,
-    TrainingArguments,
-)
+from transformers import PreTrainedTokenizerBase, Trainer, TrainingArguments
 
 from pretrain_on_test import Config
 
 
 class _Dataset(torch.utils.data.Dataset):
-    # taken from
-    # https://huggingface.co/transformers/v3.2.0/custom_datasets.html#sequence-classification-with-imdb-reviews
-    def __init__(self, encodings: BatchEncoding, labels: Sequence[int]):
-        self.encodings = encodings
-        self.labels = labels
+    def __init__(
+        self, texts: list[str], labels: list[int], tokenizer: PreTrainedTokenizerBase
+    ):
+        self.encodings = tokenizer(
+            texts, return_tensors="pt", truncation=True, padding=True
+        )
+        self.labels = torch.tensor(labels)
 
     def __getitem__(self, idx):
         item = {key: val[idx] for key, val in self.encodings.items()}
@@ -27,14 +23,6 @@ class _Dataset(torch.utils.data.Dataset):
 
     def __len__(self):
         return len(self.labels)
-
-
-def _dataset(
-    texts: list[str], labels: list[int], tokenizer: PreTrainedTokenizerBase
-) -> _Dataset:
-    encodings = tokenizer(texts, return_tensors="pt", truncation=True, padding=True)
-    labels = torch.tensor(labels)
-    return _Dataset(encodings, labels)
 
 
 def train(
@@ -51,7 +39,7 @@ def train(
     If `pretrained_model_name_or_path is None`, then the model at
     `config.model_path_pretrained` is finetuned.
     """
-    train_dataset = _dataset(texts, labels, config.tokenizer)
+    train_dataset = _Dataset(texts, labels, config.tokenizer)
     classifier_args = TrainingArguments(
         output_dir=config.model_path_classification,
         num_train_epochs=3,
@@ -85,7 +73,7 @@ def train(
 def predict_proba(
     texts: list[str], labels: list[int], trained_classifier: Trainer, config: Config
 ) -> np.ndarray:
-    eval_dataset = _dataset(texts, labels, config.tokenizer)
+    eval_dataset = _Dataset(texts, labels, config.tokenizer)
     logits: np.ndarray = trained_classifier.predict(eval_dataset).predictions
     # I'm pretty sure that predictions are logits, not log-probs
     probs: torch.Tensor = torch.softmax(
