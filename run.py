@@ -49,6 +49,8 @@ class ExperimentArgParser(Tap):
                 )
 
 
+# The values are lambdas so that evaluation (downloading the tokenizer) is done only
+# when requested
 model_type_to_config = {
     "bert": lambda: pretrain_on_test.Config(
         model_id="bert-base-uncased",
