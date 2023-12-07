@@ -91,7 +91,3 @@ def predict_proba(
         torch.tensor(logits, device=config.device), axis=-1
     )
     return probs.numpy(force=True)
-
-
-# for class_idx, class_preds in enumerate(x.T):
-#     df[f"pred_x_{class_idx}"] = class_preds
