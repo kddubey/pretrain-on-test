@@ -1,22 +1,35 @@
 from __future__ import annotations
+import logging
 import os
 import shutil
+import sys
 
-from IPython.display import clear_output
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import torch
-from transformers import logging
+from transformers import logging as hf_logging
+
+try:
+    from IPython.display import clear_output
+except ModuleNotFoundError:
+    clear_output = lambda *args, **kwargs: None
 
 from pretrain_on_test import classification, Config, pretrain
 
 
-# logging.set_verbosity_error()
+hf_logging.set_verbosity_error()
 # Ignore the HF warning about untrained weights. We always train them
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)-8s %(filename)-17s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    stream=sys.stdout,
+)
+logger = logging.getLogger(__name__)
 
 
-torch.manual_seed(123)
+_ = torch.manual_seed(123)
 torch.cuda.manual_seed_all(123)
 
 
@@ -91,8 +104,8 @@ def _experiment(
     # Run the methodology which does no pretraining. We'll compare to this data
     # to demonstrate that pretraining/domain adaptation helps, so that there's an effect
     # to detect
-    print("\n\n")
-    print("Base - training classifier")
+    print()
+    logger.info("Base - training classifier")
     trained_classifier = classification.train(
         df_train["text"].tolist(),
         df_train["label"].tolist(),
@@ -100,18 +113,18 @@ def _experiment(
         config=config,
         pretrained_model_name_or_path=config.model_id,
     )
-    print("Base - testing")
+    logger.info("Base - testing")
     model_type_to_test_probs["base"] = classification.predict_proba(
         df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier, config
     )
 
     # Run the fair pretraining methodology
-    print("\n\n")
-    print("Extra - pretraining")
+    print()
+    logger.info("Extra - pretraining")
     pretrain.train(
         df_extra["text"].tolist(), config
     )  # saved pretrained model in config.model_path_pretrained
-    print("Extra - training")
+    logger.info("Extra - training")
     trained_classifier = classification.train(
         df_train["text"].tolist(),
         df_train["label"].tolist(),
@@ -121,18 +134,18 @@ def _experiment(
     )
     shutil.rmtree(config.model_path_pretrained)
     shutil.rmtree(config.model_path_classification)
-    print("Extra - testing")
+    logger.info("Extra - testing")
     model_type_to_test_probs["extra"] = classification.predict_proba(
         df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier, config
     )
 
     # Run the (presumably) unfair pretraining methodology
-    print("\n\n")
-    print("Test - pretraining")
+    print()
+    logger.info("Test - pretraining")
     pretrain.train(
         df_test["text"].tolist(), config
     )  # saved pretrained model in config.model_path_pretrained
-    print("Test - training")
+    logger.info("Test - training")
     trained_classifier = classification.train(
         df_train["text"].tolist(),
         df_train["label"].tolist(),
@@ -142,7 +155,7 @@ def _experiment(
     )
     shutil.rmtree(config.model_path_pretrained)
     shutil.rmtree(config.model_path_classification)
-    print("Test - testing")
+    logger.info("Test - testing")
     model_type_to_test_probs["test"] = classification.predict_proba(
         df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier, config
     )
@@ -169,7 +182,7 @@ def replicate(
     dataset_name: str,
     results_dir: str,
     config: Config,
-    num_replications: int = 50,
+    num_subsamples: int = 50,
     num_train: int = 100,
     num_test: int = 200,
     random_state_subsamples: int = 42,
@@ -185,29 +198,35 @@ def replicate(
     else:
         os.makedirs(dataset_dir)
 
-    # Repeat experiment on num_replications random subsamples of df
+    # Repeat experiment on num_subsamples random subsamples of df
     accuracy_records: list[dict[str, float]] = []
-    for replication in range(1, num_replications + 1):  # 1-indexed
+    for subsample_idx in range(1, num_subsamples + 1):
         clear_output(wait=True)
-        print(f"Running replication {replication} of {num_replications}\n")
-        df_test_with_pred_probs, accuracies_replication = _experiment(
+        print()
+        logger.info(
+            f"Dataset - {dataset_name}; "
+            f"Subsample - {subsample_idx} of {num_subsamples}\n"
+        )
+        df_test_with_pred_probs, accuracies_subsample = _experiment(
             df,
             config,
             num_train=num_train,
             num_test=num_test,
-            random_state_subsamples=random_state_subsamples + replication,
+            random_state_subsamples=random_state_subsamples + subsample_idx,
         )
-        accuracy_records.append(accuracies_replication)
+        accuracy_records.append(accuracies_subsample)
         # Save df_test_with_pred_probs
-        file_path_replication = os.path.join(
-            dataset_dir, f"subsample_test{replication}.csv"
+        file_path_subsample = os.path.join(
+            dataset_dir, f"subsample_test{subsample_idx}.csv"
         )
-        df_test_with_pred_probs.to_csv(file_path_replication, index=True)
+        logger.info(f"Writing to {file_path_subsample}")
+        df_test_with_pred_probs.to_csv(file_path_subsample, index=True)
 
-    # Save accuracies for each replication
+    # Save accuracies for each subsample
     accuracies_df = pd.DataFrame(accuracy_records)
-    # Add some useful metadata. This is static across all replications/subsamples
+    # Add some useful metadata. This is static across all subsamples
     accuracies_df["num_classes"] = len(df["label"].unique())
     accuracies_df["majority_all"] = df["label"].value_counts(normalize=True).max()
     file_path_accuracies = os.path.join(dataset_dir, "accuracies.csv")
+    logger.info(f"Writing to {file_path_accuracies}")
     accuracies_df.to_csv(file_path_accuracies, index=False)

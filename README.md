@@ -43,7 +43,7 @@ For quick local tests:
 python run.py \
 --model_type bert \
 --dataset_names ag_news \
---num_replications 1 \
+--num_subsamples 1 \
 --num_train 10 \
 --num_test 10
 ```
