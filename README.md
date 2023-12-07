@@ -1,5 +1,7 @@
 # Is pretraining on test set texts (without labels) ok?
 
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg?logo=python&style=for-the-badge)](https://www.python.org/downloads/release/python-390/)
+
 See work in progress
 [here](https://stats.stackexchange.com/questions/611877/is-pretraining-on-test-set-texts-without-labels-ok).
 
