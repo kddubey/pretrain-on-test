@@ -107,7 +107,6 @@ def _experiment(
     # Run the methodology which does no pretraining. We'll compare to this data
     # to demonstrate that pretraining/domain adaptation helps, so that there's an effect
     # to detect
-    print()
     logger.info("Base - training classifier")
     trained_classifier = classification.train(
         df_train["text"].tolist(),
@@ -122,7 +121,6 @@ def _experiment(
     )
 
     # Run the fair pretraining methodology
-    print()
     logger.info("Extra - pretraining")
     pretrain.train(
         df_extra["text"].tolist(), config
@@ -143,7 +141,6 @@ def _experiment(
     )
 
     # Run the (presumably) unfair pretraining methodology
-    print()
     logger.info("Test - pretraining")
     pretrain.train(
         df_test["text"].tolist(), config
@@ -203,10 +200,9 @@ def replicate(
     accuracy_records: list[dict[str, float]] = []
     for subsample_idx in range(1, num_subsamples + 1):
         clear_output(wait=True)
-        print()
         logger.info(
             f"Dataset - {dataset_name}; "
-            f"Subsample - {subsample_idx} of {num_subsamples}\n"
+            f"Subsample - {subsample_idx} of {num_subsamples}"
         )
         df_test_with_pred_probs, accuracies_subsample = _experiment(
             df,

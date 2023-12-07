@@ -86,7 +86,6 @@ def run(
     config = model_type_to_config[model_type]()
     for dataset_name in dataset_names:
         clear_output(wait=True)
-        print()
         df = pretrain_on_test.load_classification_data_from_hf(dataset_name)
         pretrain_on_test.experiment.replicate(
             df,

@@ -35,8 +35,13 @@ See work in progress
 
 ## Usage
 
+Batch sizes are currently hardcoded for running on a single T4 GPU.
+TODO: input batch sizes as args for larger GPUs.
+
+### Terminal
+
 ```bash
-python run.py --model_type bert
+python run.py --model_type bert | tee run.log
 ```
 
 For quick local tests:
@@ -47,8 +52,23 @@ python run.py \
 --dataset_names ag_news \
 --num_subsamples 1 \
 --num_train 10 \
---num_test 10
+--num_test 10 | tee run.log
 ```
 
-Batch sizes are currently hardcoded for running on a single T4 GPU.
-TODO: input batch sizes as args for larger GPUs.
+### Notebook
+
+For nicer logs
+
+```python
+from run import run
+
+experiment = dict(
+   model_type="bert",
+   dataset_names=["ag_news"],
+   num_subsamples=1,
+   num_train=10,
+   num_test=10,
+)
+
+run(**experiment)
+```
