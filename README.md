@@ -33,8 +33,6 @@ See work in progress
 
 ## Usage
 
-On a T4 GPU:
-
 ```bash
 python run.py --model_type bert
 ```
@@ -44,10 +42,11 @@ For quick local tests:
 ```bash
 python run.py \
 --model_type bert \
---dataset_names "ag_news" \
+--dataset_names ag_news \
 --num_replications 1 \
 --num_train 10 \
 --num_test 10
 ```
 
+Batch sizes are currently hardcoded for running on a single T4 GPU.
 TODO: input batch sizes as args for larger GPUs.

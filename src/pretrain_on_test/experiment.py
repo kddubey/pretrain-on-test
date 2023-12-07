@@ -175,6 +175,12 @@ def replicate(
     Runs the main experiment, and saves results as CSVs locally.
     """
     dataset_dir = os.path.join(results_dir, dataset_name.split("/")[-1])  # drop owner
+    if os.path.exists(dataset_dir):
+        raise ValueError(
+            f"Results for this dataset already exist in {dataset_dir}. Please move it"
+        )
+    else:
+        os.makedirs(dataset_dir)
 
     # Repeat experiment on num_replications random subsamples of df
     accuracy_records: list[dict[str, float]] = []
@@ -193,7 +199,6 @@ def replicate(
         file_path_replication = os.path.join(
             dataset_dir, f"subsample_test{replication}.csv"
         )
-        os.makedirs(file_path_replication)
         df_test_with_pred_probs.to_csv(file_path_replication, index=True)
 
     # Save accuracies for each replication

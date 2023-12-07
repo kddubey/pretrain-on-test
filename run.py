@@ -5,7 +5,6 @@ Help::
 
     python run.py -h
 """
-import os
 from typing import get_args, Literal, Collection
 
 from tap import Tap
@@ -35,6 +34,18 @@ class ExperimentArgParser(Tap):
     num_test: int = 200
     "Number of observations for pretraining and classification evaluation"
 
+    def process_args(self) -> None:
+        if self.dataset_names is None:
+            self.dataset_names = get_args(pretrain_on_test.HuggingFaceDatasetNames)
+        dataset_names_without_owners = [
+            dataset_name.split("/")[-1] for dataset_name in self.dataset_names
+        ]
+        if len(set(dataset_names_without_owners)) < len(self.dataset_names):
+            raise ValueError(
+                "Some datasets have different owners but the same name. This currently "
+                "isn't allowed."
+            )
+
 
 # The values are lambdas so that evaluation (downloading the tokenizer) is done only
 # when requested
@@ -56,8 +67,8 @@ model_type_to_config = {
 
 def run(
     model_type: Literal["bert", "gpt2"],
+    dataset_names: Collection[str],
     results_dir: str = "accuracies",
-    dataset_names: Collection[str] | None = None,
     num_replications: int = 50,
     num_train: int = 100,
     num_test: int = 200,
@@ -80,8 +91,8 @@ if __name__ == "__main__":
     args = ExperimentArgParser().parse_args()
     run(
         args.model_type,
-        results_dir=args.results_dir,
         dataset_names=args.dataset_names,
+        results_dir=args.results_dir,
         num_replications=args.num_replications,
         num_train=args.num_train,
         num_test=args.num_test,
