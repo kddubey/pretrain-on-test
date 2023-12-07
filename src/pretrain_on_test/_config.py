@@ -31,6 +31,8 @@ class Config:
     def __post_init__(self):
         if self.tokenizer is None:
             default_tokenizer = AutoTokenizer.from_pretrained(self.model_id)
+            if default_tokenizer.pad_token is None:
+                default_tokenizer.pad_token = default_tokenizer.eos_token
             # Re-setting an attribute in a frozen object requires this call:
             object.__setattr__(self, "tokenizer", default_tokenizer)
         if self.mlm is None:
