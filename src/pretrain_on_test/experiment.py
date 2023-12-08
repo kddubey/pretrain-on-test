@@ -114,7 +114,7 @@ def _experiment(
     # Run the methodology which does no pretraining. We'll compare to this data
     # to demonstrate that pretraining/domain adaptation helps, so that there's an effect
     # to detect
-    logger.info("Base - training classifier")
+    logger.info("Base - training")
     trained_classifier = classification.train(
         df_train["text"].tolist(),
         df_train["label"].tolist(),
