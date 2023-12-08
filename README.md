@@ -92,3 +92,12 @@ run(**experiment)
 ```
 
 </details>
+
+
+<details>
+<summary>Google Colab</summary>
+
+See [this
+notebook](https://github.com/kddubey/pretrain-on-test/blob/main/google_colab.ipynb).
+
+</details>
