@@ -11,12 +11,14 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import torch
+from tqdm.auto import tqdm
 from transformers import logging as hf_logging
 
 try:
-    from IPython.display import clear_output
+    from IPython.display import clear_output, display
 except ModuleNotFoundError:
     clear_output = lambda *args, **kwargs: None
+    display = print
 
 from pretrain_on_test import classification, Config, pretrain
 
@@ -202,8 +204,10 @@ def replicate(
 
     # Repeat experiment on num_subsamples random subsamples of df
     accuracy_records: list[dict[str, float]] = []
-    for subsample_idx in range(1, num_subsamples + 1):
+    progress_bar = tqdm(range(1, num_subsamples + 1), desc=f"{dataset_name} subsample")
+    for subsample_idx in progress_bar:
         clear_output(wait=True)
+        display(str(progress_bar))  # janky, but it's the only thing that worked
         logger.info(
             f"Dataset - {dataset_name}; "
             f"Subsample - {subsample_idx} of {num_subsamples}"
