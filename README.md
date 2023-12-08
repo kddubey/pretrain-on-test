@@ -35,12 +35,14 @@ See work in progress
 
 ## Usage
 
-By default, results are saved to `./accuracies`.
+Reproduce the experiment results. By default, results are saved to `./accuracies`.
 
 Batch sizes are currently hardcoded for running on a single T4 GPU.
+
 TODO: input batch sizes as args for larger GPUs.
 
-### Terminal
+<details>
+<summary>Terminal</summary>
 
 ```bash
 python run.py --model_type bert | tee run.log
@@ -57,9 +59,25 @@ python run.py \
 --num_test 10 | tee run.log
 ```
 
-### Notebook
+</details>
+
+
+<details>
+<summary>Notebook</summary>
 
 For shorter logs
+
+```python
+from run import run
+
+experiment = dict(
+   model_type="bert",
+)
+
+run(**experiment)
+```
+
+For quick local tests:
 
 ```python
 from run import run
@@ -74,3 +92,5 @@ experiment = dict(
 
 run(**experiment)
 ```
+
+</details>
