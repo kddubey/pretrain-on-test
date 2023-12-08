@@ -36,6 +36,7 @@ _stream_handler.setFormatter(
     )
 )
 logger.addHandler(_stream_handler)
+logger.propagate = False
 
 
 _ = torch.manual_seed(123)
