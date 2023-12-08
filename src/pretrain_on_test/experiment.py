@@ -205,7 +205,8 @@ def replicate(
 
     # Repeat experiment on num_subsamples random subsamples of df
     accuracy_records: list[dict[str, float]] = []
-    progress_bar = tqdm(range(1, num_subsamples + 1), desc=f"{dataset_name} subsample")
+    progress_bar = tqdm(range(1, num_subsamples + 1), desc=f"{dataset_name}")
+    n_digits = len(str(num_subsamples + 1))
     for subsample_idx in progress_bar:
         clear_output(wait=True)
         display(str(progress_bar))  # janky, but it's the only thing that worked
@@ -225,7 +226,7 @@ def replicate(
         if not os.path.exists(dataset_dir):
             os.makedirs(dataset_dir)
         file_path_subsample = os.path.join(
-            dataset_dir, f"subsample_test{subsample_idx}.csv"
+            dataset_dir, f"subsample_test_{str(subsample_idx).zfill(n_digits)}.csv"
         )
         logger.info(f"Writing to {file_path_subsample}")
         df_test_with_pred_probs.to_csv(file_path_subsample, index=True)
