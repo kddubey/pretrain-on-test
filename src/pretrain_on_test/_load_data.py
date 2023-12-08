@@ -60,7 +60,7 @@ def load_classification_data_from_hf(
     """
     loading_args = _dataset_to_loading_args.get(huggingface_dataset_name, ())
     df = pd.DataFrame(
-        load_dataset(huggingface_dataset_name, split="train", *loading_args)
+        load_dataset(huggingface_dataset_name, *loading_args, split="train")
     )
     process = _dataset_to_processor.get(huggingface_dataset_name, lambda df: df)
     df = process(df)
