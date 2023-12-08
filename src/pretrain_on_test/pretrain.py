@@ -64,7 +64,7 @@ def train(texts: list[str], config: Config):
         overwrite_output_dir=True,
         learning_rate=1e-4,
         num_train_epochs=2,
-        per_device_train_batch_size=32,
+        per_device_train_batch_size=16,
         save_strategy="no",
         optim="adamw_torch",
         prediction_loss_only=True,
@@ -72,9 +72,11 @@ def train(texts: list[str], config: Config):
     )
     # Trainer will modify the model, so need to re-load a fresh one every time this
     # function is called
-    model = config.model_class_pretrain.from_pretrained(config.model_id).to(
-        config.device
-    )
+    model = config.model_class_pretrain.from_pretrained(
+        config.model_id,
+        output_attentions=False,
+        output_hidden_states=False,
+    ).to(config.device)
     if model.config.pad_token_id is None:
         model.config.pad_token_id = model.config.eos_token_id
     trainer = Trainer(
