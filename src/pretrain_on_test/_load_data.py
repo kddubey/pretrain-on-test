@@ -45,8 +45,8 @@ _dataset_to_processor: dict[str, _ProcessDataFrame] = {
 
 
 _dataset_to_loading_args: dict[str, tuple[Any]] = {
-    "ethos": "binary",
-    "financial_phrasebank": "sentences_allagree",
+    "ethos": ("binary",),
+    "financial_phrasebank": ("sentences_allagree",),
 }
 
 
