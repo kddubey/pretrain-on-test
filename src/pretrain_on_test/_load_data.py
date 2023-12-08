@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Callable, Literal
+from typing import Any, Callable, Literal
 
 from datasets import load_dataset
 import numpy as np
@@ -44,6 +44,12 @@ _dataset_to_processor: dict[str, _ProcessDataFrame] = {
 }
 
 
+_dataset_to_loading_args: dict[str, tuple[Any]] = {
+    "ethos": "binary",
+    "financial_phrasebank": "sentences_allagree",
+}
+
+
 def load_classification_data_from_hf(
     huggingface_dataset_name: str | HuggingFaceDatasetNames,
 ) -> pd.DataFrame:
@@ -52,7 +58,10 @@ def load_classification_data_from_hf(
 
     https://huggingface.co/datasets/{huggingface_dataset_name}
     """
-    df = pd.DataFrame(load_dataset(huggingface_dataset_name, split="train"))
+    loading_args = _dataset_to_loading_args.get(huggingface_dataset_name, ())
+    df = pd.DataFrame(
+        load_dataset(huggingface_dataset_name, split="train", *loading_args)
+    )
     process = _dataset_to_processor.get(huggingface_dataset_name, lambda df: df)
     df = process(df)
     df["text"] = df["text"].fillna("")
