@@ -39,8 +39,6 @@ Reproduce the experiment results. By default, results are saved to `./accuracies
 
 Batch sizes are currently hardcoded for running on a single T4 GPU.
 
-TODO: input batch sizes as args for larger GPUs.
-
 <details>
 <summary>Terminal</summary>
 
@@ -65,7 +63,7 @@ python run.py \
 <details>
 <summary>Notebook</summary>
 
-For shorter logs
+The stdout for terminal runs is quite verbose. For shorter info, run this in a notebook.
 
 ```python
 from run import run
