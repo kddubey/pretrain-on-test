@@ -69,7 +69,7 @@ The stdout for terminal runs is quite verbose. For shorter info, run this in a n
 from run import run
 
 experiment = dict(
-   model_type="bert",
+    model_type="bert",
 )
 
 run(**experiment)
@@ -81,11 +81,11 @@ For quick local tests:
 from run import run
 
 experiment = dict(
-   model_type="bert",
-   dataset_names=["ag_news"],
-   num_subsamples=1,
-   num_train=10,
-   num_test=10,
+    model_type="bert",
+    dataset_names=["ag_news"],
+    num_subsamples=1,
+    num_train=10,
+    num_test=10,
 )
 
 run(**experiment)
