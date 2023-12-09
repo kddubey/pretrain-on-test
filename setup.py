@@ -6,10 +6,10 @@ requirements_base = [
     "datasets>=2.10.0",
     "pandas>=1.5.3",
     "scikit-learn>=1.2.2",
-    "typed-argument-parser>=1.9.0",
     "torch>=1.12.1",
     "tqdm>=4.27.0",
     "transformers>=4.31.0",
+    "typed-argument-parser>=1.9.0",
 ]
 
 
