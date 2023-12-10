@@ -89,15 +89,3 @@ happens if i didnt replicate
 Does the causal/anti-causal domain adaptation theory explain some of the control
 results? There are some datasets where the effect is far more pronounced and less noisy.
 Can we argue (after the fact...unfortunately) that they're causal?
-
-
-## Todo
-
-gpt-2. record token lengths. consider increasing context size and decreasing
-per-device-train-batch-size
-
-50 subsamples, and vary sample sizes (say 500 train, 500 extra and test). clarify that
-previous research has shown that the effect should have higher magnitude at smaller
-sample sizes, so we'll study that
-
-add 6 more classification datasets to get to 20
