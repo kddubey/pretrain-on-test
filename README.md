@@ -63,7 +63,8 @@ python run.py \
 <details>
 <summary>Notebook</summary>
 
-The stdout for terminal runs is quite verbose. For shorter info, run this in a notebook.
+The stdout for terminal runs is quite verbose. For minimal but sufficient info, run this
+in a notebook.
 
 ```python
 from run import run
