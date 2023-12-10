@@ -30,7 +30,6 @@ model_type_to_config = {
         model_id="bert-base-uncased",
         model_class_pretrain=BertForMaskedLM,
         model_class_classification=BertForSequenceClassification,
-        max_length=256,
         mlm=True,
         mlm_probability=0.15,
         **kwargs,
@@ -39,7 +38,6 @@ model_type_to_config = {
         model_id="gpt2",
         model_class_pretrain=GPT2LMHeadModel,
         model_class_classification=GPT2ForSequenceClassification,
-        max_length=256,
         **kwargs,
     ),
 }
@@ -72,12 +70,14 @@ def run(
     num_train: int = 100,
     num_test: int = 200,
     pretrain_per_device_train_batch_size: int = 16,
+    max_length: int | None = 256,
 ):
     """
     Main function to run the experiment.
     """
     config = model_type_to_config[model_type](
-        pretrain_per_device_train_batch_size=pretrain_per_device_train_batch_size
+        pretrain_per_device_train_batch_size=pretrain_per_device_train_batch_size,
+        max_length=max_length,
     )
     dataset_names = _check_dataset_names(dataset_names)
     for dataset_name in dataset_names:
@@ -118,6 +118,9 @@ class ExperimentArgParser(Tap):
 
     pretrain_per_device_train_batch_size: int = 16
     "Batch size for pretraining. Reduce this to reduce memory"
+
+    max_length: int | None = 256
+    "Number of context tokens for pretraining. Set to None to use the model's default"
 
 
 if __name__ == "__main__":

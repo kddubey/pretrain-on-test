@@ -25,10 +25,10 @@ class Config:
     tokenizer: PreTrainedTokenizerBase | None = None
     device: str | torch.device | None = None
     mlm_probability: float | None = None
+    pretrain_per_device_train_batch_size: int = 16
+    max_length: int | None = None
     model_path_pretrained: str = "_pretrained"
     model_path_classification: str = "_classifier"
-    max_length: int | None = None
-    pretrain_per_device_train_batch_size: int = 16
 
     def __post_init__(self):
         if self.tokenizer is None:
