@@ -69,14 +69,16 @@ def run(
     num_subsamples: int = 50,
     num_train: int = 100,
     num_test: int = 200,
-    pretrain_per_device_train_batch_size: int = 16,
+    per_device_train_batch_size_pretrain: int = 16,
+    per_device_train_batch_size_classification: int = 16,
     max_length: int | None = 256,
 ):
     """
     Main function to run the experiment.
     """
     config = model_type_to_config[model_type](
-        pretrain_per_device_train_batch_size=pretrain_per_device_train_batch_size,
+        per_device_train_batch_size_pretrain=per_device_train_batch_size_pretrain,
+        per_device_train_batch_size_classification=per_device_train_batch_size_classification,
         max_length=max_length,
     )
     dataset_names = _check_dataset_names(dataset_names)
@@ -116,8 +118,11 @@ class ExperimentArgParser(Tap):
     num_test: int = 200
     "Number of observations for pretraining and for evaluation"
 
-    pretrain_per_device_train_batch_size: int = 16
+    per_device_train_batch_size_pretrain: int = 16
     "Batch size for pretraining. Reduce this to reduce memory"
+
+    per_device_train_batch_size_classification: int = 16
+    "Batch size for classification training. Reduce this to reduce memory"
 
     max_length: int | None = 256
     "Number of context tokens for pretraining. Set to None to use the model's default"

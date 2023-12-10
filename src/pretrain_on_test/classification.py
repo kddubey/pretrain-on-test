@@ -45,9 +45,9 @@ def train(
     train_dataset = _Dataset(texts, labels, config.tokenizer)
     classifier_args = TrainingArguments(
         output_dir=config.model_path_classification,
-        num_train_epochs=3,
-        per_device_train_batch_size=16,
+        per_device_train_batch_size=config.per_device_train_batch_size_classification,
         per_device_eval_batch_size=64,
+        num_train_epochs=3,
         weight_decay=0.01,
         optim="adamw_torch",
         disable_tqdm=False,

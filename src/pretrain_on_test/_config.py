@@ -25,7 +25,8 @@ class Config:
     tokenizer: PreTrainedTokenizerBase | None = None
     device: str | torch.device | None = None
     mlm_probability: float | None = None
-    pretrain_per_device_train_batch_size: int = 16
+    per_device_train_batch_size_pretrain: int = 16
+    per_device_train_batch_size_classification: int = 16
     max_length: int | None = None
     model_path_pretrained: str = "_pretrained"
     model_path_classification: str = "_classifier"
