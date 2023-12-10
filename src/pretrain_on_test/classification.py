@@ -47,7 +47,7 @@ def train(
         output_dir=config.model_path_classification,
         per_device_train_batch_size=config.per_device_train_batch_size_classification,
         per_device_eval_batch_size=config.per_device_eval_batch_size_classification,
-        num_train_epochs=3,
+        num_train_epochs=config.num_train_epochs_classification,
         weight_decay=0.01,
         optim="adamw_torch",
         disable_tqdm=False,

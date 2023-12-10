@@ -73,6 +73,7 @@ def run(
     per_device_train_batch_size_classification: int = 16,
     per_device_eval_batch_size_classification: int = 64,
     max_length: int | None = 256,
+    num_train_epochs_classification: int = 3,
 ):
     """
     Main function to run the experiment.
@@ -82,6 +83,7 @@ def run(
         per_device_train_batch_size_classification=per_device_train_batch_size_classification,
         per_device_eval_batch_size_classification=per_device_eval_batch_size_classification,
         max_length=max_length,
+        num_train_epochs_classification=num_train_epochs_classification,
     )
     dataset_names = _check_dataset_names(dataset_names)
     for dataset_name in dataset_names:
@@ -131,6 +133,9 @@ class ExperimentArgParser(Tap):
 
     max_length: int | None = 256
     "Number of context tokens for pretraining. Set to None to use the model's default"
+
+    num_train_epochs_classification: int = 3
+    "Number of epochs for classification training"
 
 
 if __name__ == "__main__":
