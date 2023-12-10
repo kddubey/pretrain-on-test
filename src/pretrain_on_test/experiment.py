@@ -205,7 +205,7 @@ def replicate(
 
     # Repeat experiment on num_subsamples random subsamples of df
     accuracy_records: list[dict[str, float]] = []
-    progress_bar = tqdm(range(1, num_subsamples + 1), desc=f"{dataset_name}")
+    progress_bar = tqdm(range(1 + 45, num_subsamples + 1 + 45), desc=f"{dataset_name}")
     n_digits = len(str(num_subsamples + 1))
     for subsample_idx in progress_bar:
         clear_output(wait=True)
