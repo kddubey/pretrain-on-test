@@ -64,7 +64,7 @@ def train(texts: list[str], config: Config):
         overwrite_output_dir=True,
         learning_rate=1e-4,
         num_train_epochs=2,
-        per_device_train_batch_size=16,
+        per_device_train_batch_size=8,
         save_strategy="no",
         optim="adamw_torch",
         prediction_loss_only=True,
