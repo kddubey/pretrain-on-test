@@ -28,6 +28,7 @@ class Config:
     model_path_pretrained: str = "_pretrained"
     model_path_classification: str = "_classifier"
     max_length: int | None = None
+    pretrain_per_device_train_batch_size: int = 16
 
     def __post_init__(self):
         if self.tokenizer is None:

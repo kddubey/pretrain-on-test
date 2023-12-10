@@ -26,19 +26,21 @@ import pretrain_on_test
 # The values are lambdas so that evaluation (downloading the tokenizer) is done only
 # when requested
 model_type_to_config = {
-    "bert": lambda: pretrain_on_test.Config(
+    "bert": lambda **kwargs: pretrain_on_test.Config(
         model_id="bert-base-uncased",
         model_class_pretrain=BertForMaskedLM,
         model_class_classification=BertForSequenceClassification,
         max_length=256,
         mlm=True,
         mlm_probability=0.15,
+        **kwargs,
     ),
-    "gpt2": lambda: pretrain_on_test.Config(
+    "gpt2": lambda **kwargs: pretrain_on_test.Config(
         model_id="gpt2",
         model_class_pretrain=GPT2LMHeadModel,
         model_class_classification=GPT2ForSequenceClassification,
         max_length=256,
+        **kwargs,
     ),
 }
 
@@ -69,11 +71,14 @@ def run(
     num_subsamples: int = 50,
     num_train: int = 100,
     num_test: int = 200,
+    pretrain_per_device_train_batch_size: int = 16,
 ):
     """
     Main function to run the experiment.
     """
-    config = model_type_to_config[model_type]()
+    config = model_type_to_config[model_type](
+        pretrain_per_device_train_batch_size=pretrain_per_device_train_batch_size
+    )
     dataset_names = _check_dataset_names(dataset_names)
     for dataset_name in dataset_names:
         df = pretrain_on_test.load_classification_data_from_hf(dataset_name)
@@ -90,6 +95,7 @@ def run(
 
 
 class ExperimentArgParser(Tap):
+    # TODO: figure out how to share this between here and the run signature
     model_type: Literal["bert", "gpt2"]
 
     results_dir: str = "accuracies"
@@ -109,6 +115,9 @@ class ExperimentArgParser(Tap):
 
     num_test: int = 200
     "Number of observations for pretraining and for evaluation"
+
+    pretrain_per_device_train_batch_size: int = 16
+    "Batch size for pretraining. Reduce this to reduce memory"
 
 
 if __name__ == "__main__":
