@@ -27,6 +27,7 @@ class Config:
     mlm_probability: float | None = None
     per_device_train_batch_size_pretrain: int = 16
     per_device_train_batch_size_classification: int = 16
+    per_device_eval_batch_size_classification: int = 64
     max_length: int | None = None
     model_path_pretrained: str = "_pretrained"
     model_path_classification: str = "_classifier"

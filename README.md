@@ -37,7 +37,7 @@ See work in progress
 
 Reproduce the experiment results. By default, results are saved to `./accuracies`.
 
-Batch sizes are currently hardcoded for running on a single T4 GPU.
+Default batch sizes are set for a single T4 GPU.
 
 <details>
 <summary>Terminal</summary>
