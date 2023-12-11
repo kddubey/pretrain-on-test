@@ -68,10 +68,17 @@ def load_classification_data_from_hf(
 
     if len(set(df.index)) != len(df):
         raise ValueError("The dataframe has non-unique indices")
+    required_format_message = (
+        'It must have a "text" (str) and "label" (0-indexed integers) column'
+    )
     if "text" not in df.columns:
-        raise ValueError('The dataframe is missing a "text" column')
+        raise ValueError(
+            'The dataframe is missing a "text" column. ' + required_format_message
+        )
     if "label" not in df.columns:
-        raise ValueError('The dataframe is missing a "label" column')
+        raise ValueError(
+            'The dataframe is missing a "label" column. ' + required_format_message
+        )
 
     df["text"] = df["text"].astype(str)
     df["label"] = df["label"].astype(int)
