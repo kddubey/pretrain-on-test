@@ -47,7 +47,8 @@ def _stratified_sample(
     df: pd.DataFrame, sample_size: int, random_state: int = None
 ) -> pd.DataFrame:
     # Let's not worry about not exactly returning a df w/ size sample_size for
-    # now. It's nbd for this experiment
+    # now. It'll be consistent across subsamples b/c the discrepancy only depends on the
+    # number of labels
     num_labels = len(set(df["label"]))
     num_obs_per_label = int(sample_size / num_labels)
 

@@ -33,6 +33,12 @@ Returns a dataframe with canonical "text" and "label" columns:
 """
 
 
+_dataset_to_config_name: dict[str, str] = {
+    "ethos": "binary",
+    "financial_phrasebank": "sentences_allagree",
+}
+
+
 _dataset_to_processor: dict[str, _ProcessDataFrame] = {
     "app_reviews": lambda df: df.assign(text=df["review"], label=df["star"] - 1),
     "financial_phrasebank": lambda df: df.assign(text=df["sentence"]),
@@ -44,12 +50,6 @@ _dataset_to_processor: dict[str, _ProcessDataFrame] = {
 }
 
 
-_dataset_to_loading_args: dict[str, tuple[Any]] = {
-    "ethos": ("binary",),
-    "financial_phrasebank": ("sentences_allagree",),
-}
-
-
 def load_classification_data_from_hf(
     huggingface_dataset_name: str | HuggingFaceDatasetNames,
 ) -> pd.DataFrame:
@@ -58,9 +58,9 @@ def load_classification_data_from_hf(
 
     https://huggingface.co/datasets/{huggingface_dataset_name}
     """
-    loading_args = _dataset_to_loading_args.get(huggingface_dataset_name, ())
+    config_name = _dataset_to_config_name.get(huggingface_dataset_name)
     df = pd.DataFrame(
-        load_dataset(huggingface_dataset_name, *loading_args, split="train")
+        load_dataset(huggingface_dataset_name, config_name, split="train")
     )
     process = _dataset_to_processor.get(huggingface_dataset_name, lambda df: df)
     df = process(df)
