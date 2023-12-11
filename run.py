@@ -23,8 +23,6 @@ except ModuleNotFoundError:
 import pretrain_on_test
 
 
-# The values are lambdas so that evaluation (downloading the tokenizer) is done only
-# when requested
 model_type_to_config = {
     "bert": lambda **kwargs: pretrain_on_test.Config(
         model_id="bert-base-uncased",
@@ -101,7 +99,12 @@ def run(
 
 
 class ExperimentArgParser(Tap):
+    """
+    Main script to run the experiment.
+    """
+
     # TODO: figure out how to share this between here and the run signature
+    # TODO: put defaults in a defaults.py module
     model_type: Literal["bert", "gpt2"]
 
     results_dir: str = "accuracies"
@@ -140,11 +143,4 @@ class ExperimentArgParser(Tap):
 
 if __name__ == "__main__":
     args = ExperimentArgParser().parse_args()
-    run(
-        args.model_type,
-        dataset_names=args.dataset_names,
-        results_dir=args.results_dir,
-        num_subsamples=args.num_subsamples,
-        num_train=args.num_train,
-        num_test=args.num_test,
-    )
+    run(**args.as_dict())
