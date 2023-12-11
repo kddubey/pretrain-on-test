@@ -120,7 +120,7 @@ class ExperimentArgParser(Tap):
     "Number of subsamples to draw from the dataset"
 
     num_train: int = 100
-    "Number of classification training observations"
+    "Number of observations for classification training"
 
     num_test: int = 200
     "Number of observations for pretraining and for evaluation"
