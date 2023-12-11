@@ -23,7 +23,7 @@ except ModuleNotFoundError:
 import pretrain_on_test
 
 
-model_type_to_config = {
+model_type_to_config_creator = {
     "bert": lambda **kwargs: pretrain_on_test.Config(
         model_id="bert-base-uncased",
         model_class_pretrain=BertForMaskedLM,
@@ -76,7 +76,7 @@ def run(
     """
     Main function to run the experiment.
     """
-    config = model_type_to_config[model_type](
+    config = model_type_to_config_creator[model_type](
         per_device_train_batch_size_pretrain=per_device_train_batch_size_pretrain,
         per_device_train_batch_size_classification=per_device_train_batch_size_classification,
         per_device_eval_batch_size_classification=per_device_eval_batch_size_classification,
