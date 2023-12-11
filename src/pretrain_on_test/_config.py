@@ -22,9 +22,9 @@ class Config:
     model_class_pretrain: Type[PreTrainedModel]
     model_class_classification: Type[PreTrainedModel]
     mlm: bool | None = None
+    mlm_probability: float | None = None
     tokenizer: PreTrainedTokenizerBase | None = None
     device: str | torch.device | None = None
-    mlm_probability: float | None = None
     per_device_train_batch_size_pretrain: int = 16
     per_device_train_batch_size_classification: int = 16
     per_device_eval_batch_size_classification: int = 64
