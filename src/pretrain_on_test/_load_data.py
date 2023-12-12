@@ -12,12 +12,18 @@ HuggingFaceDatasetNames = Literal[
     "app_reviews",
     "christinacdl/clickbait_notclickbait_dataset",
     "aladar/craigslist_bargains",
+    "emo",
     "dair-ai/emotion",
     "SetFit/enron_spam",
     "ethos",
     "financial_phrasebank",
+    "hyperpartisan_news_detection",
+    "AmazonScience/massive",
+    "movie_rationales",
     "mteb/mtop_domain",
+    "poem_sentiment",
     "rotten_tomatoes",
+    "silicone",
     "trec",
     "yahoo_answers_topics",
     "yelp_review_full",
@@ -33,15 +39,26 @@ Returns a dataframe with canonical "text" and "label" columns:
 """
 
 
+# Looks like this is also referred to as the "subset"
 _dataset_to_config_name: dict[str, str] = {
     "ethos": "binary",
     "financial_phrasebank": "sentences_allagree",
+    "hyperpartisan_news_detection": "bypublisher",
+    "AmazonScience/massive": "en-US",
+    "silicone": "dyda_da",
 }
 
 
 _dataset_to_processor: dict[str, _ProcessDataFrame] = {
     "app_reviews": lambda df: df.assign(text=df["review"], label=df["star"] - 1),
     "financial_phrasebank": lambda df: df.assign(text=df["sentence"]),
+    "hyperpartisan_news_detection": lambda df: df.assign(
+        text=df["title"], label=df["hyperpartisan"]
+    ),
+    "AmazonScience/massive": lambda df: df.assign(text=df["utt"], label=df["scenario"]),
+    "movie_rationales": lambda df: df.assign(text=df["review"]),
+    "poem_sentiment": lambda df: df.assign(text=df["verse_text"]),
+    "silicone": lambda df: df.assign(text=df["Utterance"], label=df["Label"]),
     "trec": lambda df: df.assign(label=df["coarse_label"]),
     "yahoo_answers_topics": lambda df: df.assign(
         text=df["question_title"].str.cat(df["question_content"], sep="\n"),
