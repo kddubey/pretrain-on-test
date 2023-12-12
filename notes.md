@@ -62,16 +62,16 @@ See if something can be done here.
 
 (which isn't discusssed in the CV answer)
 
-Why stratified sampling when training the classifier? Reduce variance of comparison
-(compared to simple random subsampling) b/c now models don't get rewarded if their prior
-happens to match that in the test. We're isolating changes to the likelihood.
+Why stratified sampling when training the classifier? Reduce variance of peformance
+across subsamples.
 
 We don't deal w/ variance caused by BERT's inherent training instability / random inits.
 
 Why smaller sample sizes? Want to see worst case for over-optimism. Empirical
 experiments from that last study indicate that's where more bias occurs. (And PCA
 experiments on simulated data.) Intuitively (🥴) if text is quite diverse, perhaps we'll
-see greater bias if we train on the exact same set we evaluate on.
+see greater bias if we train on the exact same set we evaluate on. But test size
+shouldn't be so small that model comparisons can't reliably be made.
 
 Why not include training data as part of extra and test when pretraining? Again, we want
 to go out of our way to try and provide evidence of an effect. Keep the gap as wide as
