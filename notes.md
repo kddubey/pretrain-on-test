@@ -1,6 +1,6 @@
 # Notes
 
-turn into paper
+[WIP](https://stats.stackexchange.com/questions/611877/is-pretraining-on-test-set-texts-without-labels-ok)
 
 
 ## Motivation
@@ -76,6 +76,8 @@ shouldn't be so small that model comparisons can't reliably be made.
 Why not include training data as part of extra and test when pretraining? Again, we want
 to go out of our way to try and provide evidence of an effect. Keep the gap as wide as
 possible by not including any overlap between.
+
+Note: kinda ok that accuracy is worse than majority b/c we stratify training.
 
 
 ## Highlight importance of replicating
