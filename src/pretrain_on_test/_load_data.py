@@ -11,6 +11,7 @@ HuggingFaceDatasetNames = Literal[
     "SetFit/amazon_counterfactual_en",
     "app_reviews",
     "christinacdl/clickbait_notclickbait_dataset",
+    "climate_fever",
     "aladar/craigslist_bargains",
     "emo",
     "dair-ai/emotion",
@@ -21,7 +22,6 @@ HuggingFaceDatasetNames = Literal[
     "AmazonScience/massive",
     "movie_rationales",
     "mteb/mtop_domain",
-    "poem_sentiment",
     "rotten_tomatoes",
     "silicone",
     "trec",
@@ -51,13 +51,13 @@ _dataset_to_config_name: dict[str, str] = {
 
 _dataset_to_processor: dict[str, _ProcessDataFrame] = {
     "app_reviews": lambda df: df.assign(text=df["review"], label=df["star"] - 1),
+    "climate_fever": lambda df: df.assign(text=df["claim"], label=df["claim_label"]),
     "financial_phrasebank": lambda df: df.assign(text=df["sentence"]),
     "hyperpartisan_news_detection": lambda df: df.assign(
         text=df["title"], label=df["hyperpartisan"]
     ),
     "AmazonScience/massive": lambda df: df.assign(text=df["utt"], label=df["scenario"]),
     "movie_rationales": lambda df: df.assign(text=df["review"]),
-    "poem_sentiment": lambda df: df.assign(text=df["verse_text"]),
     "silicone": lambda df: df.assign(text=df["Utterance"], label=df["Label"]),
     "trec": lambda df: df.assign(label=df["coarse_label"]),
     "yahoo_answers_topics": lambda df: df.assign(
@@ -76,9 +76,17 @@ def load_classification_data_from_hf(
     https://huggingface.co/datasets/{huggingface_dataset_name}
     """
     config_name = _dataset_to_config_name.get(huggingface_dataset_name)
-    df = pd.DataFrame(
-        load_dataset(huggingface_dataset_name, config_name, split="train")
-    )
+    try:
+        df = pd.DataFrame(
+            load_dataset(huggingface_dataset_name, config_name, split="train")
+        )
+    except ValueError as exception:
+        if not str(exception).startswith('Unknown split "train"'):
+            raise exception
+        df = pd.DataFrame(
+            load_dataset(huggingface_dataset_name, config_name, split="test")
+        )
+
     process = _dataset_to_processor.get(huggingface_dataset_name, lambda df: df)
     df = process(df)
     df["text"] = df["text"].fillna("")
