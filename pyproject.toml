@@ -10,6 +10,7 @@ dependencies = [
     "accelerate>=0.25.0",
     "datasets>=2.10.0",
     "pandas>=1.5.3",
+    "pydantic>=2.1.0",
     "scikit-learn>=1.2.2",
     "torch>=1.12.1",
     "tqdm>=4.27.0",

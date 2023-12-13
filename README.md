@@ -40,14 +40,14 @@ Default batch sizes are set for a single T4 GPU.
 <summary>Terminal</summary>
 
 ```bash
-python run.py --model_type bert | tee run.log
+python run.py --lm_type bert | tee run.log
 ```
 
-For quick local tests:
+For quick, CPU-friendly, local tests:
 
 ```bash
 python run.py \
---model_type bert \
+--lm_type bert \
 --dataset_names ag_news \
 --num_subsamples 1 \
 --num_train 10 \
@@ -64,23 +64,26 @@ The stdout for terminal runs is quite verbose. For minimal but sufficient info, 
 in a notebook.
 
 ```python
-from run import run
+from run import run, Experiment
 
-run(model_type="bert")
+experiment = Experiment(lm_type="bert")
+run(experiment)
 ```
 
-For quick local tests:
+For quick, CPU-friendly, local tests:
 
 ```python
-from run import run
+from run import run, Experiment
 
-run(
-    model_type="bert",
+experiment = Experiment(
+    lm_type="bert",
     dataset_names=["ag_news"],
     num_subsamples=1,
     num_train=10,
     num_test=10,
 )
+
+run(experiment)
 ```
 
 </details>
