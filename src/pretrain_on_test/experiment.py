@@ -15,10 +15,9 @@ from tqdm.auto import tqdm
 from transformers import logging as hf_logging
 
 try:
-    from IPython.display import clear_output, display
+    from IPython.display import clear_output
 except ModuleNotFoundError:
     clear_output = lambda *args, **kwargs: None
-    display = print
 
 from pretrain_on_test import classification, Config, pretrain
 
@@ -210,7 +209,7 @@ def replicate(
     n_digits = len(str(num_subsamples + 1))
     for subsample_idx in progress_bar:
         clear_output(wait=True)
-        display(str(progress_bar))  # janky, but it's the only thing that worked
+        print(progress_bar)
         logger.info(
             f"Dataset - {dataset_name}; "
             f"Subsample - {subsample_idx} of {num_subsamples}"
