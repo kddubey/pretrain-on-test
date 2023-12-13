@@ -33,6 +33,9 @@ From https://datascience.stackexchange.com/a/64677
 > If you are training the document-embedding model, then split the data before you
 > convert the text into embeddings.
 
+[Reddit
+poll](https://www.reddit.com/r/MachineLearning/comments/18ghcqg/d_i_pretrained_an_lm_on_texts_from_the_test_set/)
+
 
 ### Broader ML question
 
