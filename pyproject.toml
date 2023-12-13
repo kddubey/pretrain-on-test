@@ -1,0 +1,42 @@
+[project]
+name = "pretrain-on-test"
+version = "0.0.1"
+readme = "README.md"
+license = { text = "MIT License" }
+authors = [
+    { email = "kushdubey63@gmail.com" },
+]
+dependencies = [
+    "accelerate>=0.25.0",
+    "datasets>=2.10.0",
+    "pandas>=1.5.3",
+    "scikit-learn>=1.2.2",
+    "torch>=1.12.1",
+    "tqdm>=4.27.0",
+    "transformers>=4.31.0",
+    "typed-argument-parser>=1.9.0",
+]
+requires-python = ">=3.9"
+
+[project.optional-dependencies]
+meta = [
+    "bambi>=0.13.0",
+    "jupyter>=1.0.0",
+    "seaborn>=0.13.0",
+    "statsmodels>=0.14.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[build-system]
+requires = ["setuptools >= 40.6.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+Homepage = "https://github.com/kddubey/pretrain-on-test"
+Repository = "https://github.com/kddubey/pretrain-on-test.git"
+Issues = "https://github.com/kddubey/pretrain-on-test/issues"
