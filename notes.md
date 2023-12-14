@@ -1,11 +1,15 @@
 # Notes
 
-[WIP](https://stats.stackexchange.com/questions/611877/is-pretraining-on-test-set-texts-without-labels-ok)
+WIP containing experiment details/rationale:
+https://stats.stackexchange.com/questions/611877/is-pretraining-on-test-set-texts-without-labels-ok
 
 
 ## Motivation
 
-Confusion
+Confusion. Benchmarking
+
+some phrasing: "There is a wide range of opinions among academic researchers in NLP and
+ML, as well as among practitioners in online communities"
 
 
 ### NLP
@@ -59,6 +63,9 @@ for NLP.
 ## Theoretical result with n-grams or word2vec
 
 See if something can be done here.
+
+Or review causal/anti-causal paper. Maybe ask if one of those authors can swiftly summon
+a proof.
 
 
 ## Methodology
