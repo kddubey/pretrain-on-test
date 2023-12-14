@@ -93,6 +93,15 @@ see if there are papers where people train bert or gpt2 and don't replicate. sho
 happens if i didnt replicate
 
 
+## Limitations
+
+Doesn't study case where test is intentionally or significantly distributed differently
+than training. Include hypothesis from ICM theory.
+
+May be able to study this by splitting according to ngrams or embeddings. Need to be
+careful about only changing p(x), not p(y|x).
+
+
 ## More questions
 
 Does the causal/anti-causal domain adaptation theory explain some of the control
