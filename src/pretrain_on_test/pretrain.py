@@ -62,9 +62,9 @@ def train(texts: list[str], config: Config):
     training_args = TrainingArguments(
         output_dir=config.model_path_pretrained,
         per_device_train_batch_size=config.per_device_train_batch_size_pretrain,
+        num_train_epochs=config.num_train_epochs_pretrain,
         overwrite_output_dir=True,
         learning_rate=1e-4,
-        num_train_epochs=2,
         save_strategy="no",
         optim="adamw_torch",
         prediction_loss_only=True,

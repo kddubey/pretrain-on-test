@@ -67,6 +67,9 @@ class Experiment(BaseModel):
     num_train_epochs_classification: int = Field(
         default=3, description="Number of epochs for classification training"
     )
+    num_train_epochs_pretrain: int = Field(
+        default=2, description="Number of epochs for pretraining"
+    )
 
 
 _lm_type_to_config_creator = {
@@ -116,6 +119,7 @@ def run(experiment: Experiment):
         "per_device_eval_batch_size_classification",
         "max_length",
         "num_train_epochs_classification",
+        "num_train_epochs_pretrain",
     ]
     config = _lm_type_to_config_creator[experiment.lm_type](
         **{attr: getattr(experiment, attr) for attr in model_independent_attributes}

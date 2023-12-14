@@ -30,6 +30,7 @@ class Config:
     per_device_eval_batch_size_classification: int = 64
     max_length: int | None = None
     num_train_epochs_classification: int = 3
+    num_train_epochs_pretrain: int = 2
     model_path_pretrained: str = "_pretrained"
     model_path_classification: str = "_classifier"
 

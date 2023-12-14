@@ -95,6 +95,8 @@ happens if i didnt replicate
 
 ## Limitations
 
+Doesn't study weakly/semi-supervised techniques like PET, which make use of the labels.
+
 Doesn't study case where test is intentionally or significantly distributed differently
 than training. Include hypothesis from ICM theory.
 
