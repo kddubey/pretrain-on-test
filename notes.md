@@ -60,12 +60,9 @@ B/c of this study, and in absence of theory, we should empirically answer the qu
 for NLP.
 
 
-## Theoretical result with n-grams or word2vec
+## Hypothesis from theory
 
-See if something can be done here.
-
-Or review causal/anti-causal paper. Maybe ask if one of those authors can swiftly summon
-a proof.
+See if something can be done here. Review causal/anti-causal papers. Consult authors.
 
 
 ## Methodology
