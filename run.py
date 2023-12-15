@@ -3,7 +3,8 @@ Main script to run the experiment
 """
 from typing import Collection, get_args, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
+from pydantic.dataclasses import dataclass
 from transformers import (
     BertForMaskedLM,
     BertForSequenceClassification,
@@ -20,12 +21,12 @@ import pretrain_on_test
 from _to_tap import tap_from_data_model
 
 
-class Experiment(BaseModel):
+@dataclass(frozen=True, config=dict(extra="forbid"))
+class Experiment:
     """
     Experiment configuration.
     """
 
-    model_config = ConfigDict(extra="forbid")
     lm_type: Literal["bert", "gpt2"] = Field(description="Type of language model")
     results_dir: str = Field(
         default="accuracies", description="Directory to store experiment results"
