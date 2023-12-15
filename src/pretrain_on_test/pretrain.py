@@ -27,9 +27,9 @@ class _Dataset(torch.utils.data.Dataset):
     def __getitem__(self, item):
         return self.tokenizer(
             self.sentences[item],
+            max_length=self.max_length,
             add_special_tokens=True,
             truncation=True,
-            max_length=self.max_length,
             return_special_tokens_mask=True,
         )
 

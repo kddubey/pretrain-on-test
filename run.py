@@ -18,7 +18,7 @@ except ModuleNotFoundError:
     clear_output = lambda *args, **kwargs: None
 
 import pretrain_on_test
-from _to_tap import tap_from_data_model
+from _to_tap import tap_class_from_data_model
 
 
 @pydantic.dataclasses.dataclass(frozen=True, config=dict(extra="forbid"))
@@ -142,7 +142,7 @@ def run(experiment: Experiment):
 
 
 if __name__ == "__main__":
-    _ExperimentArgParser = tap_from_data_model(Experiment)
-    args = _ExperimentArgParser(description=__doc__).parse_args()
+    ExperimentArgParser = tap_class_from_data_model(Experiment)
+    args = ExperimentArgParser(description=__doc__).parse_args()
     experiment = Experiment(**args.as_dict())
     run(experiment)

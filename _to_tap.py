@@ -100,7 +100,7 @@ def _tap_class(fields_data: Sequence[_FieldData]) -> Type[Tap]:
     return ArgParser
 
 
-def tap_from_data_model(data_model: Any) -> Type[Tap]:
+def tap_class_from_data_model(data_model: Any) -> Type[Tap]:
     """
     Convert a data model to a typed CLI argument parser.
 
