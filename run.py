@@ -71,6 +71,9 @@ class Experiment(BaseModel):
         default=2, description="Number of epochs for pretraining"
     )
 
+    class Config:
+        extra = "forbid"
+
 
 _lm_type_to_config_creator = {
     "bert": lambda **model_indepedent_kwargs: pretrain_on_test.Config(
