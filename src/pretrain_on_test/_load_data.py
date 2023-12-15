@@ -25,6 +25,7 @@ HuggingFaceDatasetNames = Literal[
     "rotten_tomatoes",
     "silicone",
     "trec",
+    "tweets_hate_speech_detection",
     "yahoo_answers_topics",
     "yelp_review_full",
 ]
@@ -60,6 +61,7 @@ _dataset_to_processor: dict[str, _ProcessDataFrame] = {
     "movie_rationales": lambda df: df.assign(text=df["review"]),
     "silicone": lambda df: df.assign(text=df["Utterance"], label=df["Label"]),
     "trec": lambda df: df.assign(label=df["coarse_label"]),
+    "tweets_hate_speech_detection": lambda df: df.assign(text=df["tweet"]),
     "yahoo_answers_topics": lambda df: df.assign(
         text=df["question_title"].str.cat(df["question_content"], sep="\n"),
         label=df["topic"],
