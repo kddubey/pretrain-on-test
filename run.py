@@ -1,6 +1,8 @@
 """
 Main script to run the experiment
 """
+import dataclasses
+from functools import partial
 from typing import Collection, get_args, Literal
 
 import pydantic
@@ -21,6 +23,9 @@ import pretrain_on_test
 from _to_tap import tap_class_from_data_model
 
 
+_field_for_config = partial(Field, json_schema_extra={"is_for_config": True})
+
+
 @pydantic.dataclasses.dataclass(frozen=True, config=dict(extra="forbid"))
 class Experiment:
     """
@@ -39,7 +44,6 @@ class Experiment:
             "By default, all datasets from the paper are used"
         ),
     )
-    # TODO: figure out how to re-use the defaults. Maybe put this class in pretrain
     num_subsamples: int = Field(
         default=50, description="Number of subsamples to draw from the dataset"
     )
@@ -50,26 +54,27 @@ class Experiment:
         default=200,
         description="Number of observations for pretraining and for evaluation",
     )
-    per_device_train_batch_size_pretrain: int = Field(
+    # Model-independent arguments which are passed to the config
+    per_device_train_batch_size_pretrain: int = _field_for_config(
         default=16, description="Batch size for pretraining"
     )
-    per_device_train_batch_size_classification: int = Field(
+    per_device_train_batch_size_classification: int = _field_for_config(
         default=16, description="Batch size for classification training"
     )
-    per_device_eval_batch_size_classification: int = Field(
+    per_device_eval_batch_size_classification: int = _field_for_config(
         default=64, description="Batch size for classification evaluation"
     )
-    max_length: int | None = Field(
+    max_length: int | None = _field_for_config(
         default=256,
         description=(
             "Number of context tokens for pretraining. Set to None to use the model's "
             "default"
         ),
     )
-    num_train_epochs_classification: int = Field(
+    num_train_epochs_classification: int = _field_for_config(
         default=3, description="Number of epochs for classification training"
     )
-    num_train_epochs_pretrain: int = Field(
+    num_train_epochs_pretrain: int = _field_for_config(
         default=2, description="Number of epochs for pretraining"
     )
 
@@ -111,20 +116,24 @@ def _check_dataset_names(dataset_names: Collection[str] | None) -> list[str]:
     return dataset_names
 
 
+# bleh
+_get_json_schema_extra = (
+    lambda field_info: getattr(field_info, "json_schema_extra") or {}
+)
+_model_independent_attributes = [
+    field.name
+    for field in dataclasses.fields(Experiment)
+    if hasattr(field.default, "json_schema_extra")
+    and _get_json_schema_extra(field.default).get("is_for_config", False)
+]
+
+
 def run(experiment: Experiment):
     """
     Main function to run the experiment.
     """
-    model_independent_attributes = [
-        "per_device_train_batch_size_pretrain",
-        "per_device_train_batch_size_classification",
-        "per_device_eval_batch_size_classification",
-        "max_length",
-        "num_train_epochs_classification",
-        "num_train_epochs_pretrain",
-    ]
     config = _lm_type_to_config_creator[experiment.lm_type](
-        **{attr: getattr(experiment, attr) for attr in model_independent_attributes}
+        **{attr: getattr(experiment, attr) for attr in _model_independent_attributes}
     )
     dataset_names = _check_dataset_names(experiment.dataset_names)
     for dataset_name in dataset_names:
