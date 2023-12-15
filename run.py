@@ -115,7 +115,6 @@ def run(experiment: Experiment):
     """
     Main function to run the experiment.
     """
-    breakpoint()
     model_independent_attributes = [
         "per_device_train_batch_size_pretrain",
         "per_device_train_batch_size_classification",
