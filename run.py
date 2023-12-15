@@ -3,7 +3,7 @@ Main script to run the experiment
 """
 from typing import Collection, get_args, Literal, Type
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from tap import Tap
 from transformers import (
     BertForMaskedLM,
@@ -25,6 +25,7 @@ class Experiment(BaseModel):
     Experiment configuration.
     """
 
+    model_config = ConfigDict(extra="forbid")
     lm_type: Literal["bert", "gpt2"] = Field(description="Type of language model")
     results_dir: str = Field(
         default="accuracies", description="Directory to store experiment results"
@@ -70,9 +71,6 @@ class Experiment(BaseModel):
     num_train_epochs_pretrain: int = Field(
         default=2, description="Number of epochs for pretraining"
     )
-
-    class Config:
-        extra = "forbid"
 
 
 _lm_type_to_config_creator = {
