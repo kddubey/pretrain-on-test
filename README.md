@@ -53,7 +53,10 @@ python run.py \
 --num_train 10 \
 --num_test 10 \
 --num_train_epochs_classification 1 \
---num_train_epochs_pretrain 1
+--num_train_epochs_pretrain 1 \
+--per_device_train_batch_size_pretrain 4 \
+--per_device_train_batch_size_classification 4 \
+--per_device_eval_batch_size_classification 4
 ```
 
 </details>
@@ -85,6 +88,9 @@ experiment = Experiment(
     num_test=10,
     num_train_epochs_classification=1,
     num_train_epochs_pretrain=1,
+    per_device_train_batch_size_pretrain=4,
+    per_device_train_batch_size_classification=4,
+    per_device_eval_batch_size_classification=4,
 )
 
 run(experiment)
