@@ -3,8 +3,8 @@ Main script to run the experiment
 """
 from typing import Collection, get_args, Literal
 
+import pydantic
 from pydantic import Field
-from pydantic.dataclasses import dataclass
 from transformers import (
     BertForMaskedLM,
     BertForSequenceClassification,
@@ -21,7 +21,7 @@ import pretrain_on_test
 from _to_tap import tap_from_data_model
 
 
-@dataclass(frozen=True, config=dict(extra="forbid"))
+@pydantic.dataclasses.dataclass(frozen=True, config=dict(extra="forbid"))
 class Experiment:
     """
     Experiment configuration.
