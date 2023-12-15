@@ -17,7 +17,7 @@ dependencies = [
     "transformers>=4.31.0",
     "typed-argument-parser>=1.9.0",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 [project.optional-dependencies]
 meta = [

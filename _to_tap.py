@@ -2,8 +2,8 @@
 Convert a data model to a typed CLI argument parser
 """
 
-from typing import Any, Sequence, Type
 import dataclasses
+from typing import Any, Sequence, Type
 
 import pydantic
 from tap import Tap

@@ -1,9 +1,7 @@
 """
-Train a freshly loaded pretrained LM using its canonical loss function: MLM for BERT,
-CLM for GPT-2
+Train a freshly loaded pretrained LM using its original loss function: MLM for BERT, CLM
+for GPT-2
 """
-from __future__ import annotations
-
 import torch
 from transformers import (
     DataCollatorForLanguageModeling,
