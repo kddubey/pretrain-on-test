@@ -1,10 +1,9 @@
 """
 Main script to run the experiment
 """
-from typing import Collection, get_args, Literal, Type
+from typing import Collection, get_args, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
-from tap import Tap
 from transformers import (
     BertForMaskedLM,
     BertForSequenceClassification,
@@ -18,6 +17,7 @@ except ModuleNotFoundError:
     clear_output = lambda *args, **kwargs: None
 
 import pretrain_on_test
+from _to_tap import tap_from_data_model
 
 
 class Experiment(BaseModel):
@@ -114,6 +114,7 @@ def run(experiment: Experiment):
     """
     Main function to run the experiment.
     """
+    breakpoint()
     model_independent_attributes = [
         "per_device_train_batch_size_pretrain",
         "per_device_train_batch_size_classification",
@@ -140,23 +141,8 @@ def run(experiment: Experiment):
         )
 
 
-def _tap_from_pydantic_model(model: Type[BaseModel]) -> Type[Tap]:
-    class ArgParser(Tap):
-        def configure(self):
-            for name, field in model.model_fields.items():
-                self._annotations[name] = field.annotation
-                self.class_variables[name] = {"comment": field.description or ""}
-                if field.is_required():
-                    kwargs = {}
-                else:
-                    kwargs = dict(required=False, default=field.default)
-                self.add_argument(f"--{name}", **kwargs)
-
-    return ArgParser
-
-
 if __name__ == "__main__":
-    _ExperimentArgParser = _tap_from_pydantic_model(Experiment)
+    _ExperimentArgParser = tap_from_data_model(Experiment)
     args = _ExperimentArgParser(description=__doc__).parse_args()
     experiment = Experiment(**args.as_dict())
     run(experiment)

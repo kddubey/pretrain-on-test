@@ -51,7 +51,9 @@ python run.py \
 --dataset_names ag_news \
 --num_subsamples 1 \
 --num_train 10 \
---num_test 10 | tee run.log
+--num_test 10 \
+--num_train_epochs_classification 1 \
+--num_train_epochs_pretrain 1
 ```
 
 </details>
@@ -81,6 +83,8 @@ experiment = Experiment(
     num_subsamples=1,
     num_train=10,
     num_test=10,
+    num_train_epochs_classification=1,
+    num_train_epochs_pretrain=1,
 )
 
 run(experiment)
