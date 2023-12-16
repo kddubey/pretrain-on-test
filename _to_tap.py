@@ -3,7 +3,7 @@ Convert a data model to a typed CLI argument parser
 """
 
 import dataclasses
-from typing import Any, Sequence, Type
+from typing import Any, Sequence
 
 import pydantic
 from tap import Tap
@@ -19,7 +19,7 @@ class _FieldData:
     """
 
     name: str
-    annotation: Type
+    annotation: type
     is_required: bool
     default: Any
     description: str | None = ""
@@ -41,17 +41,16 @@ def _field_data_from_dataclass_field(name: str, field: dataclasses.Field) -> _Fi
     )
 
 
-def _field_data_from_pydantic_field(name: str, field: _PydanticField) -> _FieldData:
+def _field_data_from_pydantic_field(
+    name: str, field: _PydanticField, annotation: type | None = None
+) -> _FieldData:
+    annotation = field.annotation if annotation is None else annotation
     return _FieldData(
-        name, field.annotation, field.is_required(), field.default, field.description
+        name, annotation, field.is_required(), field.default, field.description
     )
 
 
 def _fields_data(data_model: Any) -> list[_FieldData]:
-    # Iterate through fields to handle:
-    #   1. mixing fields w/ classes, e.g., using pydantic Fields in a (builtin)
-    #      dataclass, or using (builtin) dataclass fields in a pydantic BaseModel
-    #   2. using dataclasses.field and pydantic.Field in the same data model
     if dataclasses.is_dataclass(data_model):
         name_to_field = {field.name: field for field in dataclasses.fields(data_model)}
     elif issubclass(data_model, pydantic.BaseModel):
@@ -61,15 +60,22 @@ def _fields_data(data_model: Any) -> list[_FieldData]:
             "data_model must be a dataclass or a Pydantic BaseModel. "
             f"Got {type(data_model)}"
         )
-    fields_data = []
+    # It's possible to mix fields w/ classes, e.g., use pydantic Fields in a (builtin)
+    # dataclass, or use (builtin) dataclass fields in a pydantic BaseModel. It's also
+    # possible to use (builtin) dataclass fields and pydantic Fields in the same data
+    # model. Therefore, the type of the data model doesn't determine the type of each
+    # field. The solution is to iterate through the fields and check each type.
+    fields_data: list[_FieldData] = []
     for name, field in name_to_field.items():
         if isinstance(field, dataclasses.Field):
             # Idiosyncrasy: if a pydantic Field is used in a pydantic dataclass, then
             # field.default is a FieldInfo object instead of the field's default value.
-            # And more importantly, field.annotation is NoneType
+            # Furthermore, field.annotation is always NoneType. Luckily, the actual type
+            # of the field is stored in field.type
             if isinstance(field.default, _PydanticField):
-                field.default.annotation = field.type
-                field_data = _field_data_from_pydantic_field(name, field.default)
+                field_data = _field_data_from_pydantic_field(
+                    name, field.default, annotation=field.type
+                )
             else:
                 field_data = _field_data_from_dataclass_field(name, field)
         elif isinstance(field, _PydanticField):
@@ -82,7 +88,7 @@ def _fields_data(data_model: Any) -> list[_FieldData]:
     return fields_data
 
 
-def _tap_class(fields_data: Sequence[_FieldData]) -> Type[Tap]:
+def _tap_class(fields_data: Sequence[_FieldData]) -> type[Tap]:
     class ArgParser(Tap):
         def configure(self):
             for field_data in fields_data:
@@ -100,7 +106,7 @@ def _tap_class(fields_data: Sequence[_FieldData]) -> Type[Tap]:
     return ArgParser
 
 
-def tap_class_from_data_model(data_model: Any) -> Type[Tap]:
+def tap_class_from_data_model(data_model: Any) -> type[Tap]:
     """
     Convert a data model to a typed CLI argument parser.
 
@@ -111,7 +117,7 @@ def tap_class_from_data_model(data_model: Any) -> Type[Tap]:
 
     Returns
     -------
-    Type[Tap]
+    type[Tap]
         a typed CLI argument parser class
 
     Note

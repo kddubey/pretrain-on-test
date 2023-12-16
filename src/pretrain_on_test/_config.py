@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Type
 
 import torch
 from transformers import (
@@ -18,8 +17,8 @@ class Config:
     """
 
     model_id: str
-    model_class_pretrain: Type[PreTrainedModel]
-    model_class_classification: Type[PreTrainedModel]
+    model_class_pretrain: type[PreTrainedModel]
+    model_class_classification: type[PreTrainedModel]
     mlm: bool | None = None
     mlm_probability: float | None = None
     tokenizer: PreTrainedTokenizerBase | None = None
