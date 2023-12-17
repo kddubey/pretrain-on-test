@@ -7,6 +7,7 @@ from typing import Collection, get_args, Literal
 
 import pydantic
 from pydantic import Field
+import torch
 from transformers import (
     BertForMaskedLM,
     BertForSequenceClassification,
@@ -132,6 +133,8 @@ def run(experiment: Experiment):
     """
     Main function to run the experiment.
     """
+    _ = torch.manual_seed(123)
+    torch.cuda.manual_seed_all(123)
     config = _lm_type_to_config_creator[experiment.lm_type](
         **{attr: getattr(experiment, attr) for attr in _model_independent_attributes}
     )

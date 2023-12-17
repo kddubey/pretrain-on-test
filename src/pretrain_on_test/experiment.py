@@ -9,7 +9,6 @@ import sys
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-import torch
 from tqdm.auto import tqdm
 from transformers import logging as hf_logging
 
@@ -35,10 +34,6 @@ _stream_handler.setFormatter(
 )
 logger.addHandler(_stream_handler)
 logger.propagate = False
-
-
-_ = torch.manual_seed(123)
-torch.cuda.manual_seed_all(123)
 
 
 def _stratified_sample(
