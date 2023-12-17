@@ -19,9 +19,9 @@ class _Dataset(torch.utils.data.Dataset):
             texts, return_tensors="pt", truncation=True, padding=True
         )
         self._num_texts = self.encodings["input_ids"].shape[0]
-        if labels is not None:  # just need predictions
+        if labels is not None:
             self.labels = torch.tensor(labels)
-        else:
+        else:  # just doing inference
             self.labels = None
 
     def __getitem__(self, idx):
@@ -84,7 +84,9 @@ def predict_proba(
 ) -> np.ndarray:
     eval_dataset = _Dataset(config.tokenizer, texts)
     logits: np.ndarray = trained_classifier.predict(eval_dataset).predictions
-    # I'm pretty sure that predictions are logits, not log-probs
+    # I'm pretty sure that predictions are logits, not log-probs, b/c of the forward
+    # method in BertForSequenceClassification. I couldn't find anything in the
+    # documentation to confirm this
     probs: torch.Tensor = torch.softmax(
         torch.tensor(logits, device=config.device), axis=-1
     )
