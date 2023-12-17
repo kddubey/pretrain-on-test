@@ -118,7 +118,7 @@ def _experiment(
     )
     logger.info("Base - testing")
     model_type_to_test_probs["base"] = classification.predict_proba(
-        df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier, config
+        df_test["text"].tolist(), trained_classifier, config
     )
 
     # Run the fair pretraining methodology
@@ -138,7 +138,7 @@ def _experiment(
     shutil.rmtree(config.model_path_classification)
     logger.info("Extra - testing")
     model_type_to_test_probs["extra"] = classification.predict_proba(
-        df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier, config
+        df_test["text"].tolist(), trained_classifier, config
     )
 
     # Run the (presumably) unfair pretraining methodology
@@ -158,7 +158,7 @@ def _experiment(
     shutil.rmtree(config.model_path_classification)
     logger.info("Test - testing")
     model_type_to_test_probs["test"] = classification.predict_proba(
-        df_test["text"].tolist(), df_test["label"].tolist(), trained_classifier, config
+        df_test["text"].tolist(), trained_classifier, config
     )
 
     # Compute accuracies on test

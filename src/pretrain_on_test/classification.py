@@ -10,20 +10,28 @@ from pretrain_on_test import Config
 
 class _Dataset(torch.utils.data.Dataset):
     def __init__(
-        self, texts: list[str], labels: list[int], tokenizer: PreTrainedTokenizerBase
+        self,
+        tokenizer: PreTrainedTokenizerBase,
+        texts: list[str],
+        labels: list[int] | None = None,
     ):
         self.encodings = tokenizer(
             texts, return_tensors="pt", truncation=True, padding=True
         )
-        self.labels = torch.tensor(labels)
+        self._num_texts = self.encodings["input_ids"].shape[0]
+        if labels is not None:  # just need predictions
+            self.labels = torch.tensor(labels)
+        else:
+            self.labels = None
 
     def __getitem__(self, idx):
         item = {key: val[idx] for key, val in self.encodings.items()}
-        item["labels"] = self.labels[idx]
+        if self.labels is not None:
+            item["labels"] = self.labels[idx]
         return item
 
     def __len__(self):
-        return len(self.labels)
+        return self._num_texts
 
 
 def train(
@@ -40,7 +48,7 @@ def train(
     If `pretrained_model_name_or_path is None`, then the model at
     `config.model_path_pretrained` is finetuned.
     """
-    train_dataset = _Dataset(texts, labels, config.tokenizer)
+    train_dataset = _Dataset(config.tokenizer, texts, labels)
     classifier_args = TrainingArguments(
         output_dir=config.model_path_classification,
         per_device_train_batch_size=config.per_device_train_batch_size_classification,
@@ -72,9 +80,9 @@ def train(
 
 
 def predict_proba(
-    texts: list[str], labels: list[int], trained_classifier: Trainer, config: Config
+    texts: list[str], trained_classifier: Trainer, config: Config
 ) -> np.ndarray:
-    eval_dataset = _Dataset(texts, labels, config.tokenizer)
+    eval_dataset = _Dataset(config.tokenizer, texts)
     logits: np.ndarray = trained_classifier.predict(eval_dataset).predictions
     # I'm pretty sure that predictions are logits, not log-probs
     probs: torch.Tensor = torch.softmax(

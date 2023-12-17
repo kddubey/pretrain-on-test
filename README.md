@@ -43,7 +43,7 @@ Default batch sizes are set for a single T4 GPU.
 python run.py --lm_type bert | tee run.log
 ```
 
-For quick, CPU-friendly, local tests:
+For 1 minute, CPU-friendly, local tests:
 
 ```bash
 python run.py \
