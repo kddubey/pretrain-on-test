@@ -15,7 +15,6 @@ HuggingFaceDatasetNames = Literal[
     "emo",
     "dair-ai/emotion",
     "SetFit/enron_spam",
-    "ethos",
     "financial_phrasebank",
     "hyperpartisan_news_detection",
     "AmazonScience/massive",
@@ -41,7 +40,6 @@ Returns a dataframe with canonical "text" and "label" columns:
 
 # Looks like this is also referred to as the "subset"
 _dataset_to_config_name: dict[str, str] = {
-    "ethos": "binary",
     "financial_phrasebank": "sentences_allagree",
     "hyperpartisan_news_detection": "bypublisher",
     "AmazonScience/massive": "en-US",
