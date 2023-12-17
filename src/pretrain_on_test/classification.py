@@ -84,9 +84,7 @@ def predict_proba(
 ) -> np.ndarray:
     eval_dataset = _Dataset(config.tokenizer, texts)
     logits: np.ndarray = trained_classifier.predict(eval_dataset).predictions
-    # I'm pretty sure that predictions are logits, not log-probs, b/c of the forward
-    # method in BertForSequenceClassification. I couldn't find anything in the
-    # documentation to confirm this
+    # predictions are logits, not log-probs. (I checked that some are positive)
     probs: torch.Tensor = torch.softmax(
         torch.tensor(logits, device=config.device), axis=-1
     )
