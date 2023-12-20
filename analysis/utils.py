@@ -2,6 +2,7 @@
 Analyze data
 """
 import os
+from typing import Sequence
 
 import arviz as az
 import bambi as bmb
@@ -141,7 +142,7 @@ def stat_model(
     treatment: str,
     control: str,
     equation: str = "num_correct ~ method + (1|dataset/pair)",
-    id_vars: list[str] = ["pair", "dataset"],
+    id_vars: Sequence[str] = ("pair", "dataset"),
     chains: int = 4,
     cores: int = 1,
     random_seed: int = 123,
@@ -149,6 +150,7 @@ def stat_model(
     """
     See notebook for specification.
     """
+    id_vars = list(id_vars)
     df = (
         num_correct_df.with_columns(pl.Series("pair", range(len(num_correct_df))))
         # pair indexes the subsample
