@@ -148,7 +148,7 @@ def stat_model(
     random_seed: int = 123,
 ) -> tuple[bmb.Model, az.InferenceData, pl.DataFrame]:
     """
-    See notebook for specification.
+    See the README for the specification of the model in `model.ipynb`.
     """
     id_vars = list(id_vars)
     df = (
