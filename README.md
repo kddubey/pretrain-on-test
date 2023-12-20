@@ -23,10 +23,10 @@
    python -m pip install .
    ```
 
-   To also run the meta-analysis:
+   To also run the analyses:
 
    ```bash
-   python -m pip install ".[meta]"
+   python -m pip install ".[stat]"
    ```
 
 

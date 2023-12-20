@@ -21,7 +21,7 @@ dependencies = [
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
-meta = [
+stat = [
     "bambi>=0.13.0",
     "jupyter>=1.0.0",
     "seaborn>=0.13.0",
