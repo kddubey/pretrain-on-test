@@ -95,7 +95,7 @@ class ArgParser(Tap):
     num_test: Literal[200, 500]
     "The number of test observations in the accuracy data."
 
-    num_samples: int = 200
+    num_samples: int = 500
     "Number of subsamples to draw from accuracy data, i.e., number of means to compute"
 
     accuracies_home_dir: str = "accuracies_from_paper"

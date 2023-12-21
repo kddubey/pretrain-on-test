@@ -141,6 +141,12 @@ def _summarize_differences(accuracy_df: pl.DataFrame) -> pl.DataFrame:
     )
 
 
+def diffco_texa(treatment: str, control: str) -> str:
+    return (
+        f"$\\text{{acc}}_\\text{{{treatment}}}$ - $\\text{{acc}}_\\text{{{control}}}$"
+    )
+
+
 def eda(
     accuracy_df: pl.DataFrame,
     treatment: str,
@@ -159,10 +165,7 @@ def eda(
     """
     accuracy_df = accuracy_df.with_columns(diff=pl.col(treatment) - pl.col(control))
 
-    diffco_texa = (
-        f"$\\text{{acc}}_\\text{{{treatment}}}$ - $\\text{{acc}}_\\text{{{control}}}$"
-    )
-    ylabel = f"{ylabel}\n({diffco_texa})"
+    ylabel = f"{ylabel}\n({diffco_texa(treatment, control)})"
     violin_plot(accuracy_df.to_pandas(), title, color, ylabel=ylabel, **ylabel_kwargs)
 
     summary = _summarize_differences(accuracy_df)
