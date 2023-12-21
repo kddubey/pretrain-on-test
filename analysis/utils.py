@@ -1,5 +1,5 @@
 """
-Analyze data
+Load and analyze data
 """
 import os
 from typing import Sequence
@@ -34,6 +34,7 @@ def load_accuracies(accuracies_dir: str) -> pl.DataFrame:
         ├── {dataset2}
             ├── accuracies.csv
             └── ...
+        ├── ...
     """
     dfs: list[pl.DataFrame] = []
     for dataset in sorted(os.listdir(accuracies_dir)):
@@ -68,9 +69,44 @@ def load_num_correct(accuracies_dir: str, num_test: int) -> pl.DataFrame:
         ├── {dataset2}
             ├── accuracies.csv
             └── ...
+        ├── ...
     """
     accuracy_df = load_accuracies(accuracies_dir)
     return accuracies_to_num_correct(accuracy_df, num_test)
+
+
+def load_num_correct_all(accuracies_home_dir: str, num_test: int) -> pl.DataFrame:
+    """
+    Load a DataFrame for the number of correct predictions (across LM types) from a
+    directory structured like so::
+
+        {accuracies_home_dir}
+        ├── bert
+            ├── {dataset1}
+                ├── accuracies.csv
+                └── ...
+            ├── {dataset2}
+                ├── accuracies.csv
+                └── ...
+            ├── ...
+        ├── gpt2
+            ├── {dataset1}
+                ├── accuracies.csv
+                └── ...
+            ├── {dataset2}
+                ├── accuracies.csv
+                └── ...
+            ├── ...
+    """
+    dfs: list[pl.DataFrame] = []
+    for lm_type in lm_type_to_name.keys():
+        accuracies_dir = os.path.join(accuracies_home_dir, str(num_test), lm_type)
+        df = load_num_correct(accuracies_dir, num_test).with_columns(
+            lm_type=pl.lit(lm_type)
+        )
+        df = df.select("lm_type").with_columns(df.select(pl.exclude("lm_type")))
+        dfs.append(df)
+    return pl.concat(dfs)
 
 
 def violin_plot(
@@ -143,12 +179,17 @@ def stat_model(
     control: str,
     equation: str = "num_correct ~ method + (1|dataset/pair)",
     id_vars: Sequence[str] = ("pair", "dataset"),
+    plot: bool = True,
     chains: int = 4,
     cores: int = 1,
     random_seed: int = 123,
 ) -> tuple[bmb.Model, az.InferenceData, pl.DataFrame]:
     """
-    See the README for the specification of the model in `model.ipynb`.
+    See the README for the specification of the model.
+
+    Note about `equation`: Pairs/subsamples were formed from the dataset. So it's
+    nested, not crossed. Technically, crossed notation—(1|dataset) + (1|pair)—would
+    still result in a # nested inference b/c pair is uniquely coded across datasets
     """
     id_vars = list(id_vars)
     df = (
@@ -159,9 +200,6 @@ def stat_model(
         .sort("pair")
         .to_pandas()
     )
-    # Pairs/subsamples were formed from the dataset. So it's nested, not crossed.
-    # Technically, crossed notation—(1|dataset) + (1|pair)—would still result in a
-    # nested inference b/c pair is uniquely coded across datasets
     model = bmb.Model(equation, family="poisson", data=df)
     inference_method = "mcmc" if not torch.cuda.is_available() else "nuts_numpyro"
     fit_summary: az.InferenceData = model.fit(
@@ -171,13 +209,11 @@ def stat_model(
         random_seed=random_seed,
     )
     az_summary: pd.DataFrame = az.summary(fit_summary)
-    display(
-        az_summary.loc[
-            [index_name for index_name in az_summary.index if "method" in index_name]
-        ]
-    )
-
-    az.plot_trace(fit_summary, compact=False, var_names="method", filter_vars="like")
+    display(az_summary.loc[az_summary.index.str.contains("method")])
+    if plot:
+        az.plot_trace(
+            fit_summary, compact=False, var_names="method", filter_vars="like"
+        )
     az_summary = pl.from_pandas(az_summary, include_index=True).rename(
         {"None": "effect"}
     )
