@@ -89,11 +89,11 @@ def sample_posterior_mean(
 
 
 class ArgParser(Tap):
-    comparison: Literal["control", "treatment"]
-    "control: acc_extra - acc_base. treatment: acc_test - acc_extra"
-
     num_test: Literal[200, 500]
     "The number of test observations in the accuracy data."
+
+    comparison: Literal["control", "treatment"] = "treatment"
+    "control: acc_extra - acc_base. treatment: acc_test - acc_extra"
 
     num_samples: int = 500
     "Number of subsamples to draw from accuracy data, i.e., number of means to compute"
