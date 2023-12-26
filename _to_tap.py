@@ -133,9 +133,11 @@ def tap_class_from_data_model(data_model: Any) -> type[Tap]:
 
     For example::
 
+        from dataclasses import dataclass, field
+
         @dataclass
         class Data:
-            my_field: str = field(metadata={"description": "field description})
+            my_field: str = field(metadata={"description": "field description"})
     """
     fields_data = _fields_data(data_model)
     return _tap_class(fields_data)
