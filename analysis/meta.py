@@ -45,9 +45,9 @@ def _sample_posterior_mean(
     chains: int,
     seeds: Sequence[int],
 ) -> list[float]:
-    equation = "num_correct ~ method + lm_type + (1|pair)"
+    equation = "p(num_correct, num_test) ~ method + lm_type + (1|pair)"
     # We'll drop dataset b/c it's redunant w/ pair
-    id_vars = ["pair", "lm_type"]
+    id_vars = ["num_test", "pair", "lm_type"]
     posterior_means: list[float] = []
 
     for seed in tqdm(seeds, total=len(seeds), desc=f"Samples {seeds[0]} - {seeds[-1]}"):
@@ -96,7 +96,10 @@ class ArgParser(Tap):
     "control: acc_extra - acc_base. treatment: acc_test - acc_extra"
 
     num_samples: int = 500
-    "Number of subsamples to draw from accuracy data, i.e., number of means to compute"
+    """
+    Number of subsamples to draw from accuracy data, i.e., number of means to compute in
+    this simulation study
+    """
 
     accuracies_home_dir: str = "accuracies_from_paper"
     "Directory containing accuracies for multiple LM types."
