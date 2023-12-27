@@ -10,8 +10,8 @@ A multilevel model is fit:
 
 $$
 \begin{align*}
-Y_{ijk} \sim \text{Poisson}(\lambda_{ijk}) && \text{number of correct predictions} \\
-\log(\lambda_{ijk}) = \mu + U_i + V_{ij} + \beta x_{ijk} && \text{additive effects} \\
+Y_{ijk} \sim \text{Binomial}(n, \lambda_{ijk}) && \text{number of correct predictions} \\
+\text{logit}(\lambda_{ijk}) = \mu + U_i + V_{ij} + \beta x_{ijk} && \text{additive effects} \\
 \mu \sim \text{Normal}(0, 3.5355) && \text{prior for intercept} \\
 U_i \sim \text{Normal}(0, \sigma_{D}) && \text{effect of dataset} \\
 V_{ij} \sim \text{Normal}(0, \sigma_{V}) && \text{(nested) effect of dataset subsample} \\
@@ -20,9 +20,11 @@ V_{ij} \sim \text{Normal}(0, \sigma_{V}) && \text{(nested) effect of dataset sub
 \end{align*}
 $$
 
-$i = 1, 2, \dots, 14$ for the dataset.
+$n = 200$ or $n = 500$ depending on the dataset of scores you want to analyze.
 
-$j = 1, 2, \dots, 50$ for the subsample of dataset $i$.
+$i = 1, 2, \dots, 20$ for the dataset.
+
+$j = 1, 2, \dots, 50$ (or $20$ for $n = 500$) for the subsample of dataset $i$.
 
 $k = 1, 2$ for control and treatment.
 

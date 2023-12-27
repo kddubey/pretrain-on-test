@@ -47,13 +47,14 @@ def load_accuracies(accuracies_dir: str) -> pl.DataFrame:
 
 def accuracies_to_num_correct(accuracy_df: pl.DataFrame, num_test: int) -> pl.DataFrame:
     """
-    Convert accuracies to the number of correct predictions
+    Convert accuracies to the number of correct predictions.
     """
     return (
         (accuracy_df.select(ACCURACY_COLUMNS) * num_test)
         .cast(pl.Int64)
         .with_columns(accuracy_df.select(pl.exclude(ACCURACY_COLUMNS)))
         .select(accuracy_df.columns)
+        .with_columns(pl.lit(num_test).alias("num_test"))
     )
 
 
@@ -180,8 +181,8 @@ def stat_model(
     num_correct_df: pl.DataFrame,
     treatment: str,
     control: str,
-    equation: str = "num_correct ~ method + (1|dataset/pair)",
-    id_vars: Sequence[str] = ("pair", "dataset"),
+    equation: str,
+    id_vars: Sequence[str] = ("num_test", "pair", "dataset"),
     plot: bool = True,
     chains: int = 4,
     cores: int = 1,
@@ -195,6 +196,7 @@ def stat_model(
     still result in a # nested inference b/c pair is uniquely coded across datasets
     """
     id_vars = list(id_vars)
+    num_test: int = num_correct_df["num_test"].head(n=1).item()
     df = (
         num_correct_df.with_columns(pl.Series("pair", range(len(num_correct_df))))
         # pair indexes the subsample
@@ -203,7 +205,8 @@ def stat_model(
         .sort("pair")
         .to_pandas()
     )
-    model = bmb.Model(equation, family="poisson", data=df)
+    assert (df["num_test"] == num_test).all(), "Doh, something went wrong w/ that melt"
+    model = bmb.Model(equation, family="binomial", data=df)
     inference_method = "mcmc" if not torch.cuda.is_available() else "nuts_numpyro"
     fit_summary: az.InferenceData = model.fit(
         inference_method=inference_method,
