@@ -12,11 +12,11 @@ $$
 \begin{align*}
 Y_{ijk} \sim \text{Binomial}(n, \lambda_{ijk}) && \text{number of correct predictions} \\
 \text{logit}(\lambda_{ijk}) = \mu + U_i + V_{ij} + \beta x_{ijk} && \text{additive effects} \\
-\mu \sim \text{Normal}(0, 3.5355) && \text{prior for intercept} \\
+\mu \sim \text{Normal}(0, 1) && \text{prior for intercept} \\
 U_i \sim \text{Normal}(0, \sigma_{D}) && \text{effect of dataset} \\
 V_{ij} \sim \text{Normal}(0, \sigma_{V}) && \text{(nested) effect of dataset subsample} \\
 \beta \sim \text{Normal}(0, 5) && \text{prior for main effect} \\
-\sigma_{D}, \sigma_{V} \sim \text{HalfNormal}(0, 3.5355) && \text{prior for standard deviations}.
+\sigma_{D}, \sigma_{V} \sim \text{HalfNormal}(0, 1) && \text{prior for standard deviations}.
 \end{align*}
 $$
 

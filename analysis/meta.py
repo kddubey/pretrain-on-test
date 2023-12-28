@@ -2,13 +2,13 @@
 Run a meta-analysis to assess the importance of replicating/subsampling. Will save
 posterior means to ./meta_means_{num_test}_{comparison}.csv.
 
-Runs stuff in parallel, which makes logs messy. But whatever.
+Runs stuff in parallel, which makes logs messy.
 """
 
 from functools import partial
 from itertools import islice
 import multiprocessing
-from typing import Sequence, Literal
+from typing import Generator, Iterable, Literal, Sequence, TypeVar
 
 import polars as pl
 from tap import Tap
@@ -23,18 +23,27 @@ def _down_sample(
     seed: int | None = None,
     group: tuple[str] = ("lm_type", "dataset"),
 ) -> pl.DataFrame:
+    """
+    Randomly select a single subsample from each `group`. Returns a realization of an
+    experiment which does not replicate within each dataset.
+    """
     return num_correct_df.filter(
         pl.int_range(0, pl.count()).shuffle(seed=seed).over(*group) < sample_size
     )
 
 
-def _batched(iterable, n):
+_T = TypeVar("_T")
+
+
+def _batched(
+    iterable: Iterable[_T], batch_size: int
+) -> Generator[list[_T], None, None]:
+    # Adapted from:
     # https://docs.python.org/3/library/itertools.html#itertools.batched
-    # batched('ABCDEFG', 3) --> ABC DEF G
-    if n < 1:
-        raise ValueError("n must be at least one")
+    if batch_size < 1:
+        raise ValueError("batch_size must be at least one")
     it = iter(iterable)
-    while batch := tuple(islice(it, n)):
+    while batch := list(islice(it, batch_size)):
         yield batch
 
 
@@ -45,11 +54,14 @@ def _sample_posterior_mean(
     chains: int,
     seeds: Sequence[int],
 ) -> list[float]:
+    """
+    Down-sample `num_correct_df` and compute the posterior mean of the `treatment -
+    control` effect.
+    """
     equation = "p(num_correct, num_test) ~ method + lm_type + (1|pair)"
     # We'll drop dataset b/c it's redunant w/ pair
     id_vars = ["num_test", "pair", "lm_type"]
     posterior_means: list[float] = []
-
     for seed in tqdm(seeds, total=len(seeds), desc=f"Samples {seeds[0]} - {seeds[-1]}"):
         num_correct_df_sample = _down_sample(num_correct_df, seed=seed).drop("dataset")
         _, _, az_summary = utils.stat_model(
@@ -77,6 +89,9 @@ def sample_posterior_mean(
     chains: int = 1,
     cores: int | None = None,
 ) -> list[float]:
+    """
+    Paralleliza
+    """
     single_core_sample = partial(
         _sample_posterior_mean, num_correct_df, treatment, control, chains
     )
@@ -108,7 +123,6 @@ class ArgParser(Tap):
 if __name__ == "__main__":
     args = ArgParser(__doc__).parse_args()
     num_correct_df = utils.load_num_correct_all(args.accuracies_home_dir, args.num_test)
-
     if args.comparison == "control":
         treatment, control = "extra", "base"
     else:

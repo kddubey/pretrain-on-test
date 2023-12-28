@@ -184,10 +184,11 @@ def stat_model(
     equation: str,
     id_vars: Sequence[str] = ("num_test", "pair", "dataset"),
     plot: bool = True,
+    dont_fit: bool = False,
     chains: int = 4,
     cores: int = 1,
     random_seed: int = 123,
-) -> tuple[bmb.Model, az.InferenceData, pl.DataFrame]:
+) -> tuple[bmb.Model, az.InferenceData, pl.DataFrame] | bmb.Model:
     """
     See the README for the specification of the model.
 
@@ -195,7 +196,10 @@ def stat_model(
     nested, not crossed. Technically, crossed notation—(1|dataset) + (1|pair)—would
     still result in a # nested inference b/c pair is uniquely coded across datasets
     """
+    # Melt data
     id_vars = list(id_vars)
+    if "num_test" not in id_vars:
+        id_vars = ["num_test"] + id_vars
     num_test: int = num_correct_df["num_test"].head(n=1).item()
     df = (
         num_correct_df.with_columns(pl.Series("pair", range(len(num_correct_df))))
@@ -206,7 +210,27 @@ def stat_model(
         .to_pandas()
     )
     assert (df["num_test"] == num_test).all(), "Doh, something went wrong w/ that melt"
-    model = bmb.Model(equation, family="binomial", data=df)
+
+    # Fit model
+    # Default sigma = 3.5355 results in really wide priors after prior predictive checks
+    priors = {
+        "Intercept": bmb.Prior("Normal", mu=0, sigma=1),
+        "method": bmb.Prior("Normal", mu=0, sigma=1),
+    }
+    if "dataset" in df.columns:
+        priors["1|dataset"] = bmb.Prior(
+            "Normal", mu=0, sigma=bmb.Prior("HalfNormal", sigma=1)
+        )
+        priors["1|dataset:pair"] = bmb.Prior(
+            "Normal", mu=0, sigma=bmb.Prior("HalfNormal", sigma=1)
+        )
+    else:  # the meta-analysis only keeps one subsample per dataset
+        priors["1|pair"] = bmb.Prior(
+            "Normal", mu=0, sigma=bmb.Prior("HalfNormal", sigma=1)
+        )
+    model = bmb.Model(equation, family="binomial", data=df, priors=priors)
+    if dont_fit:
+        return model
     inference_method = "mcmc" if not torch.cuda.is_available() else "nuts_numpyro"
     fit_summary: az.InferenceData = model.fit(
         inference_method=inference_method,
@@ -214,6 +238,8 @@ def stat_model(
         cores=cores,
         random_seed=random_seed,
     )
+
+    # Analyze model
     az_summary: pd.DataFrame = az.summary(fit_summary)
     display(az_summary.loc[az_summary.index.str.contains("method")])
     if plot:
