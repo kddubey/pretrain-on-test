@@ -6,8 +6,6 @@ scores in `./accuracies_from_paper`.
 
 ## Model
 
-Specification:
-
 $$
 \begin{align*}
 Y_{ijk} \sim \text{Binomial}(n, \lambda_{ijk}) && \text{number of correct predictions} \\
@@ -37,9 +35,11 @@ Note: I'm still learning how to do this type of analysis.
 
 `describe_datasets.ipynb` summarizes each text classification dataset.
 
-`dataset.ipynb` visualizes $\text{acc}_\text{base}, \text{acc}_\text{extra}$ and
-$\text{acc}_\text{test}$, and tests that $\text{E}[\text{acc}_\text{test} -
-\text{acc}_\text{extra}] = 0$ for each dataset.
+`dataset.ipynb` visualizes
+$\text{acc}_\text{base}, \text{acc}_\text{extra}$ and $\text{acc}_\text{test}$, and
+tests that
+$\text{E}[\text{acc}_\text{test} - \text{acc}_\text{extra}] = 0$
+for each dataset.
 
 `main.ipynb` contains the posterior distribution of $\beta$ when stratifying by the LM
 type. This analysis is the main conclusion.
