@@ -185,6 +185,7 @@ def stat_model(
     id_vars: Sequence[str] = ("num_test", "pair", "dataset"),
     plot: bool = True,
     dont_fit: bool = False,
+    method_prior_mean_std: tuple[float, float] = (0, 1),
     chains: int = 4,
     cores: int = 1,
     random_seed: int = 123,
@@ -196,6 +197,8 @@ def stat_model(
     nested, not crossed. Technically, crossed notation—(1|dataset) + (1|pair)—would
     still result in a # nested inference b/c pair is uniquely coded across datasets
     """
+    # TODO: this function is bloated. Break up.
+
     # Melt data
     id_vars = list(id_vars)
     if "num_test" not in id_vars:
@@ -213,9 +216,10 @@ def stat_model(
 
     # Fit model
     # Default sigma = 3.5355 results in really wide priors after prior predictive checks
+    method_mu, method_sigma = method_prior_mean_std
     priors = {
         "Intercept": bmb.Prior("Normal", mu=0, sigma=1),
-        "method": bmb.Prior("Normal", mu=0, sigma=1),
+        "method": bmb.Prior("Normal", mu=method_mu, sigma=method_sigma),
     }
     if "dataset" in df.columns:
         priors["1|dataset"] = bmb.Prior(
