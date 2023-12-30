@@ -177,6 +177,58 @@ def eda(
     return summary
 
 
+def melt_num_correct(
+    num_correct_df: pl.DataFrame,
+    treatment: str,
+    control: str,
+    id_vars: Sequence[str] = ("num_test", "pair", "dataset"),
+) -> pd.DataFrame:
+    """
+    Melt `num_correct_df` into a format which is compatible with Wilkinson notation.
+    A pandas (not polars) dataframe is returned because `bambi` (and others) assume a
+    pandas dataframe.
+    """
+    id_vars = list(id_vars)
+    if "num_test" not in id_vars:
+        id_vars = ["num_test"] + id_vars
+    return (
+        num_correct_df.with_columns(pl.Series("pair", range(len(num_correct_df))))
+        # pair indexes the subsample
+        .select(id_vars + [control, treatment])
+        .melt(id_vars=id_vars, variable_name="method", value_name="num_correct")
+        .sort("pair")
+        .to_pandas()
+    )
+
+
+def create_model(
+    num_correct_df_melted: pd.DataFrame,
+    equation: str,
+    treatment_effect_prior_mean_std: tuple[float, float],
+) -> bmb.Model:
+    # Fit model
+    # Default sigma = 3.5355 results in really wide priors after prior predictive checks
+    method_mu, method_sigma = treatment_effect_prior_mean_std
+    priors = {
+        "Intercept": bmb.Prior("Normal", mu=0, sigma=1),
+        "method": bmb.Prior("Normal", mu=method_mu, sigma=method_sigma),
+    }
+    if "dataset" in num_correct_df_melted.columns:
+        priors["1|dataset"] = bmb.Prior(
+            "Normal", mu=0, sigma=bmb.Prior("HalfNormal", sigma=1)
+        )
+        priors["1|dataset:pair"] = bmb.Prior(
+            "Normal", mu=0, sigma=bmb.Prior("HalfNormal", sigma=1)
+        )
+    else:  # the meta-analysis only keeps one subsample per dataset
+        priors["1|pair"] = bmb.Prior(
+            "Normal", mu=0, sigma=bmb.Prior("HalfNormal", sigma=1)
+        )
+    return bmb.Model(
+        equation, family="binomial", data=num_correct_df_melted, priors=priors
+    )
+
+
 def stat_model(
     num_correct_df: pl.DataFrame,
     treatment: str,
@@ -184,8 +236,7 @@ def stat_model(
     equation: str,
     id_vars: Sequence[str] = ("num_test", "pair", "dataset"),
     plot: bool = True,
-    dont_fit: bool = False,
-    method_prior_mean_std: tuple[float, float] = (0, 1),
+    treatment_effect_prior_mean_std: tuple[float, float] = (0, 1),
     chains: int = 4,
     cores: int = 1,
     random_seed: int = 123,
@@ -197,44 +248,15 @@ def stat_model(
     nested, not crossed. Technically, crossed notation—(1|dataset) + (1|pair)—would
     still result in a # nested inference b/c pair is uniquely coded across datasets
     """
-    # TODO: this function is bloated. Break up.
-
-    # Melt data
-    id_vars = list(id_vars)
-    if "num_test" not in id_vars:
-        id_vars = ["num_test"] + id_vars
-    num_test: int = num_correct_df["num_test"].head(n=1).item()
-    df = (
-        num_correct_df.with_columns(pl.Series("pair", range(len(num_correct_df))))
-        # pair indexes the subsample
-        .select(id_vars + [control, treatment])
-        .melt(id_vars=id_vars, variable_name="method", value_name="num_correct")
-        .sort("pair")
-        .to_pandas()
+    num_correct_df_melted = melt_num_correct(
+        num_correct_df, treatment, control, id_vars=id_vars
     )
-    assert (df["num_test"] == num_test).all(), "Doh, something went wrong w/ that melt"
-
     # Fit model
-    # Default sigma = 3.5355 results in really wide priors after prior predictive checks
-    method_mu, method_sigma = method_prior_mean_std
-    priors = {
-        "Intercept": bmb.Prior("Normal", mu=0, sigma=1),
-        "method": bmb.Prior("Normal", mu=method_mu, sigma=method_sigma),
-    }
-    if "dataset" in df.columns:
-        priors["1|dataset"] = bmb.Prior(
-            "Normal", mu=0, sigma=bmb.Prior("HalfNormal", sigma=1)
-        )
-        priors["1|dataset:pair"] = bmb.Prior(
-            "Normal", mu=0, sigma=bmb.Prior("HalfNormal", sigma=1)
-        )
-    else:  # the meta-analysis only keeps one subsample per dataset
-        priors["1|pair"] = bmb.Prior(
-            "Normal", mu=0, sigma=bmb.Prior("HalfNormal", sigma=1)
-        )
-    model = bmb.Model(equation, family="binomial", data=df, priors=priors)
-    if dont_fit:
-        return model
+    model = create_model(
+        num_correct_df_melted,
+        equation,
+        treatment_effect_prior_mean_std=treatment_effect_prior_mean_std,
+    )
     inference_method = "mcmc" if not torch.cuda.is_available() else "nuts_numpyro"
     fit_summary: az.InferenceData = model.fit(
         inference_method=inference_method,
@@ -242,7 +264,6 @@ def stat_model(
         cores=cores,
         random_seed=random_seed,
     )
-
     # Analyze model
     az_summary: pd.DataFrame = az.summary(fit_summary)
     display(az_summary.loc[az_summary.index.str.contains("method")])
