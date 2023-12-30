@@ -43,7 +43,7 @@ Default batch sizes are set for a single T4 GPU.
 python run.py --lm_type bert | tee run.log
 ```
 
-For 1 minute, CPU-friendly, local tests:
+For quick, CPU-friendly, local tests:
 
 ```bash
 python run.py \
@@ -102,7 +102,8 @@ run(experiment)
 <details>
 <summary>Google Colab</summary>
 
-See [this
-notebook](https://github.com/kddubey/pretrain-on-test/blob/main/google_colab.ipynb).
+Run [this
+notebook](https://github.com/kddubey/pretrain-on-test/blob/main/google_colab.ipynb) on a
+T4 GPU for free in Google Colab.
 
 </details>
