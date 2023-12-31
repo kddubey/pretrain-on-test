@@ -2,7 +2,7 @@
 Load and analyze data
 """
 import os
-from typing import Sequence
+from typing import Any, Callable, Sequence
 
 import arviz as az
 import bambi as bmb
@@ -76,7 +76,25 @@ def load_num_correct(accuracies_dir: str, num_test: int) -> pl.DataFrame:
     return accuracies_to_num_correct(accuracy_df, num_test)
 
 
-def load_num_correct_all(accuracies_home_dir: str, num_test: int) -> pl.DataFrame:
+def _load_all(
+    loader: Callable[[str, Any], pl.DataFrame],
+    accuracies_home_dir: str,
+    num_test: int,
+    *args,
+    **kwargs,
+) -> pl.DataFrame:
+    dfs: list[pl.DataFrame] = []
+    for lm_type in lm_type_to_name.keys():
+        accuracies_dir = os.path.join(accuracies_home_dir, str(num_test), lm_type)
+        df = loader(accuracies_dir, *args, **kwargs).with_columns(
+            lm_type=pl.lit(lm_type)
+        )
+        df = df.select("lm_type").with_columns(df.select(pl.exclude("lm_type")))
+        dfs.append(df)
+    return pl.concat(dfs).sort(["lm_type", "dataset"])
+
+
+def load_all_num_correct(accuracies_home_dir: str, num_test: int) -> pl.DataFrame:
     """
     Load a DataFrame for the number of correct predictions (across LM types) from a
     directory structured like so::
@@ -99,36 +117,92 @@ def load_num_correct_all(accuracies_home_dir: str, num_test: int) -> pl.DataFram
                 └── ...
             ├── ...
     """
-    dfs: list[pl.DataFrame] = []
-    for lm_type in lm_type_to_name.keys():
-        accuracies_dir = os.path.join(accuracies_home_dir, str(num_test), lm_type)
-        df = load_num_correct(accuracies_dir, num_test).with_columns(
-            lm_type=pl.lit(lm_type)
-        )
-        df = df.select("lm_type").with_columns(df.select(pl.exclude("lm_type")))
-        dfs.append(df)
-    return pl.concat(dfs)
+    return _load_all(load_num_correct, accuracies_home_dir, num_test, num_test)
+
+
+def load_all_accuracies(accuracies_home_dir: str, num_test: int) -> pl.DataFrame:
+    """
+    Load a DataFrame for the accuracies (across LM types) from a directory structured
+    like so::
+
+        {accuracies_home_dir}
+        ├── bert
+            ├── {dataset1}
+                ├── accuracies.csv
+                └── ...
+            ├── {dataset2}
+                ├── accuracies.csv
+                └── ...
+            ├── ...
+        ├── gpt2
+            ├── {dataset1}
+                ├── accuracies.csv
+                └── ...
+            ├── {dataset2}
+                ├── accuracies.csv
+                └── ...
+            ├── ...
+    """
+    return _load_all(load_accuracies, accuracies_home_dir, num_test)
 
 
 def violin_plot(
-    accuracy_df: pd.DataFrame,
-    title: str,
-    color,
-    **ylabel_kwargs,
-):
+    accuracy_df: pl.DataFrame, title: str, ax: plt.Axes | None = None
+) -> plt.Axes:
     """
-    Violin plot of `diff` column for each dataset.
+    ```
+        {title}
+
+    dataset 1   👄
+
+    dataset 2   🫦
+
+    ...
+
+    dataset N   👄
+    ```
     """
-    _, axes = plt.subplots(figsize=(16, 2))
-    axes: plt.Axes
-    sns.violinplot(data=accuracy_df, x="dataset", y="diff", ax=axes, color=color)
-    plt.axhline(0, linestyle="dashed", color="gray")
-    axes.set_title(title)
-    axes.yaxis.grid(True)
-    axes.set_xlabel("Text classification dataset")
-    axes.set_ylabel(**ylabel_kwargs)
-    plt.xticks(rotation=45, ha="right")
-    plt.show()
+    data_for_plot = (
+        accuracy_df.with_columns(
+            extra_base=pl.col("extra") - pl.col("base"),
+            test_extra=pl.col("test") - pl.col("extra"),
+        )
+        .select(["dataset", "extra_base", "test_extra"])
+        .melt(id_vars="dataset", variable_name="distribution", value_name="diff")
+        .with_columns(
+            pl.col("distribution").replace(
+                {
+                    "extra_base": f'{diffco_texa("extra", "base")} (pretraining boost)',
+                    "test_extra": f'{diffco_texa("test", "extra")} (evaluation bias)',
+                }
+            )
+        )
+    )
+    is_ax_none = ax is None
+    if is_ax_none:
+        _, ax = plt.subplots(figsize=(4, 16))
+    ax = sns.violinplot(
+        data_for_plot.sort("dataset"),
+        y="dataset",
+        x="diff",
+        hue="distribution",
+        ax=ax,
+        orient="h",
+        split=True,
+        inner=None,
+        cut=0,
+        fill=False,
+    )
+    if not is_ax_none:
+        ax.legend().set_visible(False)
+    ax.axvline(0, linestyle="dashed", color="gray")
+    ax.set_title(title)
+    ax.yaxis.grid(True)
+    ax.set_ylabel("Text classification dataset")
+    ax.set_xlabel("Accuracy difference")
+    if is_ax_none:
+        plt.show()
+    return ax
 
 
 def _summarize_differences(accuracy_df: pl.DataFrame) -> pl.DataFrame:
@@ -148,28 +222,14 @@ def diffco_texa(treatment: str, control: str) -> str:
     )
 
 
-def eda(
-    accuracy_df: pl.DataFrame,
-    treatment: str,
-    control: str,
-    title: str,
-    color,
-    ylabel: str = "",
-    **ylabel_kwargs,
-) -> pl.DataFrame:
+def eda(accuracy_df: pl.DataFrame, treatment: str, control: str) -> pl.DataFrame:
     """
     Returns the mean and standard deviation of the difference between `treatment` and
-    `control` columns.
-
-    Displays a violin plot of the differences, and prints the overall mean and standard
-    deviation of the difference.
+    `control` columns. Prints the overall mean and standard deviation of the difference.
     """
-    accuracy_df = accuracy_df.with_columns(diff=pl.col(treatment) - pl.col(control))
-
-    ylabel = f"{ylabel}\n({diffco_texa(treatment, control)})"
-    violin_plot(accuracy_df.to_pandas(), title, color, ylabel=ylabel, **ylabel_kwargs)
-
-    summary = _summarize_differences(accuracy_df)
+    summary = _summarize_differences(
+        accuracy_df.with_columns(diff=pl.col(treatment) - pl.col(control))
+    )
     print("Overall difference:")
     pl.Config.set_tbl_hide_dataframe_shape(True)
     pl.Config.set_tbl_hide_column_data_types(True)
