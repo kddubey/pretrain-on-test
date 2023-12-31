@@ -240,7 +240,7 @@ def stat_model(
     chains: int = 4,
     cores: int = 1,
     random_seed: int = 123,
-) -> tuple[bmb.Model, az.InferenceData, pl.DataFrame] | bmb.Model:
+) -> tuple[bmb.Model, az.InferenceData, pl.DataFrame]:
     """
     See the README for the specification of the model.
 
