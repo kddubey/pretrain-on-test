@@ -6,27 +6,34 @@ scores in `./accuracies_from_paper`.
 
 ## Model
 
+The model is a multilevel one which stratifies by the type of LM:
+
 $$
 \begin{align*}
-Y_{ijk} \sim \text{Binomial}(n, \lambda_{ijk}) && \text{number of correct predictions} \\
-\text{logit}(\lambda_{ijk}) = \mu + U_i + V_{ij} + \beta x_{ijk} && \text{additive effects} \\
+Y_{ijkl} \sim \text{Binomial}(n, \lambda_{ijkl}) && \text{number of correct predictions} \\
+\text{logit}(\lambda_{ijkl}) = \mu + \alpha z_i + U_j + V_{jk} + \beta x_{ijkl} && \text{additive effects} \\
 \mu \sim \text{Normal}(0, 1) && \text{prior for intercept} \\
-U_i \sim \text{Normal}(0, \sigma_{D}) && \text{effect of dataset} \\
-V_{ij} \sim \text{Normal}(0, \sigma_{V}) && \text{(nested) effect of dataset subsample} \\
-\beta \sim \text{Normal}(0, 1) && \text{prior for main effect} \\
+\alpha \sim \text{Normal}(0, 5) && \text{prior for LM type effect} \\
+U_j \sim \text{Normal}(0, \sigma_{D}) && \text{effect of dataset} \\
+V_{jk} \sim \text{Normal}(0, \sigma_{V}) && \text{(nested) effect of dataset subsample} \\
+\beta \sim \text{Normal}(0, 1) && \text{prior for treatment effect} \\
 \sigma_{D}, \sigma_{V} \sim \text{HalfNormal}(0, 1) && \text{prior for standard deviations}.
 \end{align*}
 $$
 
 $n = 200$ or $n = 500$ depending on the dataset of scores you want to analyze.
 
-$i = 1, 2, \dots, 20$ for the dataset.
+$i = 1, 2$ for BERT and GPT-2, respectively.
 
-$j = 1, 2, \dots, 50$ (or $20$ for $n = 500$) for the subsample of dataset $i$.
+$z_i = 0$ if $i = 1$ else it's $1$.
 
-$k = 1, 2$ for control and treatment.
+$j = 1, 2, \dots, 20$ for the dataset.
 
-$x_{ijk} = 0$ if $k = 1$ else it's $1$. Inference on $\beta$ is performed via MCMC.
+$k = 1, 2, \dots, 50$ (or $20$ for $n = 500$) for the subsample of dataset $j$.
+
+$l = 1, 2$ for control and treatment, respectively.
+
+$x_{ijkl} = 0$ if $l = 1$ else it's $1$. Inference on $\beta$ is performed via MCMC.
 
 Note: I'm still learning how to do this type of analysis.
 
