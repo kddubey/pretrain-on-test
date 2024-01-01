@@ -222,10 +222,13 @@ def diffco_texa(treatment: str, control: str) -> str:
     )
 
 
-def eda(accuracy_df: pl.DataFrame, treatment: str, control: str) -> pl.DataFrame:
+def eda(
+    accuracy_df: pl.DataFrame, treatment: str, control: str
+) -> tuple[pl.DataFrame, pl.DataFrame]:
     """
-    Returns the mean and standard deviation of the difference between `treatment` and
-    `control` columns. Prints the overall mean and standard deviation of the difference.
+    Returns the mean and standard deviation of the raw and relative difference between
+    `treatment` and `control` columns. Prints the overall mean and standard deviation of
+    the raw and relative difference.
     """
     summary = _summarize_differences(
         accuracy_df.with_columns(diff=pl.col(treatment) - pl.col(control))
@@ -234,7 +237,15 @@ def eda(accuracy_df: pl.DataFrame, treatment: str, control: str) -> pl.DataFrame
     pl.Config.set_tbl_hide_dataframe_shape(True)
     pl.Config.set_tbl_hide_column_data_types(True)
     print(summary.select(["mean", "std"]).mean())
-    return summary
+
+    print("Overall difference (relative):")
+    summary_relative = _summarize_differences(
+        accuracy_df.with_columns(
+            diff=(pl.col(treatment) - pl.col(control)) / pl.col(control)
+        )
+    )
+    print(summary_relative.select(["mean", "std"]).mean())  # math not right but idc
+    return summary, summary_relative
 
 
 def melt_num_correct(
@@ -323,6 +334,7 @@ def stat_model(
         chains=chains,
         cores=cores,
         random_seed=random_seed,
+        tune=500,
     )
     # Analyze model
     az_summary: pd.DataFrame = az.summary(fit_summary)
