@@ -48,8 +48,11 @@ tests that
 $\text{E}[\text{acc}_\text{test} - \text{acc}_\text{extra}] = 0$
 for each dataset.
 
-`main.ipynb` contains the posterior distribution of $\beta$ when stratifying by the LM
-type. This analysis is the main conclusion.
+`main_200.ipynb` contains the posterior distribution of $\beta$ when stratifying by the
+LM type for $n = 200$.
+
+`main_500.ipynb` contains the posterior distribution of $\beta$ when stratifying by the
+LM type for $n = 500$.
 
 `model.ipynb` contains the posterior distribution of $\beta$ for each LM type—BERT and
 GPT-2.
