@@ -70,7 +70,9 @@ See if something can be done here. Review causal/anti-causal papers. Consult aut
 (which isn't discusssed in the CV answer)
 
 Why stratified sampling when training the classifier? Reduce variance of peformance
-across subsamples.
+across subsamples. This paper does not study the subdomain of few-shot text
+classification where the set of classes may change when transitioning a model from
+training data to test data.
 
 We don't deal w/ variance caused by BERT's inherent training instability / random inits.
 
