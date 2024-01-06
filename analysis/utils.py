@@ -207,11 +207,13 @@ def violin_plot(
 
 def _summarize_differences(accuracy_df: pl.DataFrame) -> pl.DataFrame:
     """
-    Mean and standard deviation of `diff` column for each dataset.
+    Mean and standard error of `diff` column for each dataset.
     """
+    num_subsamples: int = accuracy_df.group_by("dataset").count()["count"][0]
+    num_subsamples_sqrt: float = num_subsamples**0.5
     return (
         accuracy_df.group_by("dataset")
-        .agg(mean=pl.col("diff").mean(), std=pl.col("diff").std())
+        .agg(mean=pl.col("diff").mean(), se=pl.col("diff").std() / num_subsamples_sqrt)
         .sort(by="dataset")
     )
 
@@ -226,17 +228,26 @@ def eda(
     accuracy_df: pl.DataFrame, treatment: str, control: str
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
     """
-    Returns the mean and standard deviation of the raw and relative difference between
-    `treatment` and `control` columns. Prints the overall mean and standard deviation of
-    the raw and relative difference.
+    Returns the mean and standard error of the raw and relative difference between
+    `treatment` and `control` columns for each dataset.
+
+    Prints the overall mean and standard error of the raw and relative difference. The
+    standard error is over the average accuracy for each dataset, because dataset
+    subsamples are technical replicates.
     """
     summary = _summarize_differences(
         accuracy_df.with_columns(diff=pl.col(treatment) - pl.col(control))
     )
+    num_datasets = accuracy_df["dataset"].unique().len()
+    num_datasets_sqrt: float = num_datasets**0.5
     print("Overall difference:")
     pl.Config.set_tbl_hide_dataframe_shape(True)
     pl.Config.set_tbl_hide_column_data_types(True)
-    print(summary.select(["mean", "std"]).mean())
+    print(
+        summary.select(
+            pl.col("mean").mean(), pl.col("mean").std().alias("se") / num_datasets_sqrt
+        )
+    )
 
     print("Overall difference (relative):")
     summary_relative = _summarize_differences(
@@ -244,7 +255,11 @@ def eda(
             diff=(pl.col(treatment) - pl.col(control)) / pl.col(control)
         )
     )
-    print(summary_relative.select(["mean", "std"]).mean())  # math not right but idc
+    print(
+        summary_relative.select(
+            pl.col("mean").mean(), pl.col("mean").std().alias("se") / num_datasets_sqrt
+        )
+    )
     return summary, summary_relative
 
 
