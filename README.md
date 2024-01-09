@@ -32,13 +32,13 @@
 
 ## Usage
 
-Reproduce the experiment results by running `./experiment.sh`, which will take more than
-24 hours to finish.
+Reproduce the experiment results by running `./experiment.sh` on a T4 GPU, which will
+take roughly 40 hours to finish.
 
 Default batch sizes are set to fit on a single T4 GPU. For some datasets, the batch
 sizes need to be decreased.
 
-> :warning: Results from running `./experiment.sh` will not be completely identical to
+> :warning:   Results from running `./experiment.sh` will not be completely identical to
 `./analysis/accuracies_from_paper/` b/c torch seeds will be different. That's b/c I ran
 datasets individually in Google Colab notebook sessions. I did that to avoid spending
 money, and to run experiments in parallel on 5 smurf'd gmail accounts :-]
