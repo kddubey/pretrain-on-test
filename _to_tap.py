@@ -1,7 +1,8 @@
 """
 Convert a data model to a typed CLI argument parser.
 
-TODO: get this to work for Python 3.8, 3.9, and Pydantic v1.
+I'm working on getting this integrated into typed-argument parser:
+https://github.com/swansonk14/typed-argument-parser/pull/128
 """
 
 import dataclasses
@@ -95,7 +96,7 @@ def _fields_data(data_model: Any) -> list[_FieldData]:
 
 def _tap_class(fields_data: Sequence[_FieldData]) -> type[Tap]:
     class ArgParser(Tap):
-        def configure(self):
+        def _configure(self):
             for field_data in fields_data:
                 variable = field_data.name
                 self._annotations[variable] = field_data.annotation
@@ -107,6 +108,8 @@ def _tap_class(fields_data: Sequence[_FieldData]) -> type[Tap]:
                 else:
                     kwargs = dict(required=False, default=field_data.default)
                 self.add_argument(f"--{variable}", **kwargs)
+
+            super()._configure()
 
     return ArgParser
 
