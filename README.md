@@ -40,8 +40,7 @@ sizes need to be decreased.
 
 > :warning:   Results from running `./experiment.sh` will not be completely identical to
 `./analysis/accuracies_from_paper/` b/c torch seeds will be different. That's b/c I ran
-datasets individually in Google Colab notebook sessions. I did that to avoid spending
-money, and to run experiments in parallel on 5 smurf'd gmail accounts :-]
+datasets individually in Google Colab notebook sessions :-]
 
 By default, results are saved to `./accuracies`.
 
