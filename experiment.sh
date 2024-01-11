@@ -1,5 +1,5 @@
 # This will write to a new directory: ./accuracies
-# Hyperparameters are set to run on a single T4 GPU (15 GB RAM)
+# Hyperparameters are set to run on a single T4 GPU (15 GB VRAM)
 # They vary by dataset b/c some datasets have much longer text than others
 # They vary by the LM type b/c different architectures cause differences in peak memory
 # For n=500, the number of pretraining epochs is reduced from 2 to 1 to save time
