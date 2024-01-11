@@ -9,17 +9,22 @@ HuggingFaceDatasetNames = Literal[
     "ag_news",
     "SetFit/amazon_counterfactual_en",
     "app_reviews",
+    "blog_authorship_corpus",
     "christinacdl/clickbait_notclickbait_dataset",
     "climate_fever",
     "aladar/craigslist_bargains",
+    "disaster_response_messages",
     "emo",
     "dair-ai/emotion",
     "SetFit/enron_spam",
     "financial_phrasebank",
+    "classla/FRENK-hate-en",
     "hyperpartisan_news_detection",
+    "limit",
     "AmazonScience/massive",
     "movie_rationales",
     "mteb/mtop_domain",
+    "ccdv/patent-classification",
     "rotten_tomatoes",
     "silicone",
     "trec",
@@ -38,24 +43,42 @@ Returns a dataframe with canonical "text" and "label" columns:
 """
 
 
-# Looks like this is also referred to as the "subset"
+# Looks like this is also referred to as the "subset" in the HF dataset viewer online
 _dataset_to_config_name: dict[str, str] = {
     "financial_phrasebank": "sentences_allagree",
     "hyperpartisan_news_detection": "bypublisher",
     "AmazonScience/massive": "en-US",
+    "ccdv/patent-classification": "abstract",
     "silicone": "dyda_da",
 }
 
 
+# Sometimes need to filter out ginormous texts, so limit to < 1_000 characters
+_NUM_CHARACTERS_MAX = 1_000
 _dataset_to_processor: dict[str, _ProcessDataFrame] = {
     "app_reviews": lambda df: df.assign(text=df["review"], label=df["star"] - 1),
+    "blog_authorship_corpus": lambda df: df.assign(
+        label=df["gender"].map({"female": 0, "male": 1})
+    ).copy()[df["text"].str.len() < _NUM_CHARACTERS_MAX],
     "climate_fever": lambda df: df.assign(text=df["claim"], label=df["claim_label"]),
+    "disaster_response_messages": lambda df: df.assign(
+        text=df["message"], label=df["genre"].map({"direct": 0, "news": 1, "social": 2})
+    ).copy()[df["message"].str.len() < _NUM_CHARACTERS_MAX],
     "financial_phrasebank": lambda df: df.assign(text=df["sentence"]),
+    "classla/FRENK-hate-en": lambda df: df.assign(
+        label=df["topic"].map({"lgbt": 0, "migrants": 1})
+    ).copy()[df["text"].str.len() < _NUM_CHARACTERS_MAX],
     "hyperpartisan_news_detection": lambda df: df.assign(
         text=df["title"], label=df["hyperpartisan"]
     ),
+    "limit": lambda df: df.assign(
+        text=df["sentence"], label=df["motion"].map({"no": 0, "yes": 1})
+    ),
     "AmazonScience/massive": lambda df: df.assign(text=df["utt"], label=df["scenario"]),
     "movie_rationales": lambda df: df.assign(text=df["review"]),
+    "ccdv/patent-classification": lambda df: df.copy()[
+        df["text"].str.len() < _NUM_CHARACTERS_MAX
+    ],
     "silicone": lambda df: df.assign(text=df["Utterance"], label=df["Label"]),
     "trec": lambda df: df.assign(label=df["coarse_label"]),
     "tweets_hate_speech_detection": lambda df: df.assign(text=df["tweet"]),
@@ -88,6 +111,10 @@ def load_classification_data_from_hf(
 
     process = _dataset_to_processor.get(huggingface_dataset_name, lambda df: df)
     df = process(df)
+
+    if df["text"].isna().mean() > 0.05:
+        raise ValueError("More than 5% of texts are missing.")
+
     df["text"] = df["text"].fillna("")
 
     if len(set(df.index)) != len(df):
