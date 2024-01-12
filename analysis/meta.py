@@ -53,7 +53,7 @@ def _sample_posterior_mean(
     control: str,
     chains: int,
     seeds: Sequence[int],
-) -> list[float]:
+) -> list[dict[str, float]]:
     """
     Down-sample `num_correct_df` and compute the posterior mean of the `treatment -
     control` effect.
@@ -61,7 +61,7 @@ def _sample_posterior_mean(
     equation = "p(num_correct, num_test) ~ method + lm_type + (1|pair)"
     # We'll drop dataset b/c it's redunant w/ pair
     id_vars = ["num_test", "pair", "lm_type"]
-    posterior_means: list[float] = []
+    summaries: list[dict[str, float]] = []
     for seed in tqdm(seeds, total=len(seeds), desc=f"Samples {seeds[0]} - {seeds[-1]}"):
         num_correct_df_sample = _down_sample(num_correct_df, seed=seed).drop("dataset")
         _, _, az_summary = utils.stat_model(
@@ -73,12 +73,14 @@ def _sample_posterior_mean(
             chains=chains,
             plot=False,
         )
-        effect_of_method = az_summary.filter(
-            az_summary["effect"].str.contains("method")
-        )["mean"]
-        assert len(effect_of_method) == 1  # always True b/c we pick treatment, control
-        posterior_means.append(effect_of_method[0])
-    return posterior_means
+        effect_summary = (
+            az_summary.filter(az_summary["effect"].str.contains("method"))
+            .select(pl.exclude(["effect", "ess_bulk", "ess_tail", "r_hat"]))
+            .to_dicts()
+        )
+        assert len(effect_summary) == 1  # always True b/c we pick treatment, control
+        summaries.append(effect_summary[0])
+    return summaries
 
 
 def sample_posterior_mean(
@@ -99,8 +101,8 @@ def sample_posterior_mean(
     batch_size = (num_samples // cores) + 1
     batches = list(_batched(range(num_samples), batch_size))
     with multiprocessing.Pool(cores) as pool:
-        means = pool.map(single_core_sample, batches)
-    return [mean for means_batch in means for mean in means_batch]
+        summaries = pool.map(single_core_sample, batches)
+    return [summary for summaries_batch in summaries for summary in summaries_batch]
 
 
 class ArgParser(Tap):
@@ -122,14 +124,12 @@ class ArgParser(Tap):
 
 if __name__ == "__main__":
     args = ArgParser(__doc__).parse_args()
-    num_correct_df = utils.load_num_correct_all(args.accuracies_home_dir, args.num_test)
+    num_correct_df = utils.load_all_num_correct(args.accuracies_home_dir, args.num_test)
     if args.comparison == "control":
         treatment, control = "extra", "base"
     else:
         treatment, control = "test", "extra"
-    posterior_means = sample_posterior_mean(
+    summaries = sample_posterior_mean(
         num_correct_df, treatment, control, num_samples=args.num_samples
     )
-    pl.DataFrame({"mean": posterior_means}).write_csv(
-        f"meta_means_{args.num_test}_{args.comparison}.csv"
-    )
+    pl.DataFrame(summaries).write_csv(f"meta_{args.num_test}_{args.comparison}.csv")
