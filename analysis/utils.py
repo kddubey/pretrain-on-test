@@ -352,7 +352,7 @@ def stat_model(
         tune=500,
     )
     # Analyze model
-    az_summary: pd.DataFrame = az.summary(fit_summary)
+    az_summary: pd.DataFrame = az.summary(fit_summary, hdi_prob=0.89)
     display(az_summary.loc[az_summary.index.str.contains("method")])
     if plot:
         az.plot_trace(
