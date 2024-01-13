@@ -8,10 +8,13 @@ import arviz as az
 import bambi as bmb
 from IPython.display import display
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import polars as pl
 import seaborn as sns
 import torch
+from tqdm.auto import tqdm
+import xarray as xr
 
 
 ACCURACY_COLUMNS = ["base", "extra", "test", "majority", "majority_all"]
@@ -322,6 +325,7 @@ def stat_model(
     equation: str,
     id_vars: Sequence[str] = ("num_test", "pair", "dataset"),
     plot: bool = True,
+    sample_posterior_predictive: bool = True,
     treatment_effect_prior_mean_std: tuple[float, float] = (0, 1),
     chains: int = 4,
     cores: int = 1,
@@ -351,6 +355,9 @@ def stat_model(
         random_seed=random_seed,
         tune=500,
     )
+    if sample_posterior_predictive:
+        print("Sampling posterior predictive")
+        model.predict(fit_summary, kind="pps")
     # Analyze model
     az_summary: pd.DataFrame = az.summary(fit_summary, hdi_prob=0.89)
     display(az_summary.loc[az_summary.index.str.contains("method")])
@@ -362,3 +369,92 @@ def stat_model(
         {"None": "effect"}
     )
     return model, fit_summary, az_summary
+
+
+def num_correct_df_from_predicions(
+    num_correct_df: pl.DataFrame,
+    predictions: Sequence[float],
+    id_vars: Sequence[str] = ("num_test", "pair", "lm_type", "dataset"),
+    group_for_subsample: Sequence[str] = ("lm_type", "dataset"),
+) -> pl.DataFrame:
+    """
+    Returns a dataframe which looks like `num_correct_df` where observations are filled
+    by `predictions`.
+
+    `predictions` is assumed to come from an `InferenceData` xarray. So `predictions` is
+    melted while `num_correct_df` is not.
+    """
+    # Some data we'll need to populated the simulated DF
+    num_test: int = num_correct_df.select("num_test")[0].item()
+    datasets = num_correct_df["dataset"].unique(maintain_order=True)
+    num_subsamples = (
+        num_correct_df.group_by(group_for_subsample)
+        .count()
+        .select("count")
+        .head(n=1)
+        .item()
+    )
+    lm_types = num_correct_df["lm_type"].unique(maintain_order=True)
+    # Inverse of melt is pivot
+    # TODO: test this code for correctness
+    # The number 2 in the code below refers to treatment and control
+    return (
+        pl.DataFrame(
+            {
+                "pair": np.repeat(np.arange(len(num_correct_df)), 2),
+                "lm_type": np.tile(
+                    lm_types.to_numpy().repeat(datasets.len() * num_subsamples),
+                    reps=lm_types.len(),
+                ).tolist(),
+                "dataset": np.tile(
+                    datasets.to_numpy().repeat(num_subsamples * 2), reps=lm_types.len()
+                ).tolist(),
+                "method": np.tile(["control", "treatment"], reps=len(num_correct_df)),
+                "num_correct": predictions,
+                "num_test": num_test,
+            }
+        )
+        .pivot(values="num_correct", index=id_vars, columns="method")
+        .drop("pair")
+    )
+
+
+def _marginal_mean_diffs(
+    num_correct_df: pl.DataFrame, predictions: xr.DataArray
+) -> list[float]:
+    """
+    Distribution for the expected accuracy difference between the treatment and control.
+    """
+    num_test: int = num_correct_df.select("num_test")[0].item()
+    mean_diffs = []
+    for draw in tqdm(range(predictions.shape[1]), desc="Marginalizing each draw"):
+        num_correct_df_simulated = num_correct_df_from_predicions(
+            num_correct_df, predictions[:, draw].to_numpy()
+        )
+        mean_diffs.append(
+            num_correct_df_simulated.select(
+                (pl.col("treatment") - pl.col("control")) / num_test
+            )
+            .mean()
+            .item()
+        )
+    return mean_diffs
+
+
+def posterior_marginal_mean_diffs(
+    model: bmb.Model, summary: az.InferenceData, num_correct_df: pl.DataFrame
+) -> list[float]:
+    try:
+        posterior_predictive = az.extract(summary, group="posterior_predictive")
+    except ValueError as exception:
+        if not str(exception).startswith("Can not extract posterior_predictive"):
+            raise exception
+        print("Sampling posterior predictions")
+        model.predict(summary, kind="pps")
+        posterior_predictive = az.extract(summary, group="posterior_predictive")
+    mean_diffs = _marginal_mean_diffs(
+        num_correct_df, posterior_predictive["p(num_correct, num_test)"]
+    )
+    return mean_diffs
+    # sns.kdeplot(mean_diffs)
+    # plt.xlabel("$\\bar{Y}_{\cdot \cdot \cdot 1} - \\bar{Y}_{\cdot \cdot \cdot 0}$")
