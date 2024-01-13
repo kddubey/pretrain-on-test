@@ -72,6 +72,7 @@ def _sample_posterior_mean(
             id_vars=id_vars,
             chains=chains,
             plot=False,
+            sample_posterior_predictive=False,
         )
         effect_summary = (
             az_summary.filter(az_summary["effect"].str.contains("method"))
