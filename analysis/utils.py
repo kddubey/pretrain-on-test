@@ -442,19 +442,10 @@ def _marginal_mean_diffs(
 
 
 def posterior_marginal_mean_diffs(
-    model: bmb.Model, summary: az.InferenceData, num_correct_df: pl.DataFrame
+    summary: az.InferenceData, num_correct_df: pl.DataFrame
 ) -> list[float]:
-    try:
-        posterior_predictive = az.extract(summary, group="posterior_predictive")
-    except ValueError as exception:
-        if not str(exception).startswith("Can not extract posterior_predictive"):
-            raise exception
-        print("Sampling posterior predictions")
-        model.predict(summary, kind="pps")
-        posterior_predictive = az.extract(summary, group="posterior_predictive")
+    posterior_predictive = az.extract(summary, group="posterior_predictive")
     mean_diffs = _marginal_mean_diffs(
         num_correct_df, posterior_predictive["p(num_correct, num_test)"]
     )
     return mean_diffs
-    # sns.kdeplot(mean_diffs)
-    # plt.xlabel("$\\bar{Y}_{\cdot \cdot \cdot 1} - \\bar{Y}_{\cdot \cdot \cdot 0}$")
