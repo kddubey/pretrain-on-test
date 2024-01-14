@@ -33,7 +33,7 @@ $k = 1, 2, \dots, 50$ (or $20$ for $n = 500$) for the subsample of dataset $j$.
 
 $l = 1, 2$ for control and treatment, respectively.
 
-$x_{ijkl} = 0$ if $l = 1$ else it's $1$. Inference on $\beta$ is performed via MCMC.
+$x_{ijkl} = 0$ if $l = 0$ else it's $1$. Model is fit via MCMC.
 
 Note: I'm still learning how to do this type of analysis.
 
@@ -53,6 +53,9 @@ LM type for $n = 200$.
 
 `main_500.ipynb` contains the posterior distribution of $\beta$ when stratifying by the
 LM type for $n = 500$.
+
+`posterior_pred.ipynb` contains the main marginal effects of interest. It's the main
+figure.
 
 `model.ipynb` contains the posterior distribution of $\beta$ for each LM type—BERT and
 GPT-2.

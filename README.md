@@ -33,10 +33,10 @@
 ## Usage
 
 Reproduce the experiment results by running `./experiment.sh` on a T4 GPU, which will
-take roughly 40 hours to finish.
+take roughly 50 hours to finish.
 
 Default batch sizes are set to fit on a single T4 GPU. For some datasets, the batch
-sizes need to be decreased.
+sizes needed to be decreased.
 
 > :warning:   Results from running `./experiment.sh` will not be completely identical to
 `./analysis/accuracies_from_paper/` b/c torch seeds will be different. That's b/c I ran
