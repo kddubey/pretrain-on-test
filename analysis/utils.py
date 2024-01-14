@@ -425,6 +425,7 @@ def _marginal_mean_diffs(
     """
     Distribution for the expected accuracy difference between the treatment and control.
     """
+    # This can be vectorized w/ some fancy stuff, but I don't want to risk incorrectness
     num_test: int = num_correct_df.select("num_test")[0].item()
     mean_diffs = []
     for draw in tqdm(range(predictions.shape[1]), desc="Marginalizing each draw"):
