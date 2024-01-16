@@ -42,9 +42,15 @@ Note: I'm still learning how to do this type of analysis.
 
 `describe_datasets.ipynb` summarizes each text classification dataset.
 
-`dataset.ipynb` visualizes $$\text{acc}_\text{base}, \text{acc}_\text{extra}$$, and
-$$\text{acc}_\text{test}$$, and tests that $$\text{E}[\text{acc}_\text{test} -
-\text{acc}_\text{extra}] = 0$$ for each dataset.
+`dataset.ipynb` visualizes the distributions of
+
+$\text{acc}_\text{base}, \text{acc}_\text{extra}$, and $\text{acc}_\text{test}$
+
+and tests that
+
+$\text{E}[\text{acc}_\text{test} - \text{acc}_\text{extra}] = 0$
+
+for each dataset.
 
 `main_200.ipynb` contains the posterior distribution of $\beta$ when stratifying by the
 LM type for $n = 200$.
