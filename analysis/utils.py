@@ -149,6 +149,12 @@ def load_all_accuracies(accuracies_home_dir: str, num_test: int) -> pl.DataFrame
     return _load_all(load_accuracies, accuracies_home_dir, num_test)
 
 
+def diffco_texa(treatment: str, control: str) -> str:
+    return (
+        f"$\\text{{acc}}_\\text{{{treatment}}}$ - $\\text{{acc}}_\\text{{{control}}}$"
+    )
+
+
 def violin_plot(
     accuracy_df: pl.DataFrame, title: str, ax: plt.Axes | None = None
 ) -> plt.Axes:
@@ -221,12 +227,6 @@ def _summarize_differences(accuracy_df: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-def diffco_texa(treatment: str, control: str) -> str:
-    return (
-        f"$\\text{{acc}}_\\text{{{treatment}}}$ - $\\text{{acc}}_\\text{{{control}}}$"
-    )
-
-
 def eda(
     accuracy_df: pl.DataFrame, treatment: str, control: str
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
@@ -295,8 +295,8 @@ def create_model(
     equation: str,
     treatment_effect_prior_mean_std: tuple[float, float],
 ) -> bmb.Model:
-    # Fit model
-    # Default sigma = 3.5355 results in really wide priors after prior predictive checks
+    # Default sigma=3.5355 results in really wide priors after prior predictive checks
+    # sigma=1 results in more reasonable priors. See test.ipynb
     method_mu, method_sigma = treatment_effect_prior_mean_std
     priors = {
         "Intercept": bmb.Prior("Normal", mu=0, sigma=1),
@@ -334,13 +334,14 @@ def stat_model(
     """
     See the README for the specification of the model.
 
-    Note about `equation`: Pairs/subsamples were formed from the dataset. So it's
+    Note about `equation`: pairs/subsamples were formed from the dataset. So it's
     nested, not crossed. Technically, crossed notation—(1|dataset) + (1|pair)—would
-    still result in a # nested inference b/c pair is uniquely coded across datasets
+    still result in a # nested inference b/c pair is uniquely coded across datasets.
     """
     num_correct_df_melted = melt_num_correct(
         num_correct_df, treatment, control, id_vars=id_vars
     )
+
     # Fit model
     model = create_model(
         num_correct_df_melted,
@@ -358,6 +359,7 @@ def stat_model(
     if sample_posterior_predictive:
         print("Sampling posterior predictive")
         model.predict(fit_summary, kind="pps")
+
     # Analyze model
     az_summary: pd.DataFrame = az.summary(fit_summary, hdi_prob=0.89)
     display(az_summary.loc[az_summary.index.str.contains("method")])
@@ -396,7 +398,6 @@ def num_correct_df_from_predicions(
     )
     lm_types = num_correct_df["lm_type"].unique(maintain_order=True)
     # Inverse of melt is pivot
-    # TODO: test this code for correctness
     # The number 2 in the code below refers to treatment and control
     return (
         pl.DataFrame(
