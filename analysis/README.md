@@ -40,8 +40,6 @@ Note: I'm still learning how to do this type of analysis.
 
 ## Notebooks
 
-`describe_datasets.ipynb` summarizes each text classification dataset.
-
 `dataset.ipynb` visualizes $\text{acc}\_\text{base}, \text{acc}\_\text{extra}$ and
 $\text{acc}\_\text{test}$, and tests that $\text{E}[\text{acc}\_\text{test} -
 \text{acc}\_\text{extra}] = 0$ for each dataset.
@@ -52,12 +50,13 @@ LM type for $n = 200$.
 `main_500.ipynb` contains the posterior distribution of $\beta$ when stratifying by the
 LM type for $n = 500$.
 
-`posterior_pred.ipynb` contains the main marginal effects of interest. It's the main
-figure.
+`posterior_pred.ipynb` visualizes the marginal effects of interest.
 
 `model.ipynb` contains the posterior distribution of $\beta$ for each LM type—BERT and
-GPT-2.
+GPT-2. I don't think there's a good reason to be really interested in this analysis, b/c
+`posterior_pred.ipynb` can be made to stratify the posterior predictions from the model
+above.
 
 `meta.ipynb` assesses the importance of subsampling / replicating within each dataset.
 
-`test.ipynb` tests that the inference code works.
+`test.ipynb` tests that the inference code statistically works.
