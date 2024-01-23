@@ -115,3 +115,6 @@ notebook](https://github.com/kddubey/pretrain-on-test/blob/main/google_colab.ipy
 T4 GPU for free in Google Colab.
 
 </details>
+
+To analyze the accuracy data, see
+[`analysis/`](https://github.com/kddubey/pretrain-on-test/tree/main/analysis).
