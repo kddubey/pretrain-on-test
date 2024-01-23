@@ -3,9 +3,6 @@ name = "pretrain-on-test"
 version = "0.0.1"
 readme = "README.md"
 license = { text = "MIT License" }
-authors = [
-    { email = "kushdubey63@gmail.com" },
-]
 dependencies = [
     "accelerate>=0.25.0",
     "datasets>=2.10.0",
