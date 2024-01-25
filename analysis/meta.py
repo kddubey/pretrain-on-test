@@ -107,7 +107,7 @@ def sample_posterior_mean(
 
 
 class ArgParser(Tap):
-    num_test: Literal[200, 500] = 200
+    num_test: Literal[200, 500] = 500
     "The number of test observations in the accuracy data."
 
     comparison: Literal["control", "treatment"] = "treatment"
