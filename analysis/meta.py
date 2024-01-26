@@ -63,7 +63,8 @@ def _sample_posterior_mean(
     id_vars = ["num_test", "pair", "lm_type"]
     summaries: list[dict[str, float]] = []
     for seed in tqdm(seeds, total=len(seeds), desc=f"Samples {seeds[0]} - {seeds[-1]}"):
-        num_correct_df_sample = _down_sample(num_correct_df, seed=seed).drop("dataset")
+        # TODO: parallelization is messing up the seeds somehow. For now, not setting it
+        num_correct_df_sample = _down_sample(num_correct_df, seed=None).drop("dataset")
         _, _, az_summary = utils.stat_model(
             num_correct_df_sample,
             treatment,
@@ -113,7 +114,7 @@ class ArgParser(Tap):
     comparison: Literal["control", "treatment"] = "treatment"
     "control: acc_extra - acc_base. treatment: acc_test - acc_extra"
 
-    num_samples: int = 1000
+    num_samples: int = 500
     """
     Number of subsamples to draw from accuracy data, i.e., number of means to compute in
     this simulation study

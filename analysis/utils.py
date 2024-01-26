@@ -361,7 +361,7 @@ def stat_model(
         model.predict(fit_summary, kind="pps")
 
     # Analyze model
-    az_summary: pd.DataFrame = az.summary(fit_summary, hdi_prob=0.89)
+    az_summary: pd.DataFrame = az.summary(fit_summary, hdi_prob=0.89, round_to=5)
     display(az_summary.loc[az_summary.index.str.contains("method")])
     if plot:
         az.plot_trace(
