@@ -10,7 +10,7 @@ scores in `./accuracies_from_paper`.
 <summary>Why?</summary>
 
 The model is fancy-looking and fancily-estimated, according to the Overton window of
-data analysis. Here is justification for fanciness.
+data analysis in ML. Here is justification for fanciness.
 
 Reporting means is not enough, especially when studying few-shot learning. The two long
 figures in [`main_200.ipynb`](./main_200.ipynb) and [`main_500.ipynb`](./main_500.ipynb)
