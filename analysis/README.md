@@ -6,6 +6,36 @@ scores in `./accuracies_from_paper`.
 
 ## Model
 
+<details>
+<summary>Why?</summary>
+
+The model is fancy-looking and fancily-estimated, according to the Overton window of
+data analysis. Here is justification for fanciness.
+
+Reporting means is not enough, especially when studying few-shot learning. The two long
+figures in `main_200.ipynb` and `main_500.ipynb` demonstrate that there is considerable
+variance, despite pairing the accuracy estimators. (One source of variance is
+intentionally introduced: the subsamples/splits. The other source of variance is
+inherent: the added linear layer to perform classification is initialized with random
+weights.) While these visualizations tell us about how raw accuracy differences vary,
+they do not tell us how the mean accuracy difference varies. We seek a neat answer to
+the core question: on our benchmark of 25 classification tasks, how much does the
+average performance differ between two modeling techniques, and how much does this
+average difference vary?
+
+One way to communicate the variance is to estimate the standard error of the mean
+difference across classification tasks. But the standard error statistic can be
+difficult to interpret ([Morey et al.,
+2016](https://pubmed.ncbi.nlm.nih.gov/26450628/)). Furthermore, its computation is not
+completely trivial due to the data's hierarchical dependency structure: each triple,
+($\text{acc}\_\text{extra}, \text{acc}\_\text{test}, \text{acc}\_\text{base}$), is drawn
+from (`train`, `test`), which is itself drawn from the given classification dataset.
+
+This analysis does not aim to estimate standard errors. Instead, posterior distributions
+will be estimated by fitting a hierarchical model, specified below.
+
+</details>
+
 The model is a multilevel one which stratifies by the type of LM:
 
 $$
@@ -50,13 +80,14 @@ LM type for $n = 200$.
 `main_500.ipynb` contains the posterior distribution of $\beta$ when stratifying by the
 LM type for $n = 500$.
 
-`posterior_pred.ipynb` visualizes the marginal effects of interest.
+`posterior_pred.ipynb` visualizes the marginal effects of interest. **This is the main
+result**.
+
+`meta.ipynb` assesses the importance of subsampling / replicating within each dataset.
+
+`test.ipynb` tests that the inference code statistically works.
 
 `model.ipynb` contains the posterior distribution of $\beta$ for each LM type—BERT and
 GPT-2. I don't think there's a good reason to be really interested in this analysis, b/c
 `posterior_pred.ipynb` can be made to stratify the posterior predictions from the model
 above.
-
-`meta.ipynb` assesses the importance of subsampling / replicating within each dataset.
-
-`test.ipynb` tests that the inference code statistically works.
