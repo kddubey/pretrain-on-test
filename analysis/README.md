@@ -13,15 +13,15 @@ The model is fancy-looking and fancily-estimated, according to the Overton windo
 data analysis. Here is justification for fanciness.
 
 Reporting means is not enough, especially when studying few-shot learning. The two long
-figures in [`main_200.ipynb`](../analysis/main_200.ipynb) and
-[`main_500.ipynb`](./main_500.ipynb) demonstrate that there is considerable variance,
-despite pairing the accuracy estimators. (One source of variance is intentionally
-introduced: the subsamples/splits. The other source of variance is inherent: the added
-linear layer to perform classification is initialized with random weights.) While these
-visualizations tell us about how raw accuracy differences vary, they do not tell us how
-the mean accuracy difference varies. We seek a neat answer to the core question: on our
-benchmark of 25 classification tasks, how much does the average performance differ
-between two modeling techniques, and how much does this average difference vary?
+figures in [`main_200.ipynb`](./main_200.ipynb) and [`main_500.ipynb`](./main_500.ipynb)
+demonstrate that there is considerable variance, despite pairing the accuracy
+estimators. (One source of variance is intentionally introduced: the subsamples/splits.
+The other source of variance is inherent: the added linear layer to perform
+classification is initialized with random weights.) While these visualizations tell us
+about how raw accuracy differences vary, they do not tell us how the mean accuracy
+difference varies. We seek a neat answer to the core question: on our benchmark of 25
+classification tasks, how much does the average performance differ between two modeling
+techniques, and how much does this average difference vary?
 
 One way to communicate the variance is to estimate the standard error of the mean
 difference across classification tasks. But the standard error statistic can be
