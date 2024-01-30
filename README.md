@@ -7,6 +7,47 @@ Validated](https://stats.stackexchange.com/questions/611877/is-pretraining-on-te
 Note that my answer there is slightly outdated. A better figure is in
 [`analysis/posterior_pred.ipynb`](https://github.com/kddubey/pretrain-on-test/blob/main/analysis/posterior_pred.ipynb).
 
+## Problem setting
+
+<details>
+<summary>In researcher terms</summary>
+
+There's a new, hot, few-shot, NLP competition on the block. Alice submits her model to
+the leaderboard and gets SOTA accuracy $x$. Bob submits a model which he pretrained on
+*unlabeled* text from the test set, and gets accuracy $x + \epsilon$. Bob gets all the
+glory. Alice disputes his score. She says he used test set data, a big no-no. Alice
+argues that had Bob pretrained on text which is statistically independent of the test
+data, his score would be lower. Bob counters that he didn't use test set labels, so his
+score is valid. Who is right, Alice or Bob?
+
+</details>
+
+<details>
+<summary>In engineer terms</summary>
+
+> Andy: Hey team, I'm lookin at the notebook for our new model by @Barbie, and I see:
+
+```python
+    test_set_accuracy = (
+        llm
+        .pretrain(df_test["text"])
+        .train(df_train["text"], df_train["label"])
+        .evaluate(df_test["text"], df_test["label"])
+    )
+```
+
+> Barbie: it should be fine bc i didnt do:
+
+```python
+    llm.train(df_test["text"], df_test["label"])
+```
+
+> Andy: Interesting. I'm not sure if it's ok to pretrain on unlabeled test set
+> text like that. Could `test_set_accuracy` be higher than what we'll see in production?
+
+> Barbie: 🤔
+
+</details>
 
 ## Setup
 
@@ -78,7 +119,7 @@ python run.py \
 <details>
 <summary>Notebook</summary>
 
-The stdout for terminal runs is quite verbose. For minimal but sufficient info, run this
+The terminal output is quite verbose. For minimal but sufficient info, run this
 in a notebook.
 
 ```python
