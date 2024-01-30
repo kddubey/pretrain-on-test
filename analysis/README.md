@@ -13,15 +13,15 @@ The model is fancy-looking and fancily-estimated, according to the Overton windo
 data analysis. Here is justification for fanciness.
 
 Reporting means is not enough, especially when studying few-shot learning. The two long
-figures in `main_200.ipynb` and `main_500.ipynb` demonstrate that there is considerable
-variance, despite pairing the accuracy estimators. (One source of variance is
-intentionally introduced: the subsamples/splits. The other source of variance is
-inherent: the added linear layer to perform classification is initialized with random
-weights.) While these visualizations tell us about how raw accuracy differences vary,
-they do not tell us how the mean accuracy difference varies. We seek a neat answer to
-the core question: on our benchmark of 25 classification tasks, how much does the
-average performance differ between two modeling techniques, and how much does this
-average difference vary?
+figures in [`main_200.ipynb`](./main_200.ipynb) and [`main_500.ipynb`](./main_500.ipynb)
+demonstrate that there is considerable variance, despite pairing the accuracy
+estimators. (One source of variance is intentionally introduced: the subsamples/splits.
+The other source of variance is inherent: the added linear layer to perform
+classification is initialized with random weights.) While these visualizations tell us
+about how raw accuracy differences vary, they do not tell us how the mean accuracy
+difference varies. We seek a neat answer to the core question: on our benchmark of 25
+classification tasks, how much does the average performance differ between two modeling
+techniques, and how much does this average difference vary?
 
 One way to communicate the variance is to estimate the standard error of the mean
 difference across classification tasks. But the standard error statistic can be
@@ -70,24 +70,25 @@ Note: I'm still learning how to do this type of analysis.
 
 ## Notebooks
 
-`dataset.ipynb` visualizes $\text{acc}\_\text{base}, \text{acc}\_\text{extra}$ and
-$\text{acc}\_\text{test}$, and tests that $\text{E}[\text{acc}\_\text{test} -
-\text{acc}\_\text{extra}] = 0$ for each dataset.
+[`dataset.ipynb`](./dataset.ipynb) visualizes $\text{acc}\_\text{base},
+\text{acc}\_\text{extra}$ and $\text{acc}\_\text{test}$, and tests that
+$\text{E}[\text{acc}\_\text{test} - \text{acc}\_\text{extra}] = 0$ for each dataset.
 
-`main_200.ipynb` contains the posterior distribution of $\beta$ when stratifying by the
-LM type for $n = 200$.
+[`main_200.ipynb`](./main_200.ipynb) contains the posterior distribution of $\beta$ when
+stratifying by the LM type for $n = 200$.
 
-`main_500.ipynb` contains the posterior distribution of $\beta$ when stratifying by the
-LM type for $n = 500$.
+[`main_500.ipynb`](./main_500.ipynb) contains the posterior distribution of $\beta$ when
+stratifying by the LM type for $n = 500$.
 
-`posterior_pred.ipynb` visualizes the marginal effects of interest. **This is the main
-result**.
+[`posterior_pred.ipynb`](./posterior_pred.ipynb) visualizes the marginal effects of
+interest. **This is the main result**.
 
-`meta.ipynb` assesses the importance of subsampling / replicating within each dataset.
+[`meta.ipynb`](./meta.ipynb) assesses the importance of subsampling / replicating within
+each dataset.
 
-`test.ipynb` tests that the inference code statistically works.
+[`test.ipynb`](./test.ipynb) tests that the inference code statistically works.
 
-`model.ipynb` contains the posterior distribution of $\beta$ for each LM type—BERT and
-GPT-2. I don't think there's a good reason to be really interested in this analysis, b/c
-`posterior_pred.ipynb` can be made to stratify the posterior predictions from the model
-above.
+[`model.ipynb`](./model.ipynb) contains the posterior distribution of $\beta$ for each
+LM type—BERT and GPT-2. I don't think there's a good reason to be really interested in
+this analysis, b/c [`posterior_pred.ipynb`](./posterior_pred.ipynb) can be made to
+stratify the posterior predictions from the model above.
