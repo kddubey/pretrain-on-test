@@ -4,8 +4,6 @@
 
 A partial, empirical answer to my [question on Cross
 Validated](https://stats.stackexchange.com/questions/611877/is-pretraining-on-test-set-texts-without-labels-ok).
-Note that my answer there is slightly outdated. A better figure is in
-[`analysis/posterior_pred.ipynb`](https://github.com/kddubey/pretrain-on-test/blob/main/analysis/posterior_pred.ipynb).
 
 ## Problem setting
 
