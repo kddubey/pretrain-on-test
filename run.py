@@ -1,6 +1,7 @@
 """
 Main script to run the experiment
 """
+
 import dataclasses
 from functools import partial
 from typing import Collection, get_args, Literal

@@ -91,13 +91,15 @@ _dataset_to_processor: dict[str, _ProcessDataFrame] = {
 
 def load_classification_data_from_hf(
     huggingface_dataset_name: str | HuggingFaceDatasetNames,
+    config_name: str | None = None,
+    process: _ProcessDataFrame = lambda df: df,
 ) -> pd.DataFrame:
     """
     Returns a canonical classification dataset from the HuggingFace datasets hub:
 
     https://huggingface.co/datasets/{huggingface_dataset_name}
     """
-    config_name = _dataset_to_config_name.get(huggingface_dataset_name)
+    config_name = _dataset_to_config_name.get(huggingface_dataset_name, config_name)
     try:
         df = pd.DataFrame(
             load_dataset(huggingface_dataset_name, config_name, split="train")
@@ -109,7 +111,7 @@ def load_classification_data_from_hf(
             load_dataset(huggingface_dataset_name, config_name, split="test")
         )
 
-    process = _dataset_to_processor.get(huggingface_dataset_name, lambda df: df)
+    process = _dataset_to_processor.get(huggingface_dataset_name, process)
     df = process(df)
 
     if df["text"].isna().mean() > 0.05:

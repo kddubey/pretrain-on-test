@@ -1,6 +1,7 @@
 """
 Train a pretrained LM using categorical cross entropy loss
 """
+
 import numpy as np
 import torch
 from transformers import PreTrainedTokenizerBase, Trainer, TrainingArguments

@@ -2,6 +2,7 @@
 Train a freshly loaded pretrained LM using its original loss function: MLM for BERT, CLM
 for GPT-2
 """
+
 import torch
 from transformers import (
     DataCollatorForLanguageModeling,
