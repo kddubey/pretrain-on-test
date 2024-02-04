@@ -44,10 +44,10 @@ Y_{ijkl} \sim \text{Binomial}(n, \lambda_{ijkl}) && \text{number of correct pred
 \text{logit}(\lambda_{ijkl}) = \mu + \alpha z_i + U_j + V_{jk} + \beta x_{ijkl} && \text{additive effects} \\
 \mu \sim \text{Normal}(0, 1) && \text{prior for intercept} \\
 \alpha \sim \text{Normal}(0, 5) && \text{prior for LM type effect} \\
-U_j \sim \text{Normal}(0, \sigma_{D}) && \text{effect of dataset} \\
+U_j \sim \text{Normal}(0, \sigma_{U}) && \text{effect of dataset} \\
 V_{jk} \sim \text{Normal}(0, \sigma_{V}) && \text{(nested) effect of dataset subsample} \\
 \beta \sim \text{Normal}(0, 1) && \text{prior for treatment effect} \\
-\sigma_{D}, \sigma_{V} \sim \text{HalfNormal}(0, 1) && \text{prior for standard deviations}.
+\sigma_{U}, \sigma_{V} \sim \text{HalfNormal}(0, 1) && \text{prior for standard deviations}.
 \end{align*}
 $$
 
