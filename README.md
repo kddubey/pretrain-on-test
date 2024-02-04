@@ -5,6 +5,8 @@
 A partial, empirical answer to my [question on Cross
 Validated](https://stats.stackexchange.com/questions/611877/is-pretraining-on-test-set-texts-without-labels-ok).
 
+See [`paper.pdf`](https://github.com/kddubey/pretrain-on-test/blob/main/paper.pdf).
+
 ## Problem setting
 
 <details>
