@@ -89,6 +89,13 @@ each dataset.
 [`test.ipynb`](./test.ipynb) tests that the inference code statistically works.
 
 [`model.ipynb`](./model.ipynb) contains the posterior distribution of $\beta$ for each
-LM type—BERT and GPT-2. I don't think there's a good reason to be really interested in
-this analysis, b/c [`posterior_pred.ipynb`](./posterior_pred.ipynb) can be made to
-stratify the posterior predictions from the model above.
+LM type—BERT and GPT-2. I don't think there's a great reason to be really interested in
+this analysis, b/c:
+
+1. scientifically, I don't see a reason how training BERT vs. GPT-2 for classification
+   is so fundamentally different that we should expect and interpret different answers
+   to the question about bias
+
+2. [`posterior_pred.ipynb`](./posterior_pred.ipynb) can be made to stratify the
+   posterior predictions from the model above w/ a presumably small cost in
+   predictiveness.
