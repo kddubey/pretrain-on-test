@@ -12,8 +12,8 @@ See [`paper.pdf`](https://github.com/kddubey/pretrain-on-test/blob/main/paper.pd
 <details>
 <summary>In researcher terms</summary>
 
-There's a new, hot, few-shot, NLP competition on the block. Alice submits her model to
-the leaderboard and gets SOTA accuracy $x$. Bob submits a model which he pretrained on
+There's a new, hot, few-shot, NLP benchmark on the block. Alice submits her model to the
+leaderboard and gets SOTA accuracy $x$. Bob submits a model which he pretrained on
 *unlabeled* text from the test set, and gets accuracy $x + \epsilon$. Bob gets all the
 glory. Alice disputes his score. She says he used test set data, a big no-no. Alice
 argues that had Bob pretrained on text which is statistically independent of the test
