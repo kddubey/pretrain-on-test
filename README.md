@@ -7,6 +7,10 @@ Validated](https://stats.stackexchange.com/questions/611877/is-pretraining-on-te
 
 See [`paper.pdf`](https://github.com/kddubey/pretrain-on-test/blob/main/paper.pdf).
 
+[Slides](https://docs.google.com/presentation/d/1WiaTOMplciOHM3qp6FTu5BYRlDdlrRI5A5ayOLaBEUA/edit?usp=sharing)
+(please play the slideshow instead of scrolling through slides).
+
+
 ## Problem setting
 
 <details>
