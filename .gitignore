@@ -2,6 +2,5 @@
 *.pyc
 *.egg-info/
 __pycache__/
-.vscode
 subsample_test_*
 *.nc
