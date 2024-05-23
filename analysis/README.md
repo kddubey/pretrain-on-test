@@ -9,8 +9,7 @@ scores in `./accuracies_from_paper`.
 <details>
 <summary>Why?</summary>
 
-The model might be fancy-looking and fancily-estimated, according to the Overton window
-of data analysis in ML. Here is justification for fanciness.
+The model might be fancy-looking and fancily-estimated. Here is justification for that.
 
 Reporting means is not enough, especially when studying few-shot learning. The two long
 figures in [`main_200.ipynb`](./main_200.ipynb) and [`main_500.ipynb`](./main_500.ipynb)
@@ -20,8 +19,8 @@ The other source of variance is inherent: the added linear layer to perform
 classification is initialized with random weights.) While these visualizations tell us
 about how raw accuracy differences vary, they do not tell us how the mean accuracy
 difference varies. We seek a neat answer to the core question: on our benchmark of 25
-classification tasks, how much does the average performance differ between two modeling
-techniques, and how much does this average difference vary?
+classification tasks, how much does the average benchmark accuracy differ between two
+modeling techniques, and how much does this average difference vary?
 
 One way to communicate the variance is to estimate the standard error of the mean
 difference across classification tasks. But the standard error statistic can be
@@ -31,8 +30,10 @@ completely trivial due to the data's hierarchical dependency structure: each tri
 ($\text{acc}\_\text{extra}, \text{acc}\_\text{test}, \text{acc}\_\text{base}$), is drawn
 from (`train`, `test`), which is itself drawn from the given classification dataset.
 
-This analysis does not aim to estimate standard errors. Instead, posterior distributions
-will be estimated by fitting a hierarchical model, specified below.
+This analysis does not aim to estimate standard errors. Instead, posterior predictive
+distributions will be estimated by fitting a hierarchical model, specified below. [Slide
+14](https://docs.google.com/presentation/d/1WiaTOMplciOHM3qp6FTu5BYRlDdlrRI5A5ayOLaBEUA/edit#slide=id.g2689f42eff3_0_108)
+contains a figure connecting the data generation process to the model.
 
 </details>
 

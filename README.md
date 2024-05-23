@@ -11,7 +11,7 @@ See [`paper.pdf`](https://github.com/kddubey/pretrain-on-test/blob/main/paper.pd
 (please play the slideshow instead of scrolling through slides).
 
 
-## Problem setting
+## Question
 
 <details>
 <summary>In researcher terms</summary>
@@ -101,7 +101,7 @@ By default, results are saved to `./accuracies`.
 python run.py --lm_type bert | tee run.log
 ```
 
-For quick, CPU-friendly, local tests:
+For a quick, CPU-friendly, local run:
 
 ```bash
 python run.py \
@@ -133,7 +133,7 @@ experiment = Experiment(lm_type="bert")
 run(experiment)
 ```
 
-For quick, CPU-friendly, local tests:
+For a quick, CPU-friendly, local run:
 
 ```python
 from run import run, Experiment

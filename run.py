@@ -81,20 +81,20 @@ class Experiment:
     )
 
 
-_lm_type_to_config_creator = {
-    "bert": lambda **model_indepedent_kwargs: pretrain_on_test.Config(
+lm_type_to_config_creator = {
+    "bert": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="bert-base-uncased",
         model_class_pretrain=BertForMaskedLM,
         model_class_classification=BertForSequenceClassification,
         mlm=True,
         mlm_probability=0.15,
-        **model_indepedent_kwargs,
+        **model_independent_kwargs,
     ),
-    "gpt2": lambda **model_indepedent_kwargs: pretrain_on_test.Config(
+    "gpt2": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="gpt2",
         model_class_pretrain=GPT2LMHeadModel,
         model_class_classification=GPT2ForSequenceClassification,
-        **model_indepedent_kwargs,
+        **model_independent_kwargs,
     ),
 }
 
@@ -106,40 +106,39 @@ def _check_dataset_names(dataset_names: Collection[str] | None) -> list[str]:
     def remove_owner(dataset_name: str) -> str:
         return dataset_name.split("/")[-1]
 
-    dataset_names = sorted(set(dataset_names), key=remove_owner)
     dataset_names_without_owners = [
         remove_owner(dataset_name) for dataset_name in dataset_names
     ]
-    if len(set(dataset_names_without_owners)) < len(dataset_names):
+    if len(set(dataset_names_without_owners)) < len(dataset_names_without_owners):
         raise ValueError(
             "Some datasets have the same name. (They may have different owners. "
             "But that's still not allowed.)"
         )
-    return dataset_names
-
-
-# bleh
-_get_json_schema_extra = (
-    lambda field_info: getattr(field_info, "json_schema_extra") or {}
-)
-_model_independent_attributes = [
-    field.name
-    for field in dataclasses.fields(Experiment)
-    if hasattr(field.default, "json_schema_extra")
-    and _get_json_schema_extra(field.default).get("is_for_config", False)
-]
+    return sorted(dataset_names)
 
 
 def run(experiment: Experiment):
     """
     Main function to run the experiment.
     """
+    # Create config from experiment
+    model_independent_attributes = [
+        field.name
+        for field in dataclasses.fields(Experiment)
+        if (getattr(field.default, "json_schema_extra") or {}).get(
+            "is_for_config", False
+        )
+    ]
+    model_independent_kwargs = {
+        attr: getattr(experiment, attr) for attr in model_independent_attributes
+    }
+    config = lm_type_to_config_creator[experiment.lm_type](**model_independent_kwargs)
+
+    # Check that the dataset names don't conflict w/ each other
+    dataset_names = _check_dataset_names(experiment.dataset_names)
+
     _ = torch.manual_seed(123)
     torch.cuda.manual_seed_all(123)
-    config = _lm_type_to_config_creator[experiment.lm_type](
-        **{attr: getattr(experiment, attr) for attr in _model_independent_attributes}
-    )
-    dataset_names = _check_dataset_names(experiment.dataset_names)
     for dataset_name in dataset_names:
         df = pretrain_on_test.load_classification_data_from_hf(dataset_name)
         clear_output(wait=True)
