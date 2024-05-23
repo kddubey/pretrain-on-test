@@ -8,6 +8,7 @@ from typing import Collection, get_args, Literal
 
 import pydantic
 from pydantic import Field
+from tap import tapify
 import torch
 from transformers import (
     BertForMaskedLM,
@@ -22,7 +23,6 @@ except ModuleNotFoundError:
     clear_output = lambda *args, **kwargs: None
 
 import pretrain_on_test
-from _to_tap import tap_class_from_data_model
 
 
 _field_for_config = partial(Field, json_schema_extra={"is_for_config": True})
@@ -155,7 +155,5 @@ def run(experiment: Experiment):
 
 
 if __name__ == "__main__":
-    ExperimentArgParser = tap_class_from_data_model(Experiment)
-    args = ExperimentArgParser(description=__doc__).parse_args()
-    experiment = Experiment(**args.as_dict())
+    experiment = tapify(Experiment)
     run(experiment)

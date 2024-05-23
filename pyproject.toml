@@ -10,10 +10,9 @@ dependencies = [
     "polars>=0.18.0",
     "pydantic>=2.1.0",
     "scikit-learn>=1.2.2",
-    "torch>=1.12.1",
     "tqdm>=4.27.0",
-    "transformers>=4.31.0",
-    "typed-argument-parser>=1.9.0",
+    "transformers[torch]>=4.31.0",
+    "typed-argument-parser>=1.10.0",
 ]
 requires-python = ">=3.10"
 
@@ -31,11 +30,11 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[build-system]
-requires = ["setuptools >= 40.6.0", "wheel"]
-build-backend = "setuptools.build_meta"
+[tool.ruff]
+include = ["*.py"]
+line-length = 88
+indent-width = 4
 
-[project.urls]
-Homepage = "https://github.com/kddubey/pretrain-on-test"
-Repository = "https://github.com/kddubey/pretrain-on-test.git"
-Issues = "https://github.com/kddubey/pretrain-on-test/issues"
+[tool.ruff.lint]
+# E731: Do not assign a `lambda` expression, use a `def`
+ignore = ["E731"]
