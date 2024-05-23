@@ -119,7 +119,7 @@ def _check_dataset_names(dataset_names: Collection[str] | None) -> list[str]:
 
 def run(experiment: Experiment):
     """
-    Main function to run the experiment.
+    Run the experiment.
     """
     # Create config from experiment
     model_independent_attributes = [
