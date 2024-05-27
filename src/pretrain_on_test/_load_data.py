@@ -101,12 +101,14 @@ def load_classification_data_from_hf(
     """
     config_name = _dataset_to_config_name.get(huggingface_dataset_name, config_name)
     try:
+        # We'll later split the training split into train, test, extra
         df = pd.DataFrame(
             load_dataset(huggingface_dataset_name, config_name, split="train")
         )
     except ValueError as exception:
         if not str(exception).startswith('Unknown split "train"'):
             raise exception
+        # We'll later split the test split into train, test, extra
         df = pd.DataFrame(
             load_dataset(huggingface_dataset_name, config_name, split="test")
         )

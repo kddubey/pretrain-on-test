@@ -1,0 +1,191 @@
+$ export PRETRAIN_ON_TEST_CLOUD_PROVIDER="gcp"
+export GCP_BUCKET_NAME="pretrain-on-test-accuracies"
+(pretrain) ➜  pretrain-on-test git:(main) ✗
+$ echo $PRETRAIN_ON_TEST_CLOUD_PROVIDER
+gcp
+(pretrain) ➜  pretrain-on-test git:(main) ✗
+$ echo $GCP_BUCKET_NAME
+pretrain-on-test-accuracies
+(pretrain) ➜  pretrain-on-test git:(main) ✗
+$ python run.py \
+--lm_type bert \
+--dataset_names ag_news SetFit/amazon_counterfactual_en \
+--num_subsamples 2 \
+--num_train 5 \
+--num_test 5 \
+--num_train_epochs_classification 1 \
+--num_train_epochs_pretrain 1 \
+--per_device_train_batch_size_pretrain 4 \
+--per_device_train_batch_size_classification 4 \
+--per_device_eval_batch_size_classification 4
+2024-05-27 01:50:26 INFO     run.py            ID of the run: run-2024-05-27_01-50-26
+2024-05-27 01:50:26 INFO     run.py            Experiment(lm_type='bert', run_name='', dataset_names=['ag_news', 'SetFit/amazon_counterfactual_en'], num_subsamples=2, num_train=5, num_test=5, per_device_train_batch_size_pretrain=4, per_device_train_batch_size_classification=4, per_device_eval_batch_size_classification=4, max_length=256, num_train_epochs_classification=1, num_train_epochs_pretrain=1)
+ag_news:   0%|                                                                                                                                        | 0/2 [00:00<?, ?it/s]
+2024-05-27 01:50:33 INFO     experiment.py     Dataset - ag_news; Subsample - 1 of 2
+2024-05-27 01:50:33 INFO     experiment.py     Base - training
+/Users/kdubey/Envs/pretrain/lib/python3.11/site-packages/accelerate/accelerator.py:432: FutureWarning: Passing the following arguments to `Accelerator` is deprecated and will be removed in version 1.0 of Accelerate: dict_keys(['dispatch_batches', 'split_batches', 'even_batches', 'use_seedable_sampler']). Please pass an `accelerate.DataLoaderConfiguration` instead:
+dataloader_config = DataLoaderConfiguration(dispatch_batches=None, split_batches=False, even_batches=True, use_seedable_sampler=True)
+  warnings.warn(
+{'train_runtime': 0.6331, 'train_samples_per_second': 6.318, 'train_steps_per_second': 1.58, 'train_loss': 1.5152536630630493, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  1.59it/s]
+2024-05-27 01:50:35 INFO     experiment.py     Base - testing█████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  1.59it/s]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 32.88it/s]
+2024-05-27 01:50:35 INFO     experiment.py     Extra - pretraining                                                                                    | 0/2 [00:00<?, ?it/s]
+{'train_runtime': 1.4773, 'train_samples_per_second': 3.385, 'train_steps_per_second': 1.354, 'train_loss': 3.1040496826171875, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:01<00:00,  1.35it/s]
+2024-05-27 01:50:39 INFO     experiment.py     Extra - training███████████████████████████████████████████████████████████████████████████████| 2/2 [00:01<00:00,  1.43it/s]
+/Users/kdubey/Envs/pretrain/lib/python3.11/site-packages/accelerate/accelerator.py:432: FutureWarning: Passing the following arguments to `Accelerator` is deprecated and will be removed in version 1.0 of Accelerate: dict_keys(['dispatch_batches', 'split_batches', 'even_batches', 'use_seedable_sampler']). Please pass an `accelerate.DataLoaderConfiguration` instead:
+dataloader_config = DataLoaderConfiguration(dispatch_batches=None, split_batches=False, even_batches=True, use_seedable_sampler=True)
+  warnings.warn(
+{'train_runtime': 0.3271, 'train_samples_per_second': 12.228, 'train_steps_per_second': 3.057, 'train_loss': 1.3935389518737793, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  3.08it/s]
+2024-05-27 01:50:42 INFO     experiment.py     Extra - testing████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  3.35it/s]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 75.93it/s]
+2024-05-27 01:50:42 INFO     experiment.py     Test - pretraining                                                                                     | 0/2 [00:00<?, ?it/s]
+{'train_runtime': 1.0098, 'train_samples_per_second': 4.951, 'train_steps_per_second': 1.98, 'train_loss': 3.139662742614746, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:01<00:00,  1.98it/s]
+2024-05-27 01:50:46 INFO     experiment.py     Test - training████████████████████████████████████████████████████████████████████████████████| 2/2 [00:01<00:00,  2.15it/s]
+/Users/kdubey/Envs/pretrain/lib/python3.11/site-packages/accelerate/accelerator.py:432: FutureWarning: Passing the following arguments to `Accelerator` is deprecated and will be removed in version 1.0 of Accelerate: dict_keys(['dispatch_batches', 'split_batches', 'even_batches', 'use_seedable_sampler']). Please pass an `accelerate.DataLoaderConfiguration` instead:
+dataloader_config = DataLoaderConfiguration(dispatch_batches=None, split_batches=False, even_batches=True, use_seedable_sampler=True)
+  warnings.warn(
+{'train_runtime': 1.2981, 'train_samples_per_second': 3.081, 'train_steps_per_second': 0.77, 'train_loss': 1.4515734910964966, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:01<00:00,  1.30s/it]
+2024-05-27 01:50:51 INFO     experiment.py     Test - testing█████████████████████████████████████████████████████████████████████████████████| 1/1 [00:01<00:00,  1.29s/it]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 84.07it/s]
+2024-05-27 01:50:51 INFO     experiment.py     Writing to run-2024-05-27_01-50-26/accuracies/num_test_5/bert/ag_news/subsample_test_1.csv             | 0/2 [00:00<?, ?it/s]
+ag_news:  50%|████████████████████████████████████████████████████████████████                                                                | 1/2 [00:18<00:18, 18.54s/it]
+2024-05-27 01:50:51 INFO     experiment.py     Dataset - ag_news; Subsample - 2 of 2
+2024-05-27 01:50:52 INFO     experiment.py     Base - training
+/Users/kdubey/Envs/pretrain/lib/python3.11/site-packages/accelerate/accelerator.py:432: FutureWarning: Passing the following arguments to `Accelerator` is deprecated and will be removed in version 1.0 of Accelerate: dict_keys(['dispatch_batches', 'split_batches', 'even_batches', 'use_seedable_sampler']). Please pass an `accelerate.DataLoaderConfiguration` instead:
+dataloader_config = DataLoaderConfiguration(dispatch_batches=None, split_batches=False, even_batches=True, use_seedable_sampler=True)
+  warnings.warn(
+{'train_runtime': 0.4119, 'train_samples_per_second': 9.71, 'train_steps_per_second': 2.427, 'train_loss': 1.3663312196731567, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  2.43it/s]
+2024-05-27 01:50:55 INFO     experiment.py     Base - testing█████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  2.66it/s]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 44.62it/s]
+2024-05-27 01:50:55 INFO     experiment.py     Extra - pretraining                                                                                    | 0/2 [00:00<?, ?it/s]
+{'train_runtime': 2.6321, 'train_samples_per_second': 1.9, 'train_steps_per_second': 0.76, 'train_loss': 2.749534845352173, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:02<00:00,  1.37s/it]
+2024-05-27 01:51:03 INFO     experiment.py     Extra - training███████████████████████████████████████████████████████████████████████████████| 2/2 [00:02<00:00,  1.18s/it]
+/Users/kdubey/Envs/pretrain/lib/python3.11/site-packages/accelerate/accelerator.py:432: FutureWarning: Passing the following arguments to `Accelerator` is deprecated and will be removed in version 1.0 of Accelerate: dict_keys(['dispatch_batches', 'split_batches', 'even_batches', 'use_seedable_sampler']). Please pass an `accelerate.DataLoaderConfiguration` instead:
+dataloader_config = DataLoaderConfiguration(dispatch_batches=None, split_batches=False, even_batches=True, use_seedable_sampler=True)
+  warnings.warn(
+{'train_runtime': 3.3228, 'train_samples_per_second': 1.204, 'train_steps_per_second': 0.301, 'train_loss': 1.3704705238342285, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:03<00:00,  3.34s/it]
+2024-05-27 01:51:12 INFO     experiment.py     Extra - testing████████████████████████████████████████████████████████████████████████████████| 1/1 [00:03<00:00,  3.19s/it]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00,  8.95it/s]
+2024-05-27 01:51:13 INFO     experiment.py     Test - pretraining█████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00,  9.42it/s]
+{'train_runtime': 1.4972, 'train_samples_per_second': 3.34, 'train_steps_per_second': 1.336, 'train_loss': 2.663594961166382, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:01<00:00,  1.32it/s]
+2024-05-27 01:51:19 INFO     experiment.py     Test - training████████████████████████████████████████████████████████████████████████████████| 2/2 [00:01<00:00,  1.40it/s]
+/Users/kdubey/Envs/pretrain/lib/python3.11/site-packages/accelerate/accelerator.py:432: FutureWarning: Passing the following arguments to `Accelerator` is deprecated and will be removed in version 1.0 of Accelerate: dict_keys(['dispatch_batches', 'split_batches', 'even_batches', 'use_seedable_sampler']). Please pass an `accelerate.DataLoaderConfiguration` instead:
+dataloader_config = DataLoaderConfiguration(dispatch_batches=None, split_batches=False, even_batches=True, use_seedable_sampler=True)
+  warnings.warn(
+{'train_runtime': 0.4029, 'train_samples_per_second': 9.928, 'train_steps_per_second': 2.482, 'train_loss': 1.395784854888916, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  2.49it/s]
+2024-05-27 01:51:20 INFO     experiment.py     Test - testing█████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  2.70it/s]
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 107.19it/s]
+2024-05-27 01:51:21 INFO     experiment.py     Writing to run-2024-05-27_01-50-26/accuracies/num_test_5/bert/ag_news/subsample_test_2.csv             | 0/2 [00:00<?, ?it/s]
+ag_news: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:47<00:00, 23.84s/it]
+2024-05-27 01:51:21 INFO     experiment.py     Writing to run-2024-05-27_01-50-26/accuracies/num_test_5/bert/ag_news/accuracies.csv
+Python(51263) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(51264) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable To disable this warning, you can either:
+TOKENIZERS_PARALLELISM=(true | false)
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+Python(51265) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+Repo card metadata block was not found. Setting CardData to empty.
+SetFit/amazon_counterfactual_en:   0%|                                                                                                                | 0/2 [00:00<?, ?it/s]
+2024-05-27 01:51:27 INFO     experiment.py     Dataset - SetFit/amazon_counterfactual_en; Subsample - 1 of 2
+2024-05-27 01:51:27 INFO     experiment.py     Base - training
+/Users/kdubey/Envs/pretrain/lib/python3.11/site-packages/accelerate/accelerator.py:432: FutureWarning: Passing the following arguments to `Accelerator` is deprecated and will be removed in version 1.0 of Accelerate: dict_keys(['dispatch_batches', 'split_batches', 'even_batches', 'use_seedable_sampler']). Please pass an `accelerate.DataLoaderConfiguration` instead:
+dataloader_config = DataLoaderConfiguration(dispatch_batches=None, split_batches=False, even_batches=True, use_seedable_sampler=True)
+  warnings.warn(
+{'train_runtime': 0.3606, 'train_samples_per_second': 11.093, 'train_steps_per_second': 2.773, 'train_loss': 0.7652323246002197, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  2.78it/s]
+2024-05-27 01:51:29 INFO     experiment.py     Base - testing█████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  2.95it/s]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 40.20it/s]
+2024-05-27 01:51:29 INFO     experiment.py     Extra - pretraining                                                                                    | 0/2 [00:00<?, ?it/s]
+{'train_runtime': 1.2745, 'train_samples_per_second': 3.923, 'train_steps_per_second': 1.569, 'train_loss': 3.4924299716949463, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:01<00:00,  1.57it/s]
+2024-05-27 01:51:32 INFO     experiment.py     Extra - training███████████████████████████████████████████████████████████████████████████████| 2/2 [00:01<00:00,  1.65it/s]
+/Users/kdubey/Envs/pretrain/lib/python3.11/site-packages/accelerate/accelerator.py:432: FutureWarning: Passing the following arguments to `Accelerator` is deprecated and will be removed in version 1.0 of Accelerate: dict_keys(['dispatch_batches', 'split_batches', 'even_batches', 'use_seedable_sampler']). Please pass an `accelerate.DataLoaderConfiguration` instead:
+dataloader_config = DataLoaderConfiguration(dispatch_batches=None, split_batches=False, even_batches=True, use_seedable_sampler=True)
+  warnings.warn(
+{'train_runtime': 0.4662, 'train_samples_per_second': 8.579, 'train_steps_per_second': 2.145, 'train_loss': 0.7159436941146851, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  2.14it/s]
+2024-05-27 01:51:34 INFO     experiment.py     Extra - testing████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  2.24it/s]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 29.44it/s]
+2024-05-27 01:51:34 INFO     experiment.py     Test - pretraining                                                                                     | 0/2 [00:00<?, ?it/s]
+{'train_runtime': 2.4783, 'train_samples_per_second': 2.018, 'train_steps_per_second': 0.807, 'train_loss': 4.7782697677612305, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:02<00:00,  1.25s/it]
+2024-05-27 01:51:42 INFO     experiment.py     Test - training████████████████████████████████████████████████████████████████████████████████| 2/2 [00:02<00:00,  1.15s/it]
+/Users/kdubey/Envs/pretrain/lib/python3.11/site-packages/accelerate/accelerator.py:432: FutureWarning: Passing the following arguments to `Accelerator` is deprecated and will be removed in version 1.0 of Accelerate: dict_keys(['dispatch_batches', 'split_batches', 'even_batches', 'use_seedable_sampler']). Please pass an `accelerate.DataLoaderConfiguration` instead:
+dataloader_config = DataLoaderConfiguration(dispatch_batches=None, split_batches=False, even_batches=True, use_seedable_sampler=True)
+  warnings.warn(
+{'train_runtime': 2.6132, 'train_samples_per_second': 1.531, 'train_steps_per_second': 0.383, 'train_loss': 0.6850492358207703, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:02<00:00,  2.63s/it]
+2024-05-27 01:51:48 INFO     experiment.py     Test - testing█████████████████████████████████████████████████████████████████████████████████| 1/1 [00:02<00:00,  2.57s/it]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 82.56it/s]
+2024-05-27 01:51:48 INFO     experiment.py     Writing to run-2024-05-27_01-50-26/accuracies/num_test_5/bert/amazon_counterfactual_en/subsample_test_1.csv2 [00:00<?, ?it/s]
+SetFit/amazon_counterfactual_en:  50%|████████████████████████████████████████████████████                                                    | 1/2 [00:20<00:20, 20.82s/it]
+2024-05-27 01:51:48 INFO     experiment.py     Dataset - SetFit/amazon_counterfactual_en; Subsample - 2 of 2
+2024-05-27 01:51:48 INFO     experiment.py     Base - training
+/Users/kdubey/Envs/pretrain/lib/python3.11/site-packages/accelerate/accelerator.py:432: FutureWarning: Passing the following arguments to `Accelerator` is deprecated and will be removed in version 1.0 of Accelerate: dict_keys(['dispatch_batches', 'split_batches', 'even_batches', 'use_seedable_sampler']). Please pass an `accelerate.DataLoaderConfiguration` instead:
+dataloader_config = DataLoaderConfiguration(dispatch_batches=None, split_batches=False, even_batches=True, use_seedable_sampler=True)
+  warnings.warn(
+{'train_runtime': 0.2245, 'train_samples_per_second': 17.814, 'train_steps_per_second': 4.454, 'train_loss': 0.7379155158996582, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  4.42it/s]
+2024-05-27 01:51:50 INFO     experiment.py     Base - testing█████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  5.29it/s]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 34.31it/s]
+2024-05-27 01:51:50 INFO     experiment.py     Extra - pretraining                                                                                    | 0/2 [00:00<?, ?it/s]
+{'train_runtime': 1.8914, 'train_samples_per_second': 2.644, 'train_steps_per_second': 1.057, 'train_loss': 5.634016990661621, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:01<00:00,  1.05it/s]
+2024-05-27 01:51:56 INFO     experiment.py     Extra - training███████████████████████████████████████████████████████████████████████████████| 2/2 [00:01<00:00,  1.07it/s]
+/Users/kdubey/Envs/pretrain/lib/python3.11/site-packages/accelerate/accelerator.py:432: FutureWarning: Passing the following arguments to `Accelerator` is deprecated and will be removed in version 1.0 of Accelerate: dict_keys(['dispatch_batches', 'split_batches', 'even_batches', 'use_seedable_sampler']). Please pass an `accelerate.DataLoaderConfiguration` instead:
+dataloader_config = DataLoaderConfiguration(dispatch_batches=None, split_batches=False, even_batches=True, use_seedable_sampler=True)
+  warnings.warn(
+{'train_runtime': 0.6262, 'train_samples_per_second': 6.388, 'train_steps_per_second': 1.597, 'train_loss': 0.6704508662223816, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  1.59it/s]
+2024-05-27 01:51:58 INFO     experiment.py     Extra - testing████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  1.64it/s]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 22.23it/s]
+2024-05-27 01:51:59 INFO     experiment.py     Test - pretraining                                                                                     | 0/2 [00:00<?, ?it/s]
+{'train_runtime': 0.9376, 'train_samples_per_second': 5.333, 'train_steps_per_second': 2.133, 'train_loss': 2.918550729751587, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00,  2.13it/s]
+2024-05-27 01:52:04 INFO     experiment.py     Test - training████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00,  2.33it/s]
+/Users/kdubey/Envs/pretrain/lib/python3.11/site-packages/accelerate/accelerator.py:432: FutureWarning: Passing the following arguments to `Accelerator` is deprecated and will be removed in version 1.0 of Accelerate: dict_keys(['dispatch_batches', 'split_batches', 'even_batches', 'use_seedable_sampler']). Please pass an `accelerate.DataLoaderConfiguration` instead:
+dataloader_config = DataLoaderConfiguration(dispatch_batches=None, split_batches=False, even_batches=True, use_seedable_sampler=True)
+  warnings.warn(
+{'train_runtime': 0.3743, 'train_samples_per_second': 10.685, 'train_steps_per_second': 2.671, 'train_loss': 0.6887092590332031, 'epoch': 1.0}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  2.66it/s]
+2024-05-27 01:52:05 INFO     experiment.py     Test - testing█████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  2.69it/s]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 86.74it/s]
+2024-05-27 01:52:06 INFO     experiment.py     Writing to run-2024-05-27_01-50-26/accuracies/num_test_5/bert/amazon_counterfactual_en/subsample_test_2.csv2 [00:00<?, ?it/s]
+SetFit/amazon_counterfactual_en: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:38<00:00, 19.26s/it]
+2024-05-27 01:52:06 INFO     experiment.py     Writing to run-2024-05-27_01-50-26/accuracies/num_test_5/bert/amazon_counterfactual_en/accuracies.csv
+Python(51275) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(51276) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(51277) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable To disable this warning, you can either:
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+TOKENIZERS_PARALLELISM	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+=(true | false)
+TOKENIZERS_PARALLELISM=(true | false)
+Waiting up to 5 seconds.
+Sent all pending logs.

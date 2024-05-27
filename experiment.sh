@@ -11,7 +11,6 @@
 
 # n=200, BERT
 python run.py \
---results_dir "accuracies/200/bert" \
 --lm_type bert \
 --dataset_names \
     ag_news \
@@ -32,6 +31,8 @@ python run.py \
     silicone \
     trec \
     tweets_hate_speech_detection \
+--num_test 200 \
+--num_subsamples 50 \
 --per_device_train_batch_size_pretrain 16 \
 --per_device_train_batch_size_classification 16 \
 --per_device_eval_batch_size_classification 64 \
@@ -39,13 +40,14 @@ python run.py \
 --num_train_epochs_pretrain 2
 
 python run.py \
---results_dir "accuracies/200/bert" \
 --lm_type bert \
 --dataset_names \
     blog_authorship_corpus \
     craigslist_bargains \
     classla/FRENK-hate-en \
     movie_rationales \
+--num_test 200 \
+--num_subsamples 50 \
 --per_device_train_batch_size_pretrain 8 \
 --per_device_train_batch_size_classification 8 \
 --per_device_eval_batch_size_classification 32 \
@@ -53,11 +55,12 @@ python run.py \
 --num_train_epochs_pretrain 2
 
 python run.py \
---results_dir "accuracies/200/bert" \
 --lm_type bert \
 --dataset_names \
     enron_spam \
     yelp_review_full \
+--num_test 200 \
+--num_subsamples 50 \
 --per_device_train_batch_size_pretrain 8 \
 --per_device_train_batch_size_classification 4 \
 --per_device_eval_batch_size_classification 32 \
@@ -65,10 +68,11 @@ python run.py \
 --num_train_epochs_pretrain 2
 
 python run.py \
---results_dir "accuracies/200/bert" \
 --lm_type bert \
 --dataset_names \
     yahoo_answers_topics \
+--num_test 200 \
+--num_subsamples 50 \
 --per_device_train_batch_size_pretrain 8 \
 --num_train_epochs_classification 1 \
 --num_train_epochs_pretrain 2
@@ -79,7 +83,6 @@ python run.py \
 
 # n=200, GPT-2
 python run.py \
---results_dir "accuracies/200/gpt2" \
 --lm_type gpt2 \
 --dataset_names \
     ag_news \
@@ -100,6 +103,8 @@ python run.py \
     silicone \
     trec \
     tweets_hate_speech_detection \
+--num_test 200 \
+--num_subsamples 50 \
 --per_device_train_batch_size_pretrain 16 \
 --per_device_train_batch_size_classification 16 \
 --per_device_eval_batch_size_classification 64 \
@@ -107,13 +112,14 @@ python run.py \
 --num_train_epochs_pretrain 2
 
 python run.py \
---results_dir "accuracies/200/gpt2" \
 --lm_type gpt2 \
 --dataset_names \
     blog_authorship_corpus \
     craigslist_bargains \
     classla/FRENK-hate-en \
     movie_rationales \
+--num_test 200 \
+--num_subsamples 50 \
 --per_device_train_batch_size_pretrain 8 \
 --per_device_train_batch_size_classification 8 \
 --per_device_eval_batch_size_classification 32 \
@@ -121,11 +127,12 @@ python run.py \
 --num_train_epochs_pretrain 2
 
 python run.py \
---results_dir "accuracies/200/gpt2" \
 --lm_type gpt2 \
 --dataset_names \
     enron_spam \
     yelp_review_full \
+--num_test 200 \
+--num_subsamples 50 \
 --per_device_train_batch_size_pretrain 8 \
 --per_device_train_batch_size_classification 4 \
 --per_device_eval_batch_size_classification 32 \
@@ -133,10 +140,11 @@ python run.py \
 --num_train_epochs_pretrain 2
 
 python run.py \
---results_dir "accuracies/200/gpt2" \
 --lm_type gpt2 \
 --dataset_names \
     yahoo_answers_topics \
+--num_test 200 \
+--num_subsamples 50 \
 --per_device_train_batch_size_pretrain 8 \
 --per_device_train_batch_size_classification 8 \
 --per_device_eval_batch_size_classification 16 \
@@ -149,7 +157,6 @@ python run.py \
 
 # n=500, BERT
 python run.py \
---results_dir "accuracies/500/bert" \
 --lm_type bert \
 --dataset_names \
     ag_news \
@@ -179,7 +186,6 @@ python run.py \
 --num_train_epochs_pretrain 1
 
 python run.py \
---results_dir "accuracies/500/bert" \
 --lm_type bert \
 --dataset_names \
     blog_authorship_corpus \
@@ -195,7 +201,6 @@ python run.py \
 --num_train_epochs_pretrain 1
 
 python run.py \
---results_dir "accuracies/500/bert" \
 --lm_type bert \
 --dataset_names \
     enron_spam \
@@ -209,7 +214,6 @@ python run.py \
 --num_train_epochs_pretrain 1
 
 python run.py \
---results_dir "accuracies/500/bert" \
 --lm_type bert \
 --dataset_names \
     yahoo_answers_topics \
@@ -225,7 +229,6 @@ python run.py \
 
 # n=500, GPT-2
 python run.py \
---results_dir "accuracies/500/gpt2" \
 --lm_type gpt2 \
 --dataset_names \
     ag_news \
@@ -255,7 +258,6 @@ python run.py \
 --num_train_epochs_pretrain 1
 
 python run.py \
---results_dir "accuracies/500/gpt2" \
 --lm_type gpt2 \
 --dataset_names \
     blog_authorship_corpus \
@@ -271,7 +273,6 @@ python run.py \
 --num_train_epochs_pretrain 1
 
 python run.py \
---results_dir "accuracies/500/gpt2" \
 --lm_type gpt2 \
 --dataset_names \
     enron_spam \
@@ -285,7 +286,6 @@ python run.py \
 --num_train_epochs_pretrain 1
 
 python run.py \
---results_dir "accuracies/500/gpt2" \
 --lm_type gpt2 \
 --dataset_names \
     yahoo_answers_topics \

@@ -106,10 +106,10 @@ For a quick, CPU-friendly, local run:
 ```bash
 python run.py \
 --lm_type bert \
---dataset_names ag_news \
---num_subsamples 1 \
---num_train 10 \
---num_test 10 \
+--dataset_names ag_news SetFit/amazon_counterfactual_en \
+--num_subsamples 2 \
+--num_train 5 \
+--num_test 5 \
 --num_train_epochs_classification 1 \
 --num_train_epochs_pretrain 1 \
 --per_device_train_batch_size_pretrain 4 \

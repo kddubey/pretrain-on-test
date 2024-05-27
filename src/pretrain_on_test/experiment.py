@@ -5,7 +5,6 @@ Run the experiment on random subsamples of a classification dataset
 import logging
 import os
 import shutil
-import sys
 
 import numpy as np
 import pandas as pd
@@ -23,18 +22,6 @@ from pretrain_on_test import classification, Config, pretrain
 
 hf_logging.set_verbosity_error()
 # Ignore the HF warning about untrained weights. We always train them
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-_stream_handler = logging.StreamHandler(stream=sys.stdout)
-_stream_handler.setLevel(logging.INFO)
-_stream_handler.setFormatter(
-    logging.Formatter(
-        "%(asctime)s %(levelname)-8s %(filename)-17s %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-)
-logger.addHandler(_stream_handler)
-logger.propagate = False
 
 
 def _stratified_sample(
@@ -95,6 +82,7 @@ def _add_pred_probs(
 def _experiment(
     df: pd.DataFrame,
     config: Config,
+    logger: logging.Logger,
     num_train: int = 100,
     num_test: int = 200,
     random_state_subsamples: int = None,
@@ -184,11 +172,12 @@ def replicate(
     dataset_name: str,
     results_dir: str,
     config: Config,
+    logger: logging.Logger,
     num_subsamples: int = 50,
     num_train: int = 100,
     num_test: int = 200,
     random_state_subsamples: int = 42,
-) -> pd.DataFrame:
+) -> str:
     """
     Runs the main experiment, and saves results as CSVs locally.
     """
@@ -212,6 +201,7 @@ def replicate(
         df_test_with_pred_probs, accuracies_subsample = _experiment(
             df,
             config,
+            logger,
             num_train=num_train,
             num_test=num_test,
             random_state_subsamples=random_state_subsamples + subsample_idx,
@@ -224,7 +214,9 @@ def replicate(
             dataset_dir, f"subsample_test_{str(subsample_idx).zfill(n_digits)}.csv"
         )
         logger.info(f"Writing to {file_path_subsample}")
-        df_test_with_pred_probs.to_csv(file_path_subsample, index=True)
+        df_test_with_pred_probs.to_csv(
+            file_path_subsample, index=True, index_label="index_from_full_split"
+        )
 
     # Save accuracies for each subsample
     accuracies_df = pd.DataFrame(accuracy_records)
@@ -234,3 +226,4 @@ def replicate(
     file_path_accuracies = os.path.join(dataset_dir, "accuracies.csv")
     logger.info(f"Writing to {file_path_accuracies}")
     accuracies_df.to_csv(file_path_accuracies, index=False)
+    return dataset_dir

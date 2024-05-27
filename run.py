@@ -1,8 +1,10 @@
 """
-Main script to run the experiment
+Main script to run the experiment.
 """
 
+import os
 import dataclasses
+from datetime import datetime
 from functools import partial
 from typing import Collection, get_args, Literal
 
@@ -24,6 +26,8 @@ except ModuleNotFoundError:
 
 import pretrain_on_test
 
+import cloud
+
 
 _field_for_config = partial(Field, json_schema_extra={"is_for_config": True})
 
@@ -35,8 +39,9 @@ class Experiment:
     """
 
     lm_type: Literal["bert", "gpt2"] = Field(description="Type of language model")
-    results_dir: str = Field(
-        default="accuracies", description="Directory to store experiment results"
+    run_name: str = Field(
+        default="",
+        description="Name of the run, in case it helps you remember what changed",
     )
     dataset_names: list[str] | None = Field(
         default=None,
@@ -114,45 +119,110 @@ def _check_dataset_names(dataset_names: Collection[str] | None) -> list[str]:
             "Some datasets have the same name. (They may have different owners. "
             "But that's still not allowed.)"
         )
-    return sorted(dataset_names)
+    return sorted(dataset_names, key=remove_owner)
 
 
-def run(experiment: Experiment):
+do_nothing = lambda *args, **kwargs: None
+
+
+def run(
+    experiment: Experiment,
+    create_logger: cloud.CreateLogger = cloud.create_logger_local,
+    upload_directory: cloud.UploadDirectory = do_nothing,
+):
     """
     Run the experiment.
+
+    Parameters
+    ----------
+    experiment : Experiment
+        configuration for the experiment
+    create_logger : cloud.CreateLogger, optional
+        Callable which takes as input a single argument for the name of the log
+        group/label/tag, and outputs a `logging.Logger` object. By default, a logger is
+        created which only logs to stdout.
+    upload_directory : cloud.UploadDirectory, optional
+        Callable which takes as input `directory` and `logger` arguments and uploads all
+        local content in `directory` somewhere else, e.g., S3. By default, nothing is
+        uploaded.
     """
-    # Create config from experiment
-    model_independent_attributes = [
-        field.name
-        for field in dataclasses.fields(Experiment)
-        if (getattr(field.default, "json_schema_extra") or {}).get(
-            "is_for_config", False
-        )
-    ]
-    model_independent_kwargs = {
-        attr: getattr(experiment, attr) for attr in model_independent_attributes
-    }
-    config = lm_type_to_config_creator[experiment.lm_type](**model_independent_kwargs)
+    # Meta info
+    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    run_id = (
+        f"run-{current_time}{'-' + experiment.run_name if experiment.run_name else ''}"
+    )
 
-    # Check that the dataset names don't conflict w/ each other
-    dataset_names = _check_dataset_names(experiment.dataset_names)
+    # Create logger
+    logger = create_logger(run_id)
+    logger.info(f"ID of the run: {run_id}")
+    logger.info(experiment)
 
-    _ = torch.manual_seed(123)
-    torch.cuda.manual_seed_all(123)
-    for dataset_name in dataset_names:
-        df = pretrain_on_test.load_classification_data_from_hf(dataset_name)
-        clear_output(wait=True)
-        pretrain_on_test.experiment.replicate(
-            df,
-            dataset_name,
-            experiment.results_dir,
-            config,
-            num_subsamples=experiment.num_subsamples,
-            num_train=experiment.num_train,
-            num_test=experiment.num_test,
+    try:
+        # Create config from experiment
+        model_independent_attributes = [
+            field.name
+            for field in dataclasses.fields(Experiment)
+            if (getattr(field.default, "json_schema_extra") or {}).get(
+                "is_for_config", False
+            )
+        ]
+        model_independent_kwargs = {
+            attr: getattr(experiment, attr) for attr in model_independent_attributes
+        }
+        config = lm_type_to_config_creator[experiment.lm_type](
+            **model_independent_kwargs
         )
+
+        # Check that the dataset names don't conflict w/ each other
+        dataset_names = _check_dataset_names(experiment.dataset_names)
+
+        # Create results_dir using core settings from the experiment: n and the LM
+        results_dir = os.path.join(
+            run_id, "accuracies", f"num_test_{experiment.num_test}", experiment.lm_type
+        )
+
+        # Run experiment on each dataset
+        _ = torch.manual_seed(123)
+        torch.cuda.manual_seed_all(123)
+        for dataset_name in dataset_names:
+            df = pretrain_on_test.load_classification_data_from_hf(dataset_name)
+            clear_output(wait=True)
+            dataset_dir = pretrain_on_test.experiment.replicate(
+                df,
+                dataset_name,
+                results_dir,
+                config,
+                logger,
+                num_subsamples=experiment.num_subsamples,
+                num_train=experiment.num_train,
+                num_test=experiment.num_test,
+            )
+            # Sync w/ cloud
+            upload_directory(directory=dataset_dir, logger=logger)
+    except Exception as exception:
+        logger.error(exception, exc_info=True)
+        raise
+
+
+cloud_provider_to_create_data_handlers = {
+    None: lambda: dict(
+        create_logger=cloud.create_logger_local,
+        upload_directory=do_nothing,
+    ),
+    # They're lambdas so that evaluation is delayed; cloud-specific modules aren't
+    # imported and cloud-specific env vars aren't checked until needed
+    "gcp": lambda: dict(
+        create_logger=cloud.create_logger_gcp,
+        upload_directory=cloud.UploadGCP(
+            bucket_name=os.environ["GCP_BUCKET_NAME"]
+        ).upload_directory,
+    ),
+}
 
 
 if __name__ == "__main__":
     experiment = tapify(Experiment)
-    run(experiment)
+    cloud_provider = os.environ.get("PRETRAIN_ON_TEST_CLOUD_PROVIDER")
+    create_data_handlers = cloud_provider_to_create_data_handlers[cloud_provider]
+    data_handlers = create_data_handlers()
+    run(experiment, **data_handlers)
