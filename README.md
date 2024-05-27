@@ -97,8 +97,6 @@ sizes needed to be decreased.
 `./analysis/accuracies_from_paper/` b/c torch seeds will be different. That's b/c I ran
 datasets individually in Google Colab notebook sessions :-]
 
-By default, results are saved to `./accuracies`.
-
 <details>
 <summary>Terminal</summary>
 
