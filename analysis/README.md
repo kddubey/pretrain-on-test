@@ -3,6 +3,14 @@
 Notebooks which do dataset-level, model/LM-level, and overall analysis of the accuracy
 scores in `./accuracies_from_paper`.
 
+## Setup
+
+At the repo root, install these dependencies (in a virtual environment):
+
+```bash
+python -m pip install ".[stat]"
+```
+
 
 ## Model
 

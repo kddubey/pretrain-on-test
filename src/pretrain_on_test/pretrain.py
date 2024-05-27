@@ -17,17 +17,17 @@ from pretrain_on_test import Config
 class _Dataset(torch.utils.data.Dataset):
     def __init__(
         self,
-        sentences,
         tokenizer: PreTrainedTokenizerBase,
+        texts: list[str],
         max_length: int | None = None,
     ):
         self.tokenizer = tokenizer
-        self.sentences = sentences
+        self.texts = texts
         self.max_length = max_length
 
     def __getitem__(self, item):
         return self.tokenizer(
-            self.sentences[item],
+            self.texts[item],
             max_length=self.max_length,
             add_special_tokens=True,
             truncation=True,
@@ -35,7 +35,7 @@ class _Dataset(torch.utils.data.Dataset):
         )
 
     def __len__(self):
-        return len(self.sentences)
+        return len(self.texts)
 
 
 def train(texts: list[str], config: Config):
@@ -51,7 +51,7 @@ def train(texts: list[str], config: Config):
         )
     """
     # Set up data
-    train_dataset = _Dataset(texts, config.tokenizer, config.max_length)
+    train_dataset = _Dataset(config.tokenizer, texts, config.max_length)
     data_collator = DataCollatorForLanguageModeling(
         config.tokenizer,
         mlm=config.mlm,

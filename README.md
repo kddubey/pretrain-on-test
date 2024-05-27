@@ -73,11 +73,16 @@ score is valid. Who is right, Alice or Bob?
    python -m pip install .
    ```
 
-   To also run the analyses:
+4. (Optional) If you're using GCP, then create a bucket and run:
 
    ```bash
-   python -m pip install ".[stat]"
+   python -m pip install ".[gcp]"
+   export PRETRAIN_ON_TEST_CLOUD_PROVIDER="gcp"
+   export GCP_BUCKET_NAME="your-bucket-name"
    ```
+
+   Other cloud providers are not yet supported. To support them, implement logging and
+   file uploading functionality. See [`cloud.py`](./cloud.py).
 
 
 ## Usage
@@ -107,9 +112,9 @@ For a quick, CPU-friendly, local run:
 python run.py \
 --lm_type bert \
 --dataset_names ag_news SetFit/amazon_counterfactual_en \
---num_subsamples 2 \
---num_train 5 \
---num_test 5 \
+--num_subsamples 1 \
+--num_train 10 \
+--num_test 10 \
 --num_train_epochs_classification 1 \
 --num_train_epochs_pretrain 1 \
 --per_device_train_batch_size_pretrain 4 \
@@ -140,7 +145,7 @@ from run import run, Experiment
 
 experiment = Experiment(
     lm_type="bert",
-    dataset_names=["ag_news"],
+    dataset_names=["ag_news", "SetFit/amazon_counterfactual_en"],
     num_subsamples=1,
     num_train=10,
     num_test=10,
