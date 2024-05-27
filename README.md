@@ -73,7 +73,7 @@ score is valid. Who is right, Alice or Bob?
    python -m pip install .
    ```
 
-4. (Optional) If you're using GCP, then create a bucket and run:
+4. (Optional) If you'd like to log and upload data to GCP, then create a bucket and run:
 
    ```bash
    python -m pip install ".[gcp]"
@@ -82,7 +82,8 @@ score is valid. Who is right, Alice or Bob?
    ```
 
    Other cloud providers are not yet supported. To support them, implement logging and
-   file uploading functionality. See [`cloud.py`](./cloud.py).
+   file uploading functionality. See [`cloud.py`](./cloud.py). Then update
+   `cloud_provider_to_create_data_handlers` in [`run.py`][./run.py].
 
 
 ## Usage
