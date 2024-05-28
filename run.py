@@ -19,14 +19,15 @@ from transformers import (
     GPT2ForSequenceClassification,
 )
 
+import pretrain_on_test
+import cloud
+
+do_nothing = lambda *args, **kwargs: None
+
 try:
     from IPython.display import clear_output
 except ModuleNotFoundError:
-    clear_output = lambda *args, **kwargs: None
-
-import pretrain_on_test
-
-import cloud
+    clear_output = do_nothing
 
 
 _field_for_config = partial(Field, json_schema_extra={"is_for_config": True})
@@ -120,9 +121,6 @@ def _check_dataset_names(dataset_names: Collection[str] | None) -> list[str]:
             "But that's still not allowed.)"
         )
     return sorted(dataset_names, key=remove_owner)
-
-
-do_nothing = lambda *args, **kwargs: None
 
 
 def run(
