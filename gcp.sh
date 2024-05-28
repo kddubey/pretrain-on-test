@@ -1,7 +1,9 @@
-# Set up venv
-python3 -m venv pretrain
+#!/bin/bash
 
-source pretrain/bin/activate
+# Set up venv
+python3 -m venv pretrain-env
+
+source pretrain-env/bin/activate
 
 git clone https://github.com/kddubey/pretrain-on-test.git
 

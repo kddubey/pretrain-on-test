@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Hyperparameters are set to run on a single T4 GPU (15 GB VRAM)
 # They vary by dataset b/c some datasets have much longer text than others
 # They vary by the LM type b/c different architectures cause differences in peak memory
