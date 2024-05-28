@@ -55,7 +55,7 @@ score is valid. Who is right, Alice or Bob?
 
 ## Setup
 
-1. Clone repo to local
+1. Clone repo
 
    ```bash
    git clone https://github.com/kddubey/pretrain-on-test.git
@@ -78,7 +78,7 @@ score is valid. Who is right, Alice or Bob?
    ```bash
    python -m pip install ".[gcp]"
    export PRETRAIN_ON_TEST_CLOUD_PROVIDER="gcp"
-   export GCP_BUCKET_NAME="your-bucket-name"
+   export PRETRAIN_ON_TEST_BUCKET_NAME="your-bucket-name"
    ```
 
    Other cloud providers are not yet supported. To support them, implement logging and

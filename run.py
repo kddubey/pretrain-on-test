@@ -214,7 +214,7 @@ cloud_provider_to_create_data_handlers = {
     "gcp": lambda: dict(
         create_logger=cloud.create_logger_gcp,
         upload_directory=cloud.UploadGCP(
-            bucket_name=os.environ["GCP_BUCKET_NAME"]
+            bucket_name=os.environ["PRETRAIN_ON_TEST_BUCKET_NAME"]
         ).upload_directory,
     ),
 }
@@ -223,6 +223,8 @@ cloud_provider_to_create_data_handlers = {
 if __name__ == "__main__":
     experiment = tapify(Experiment)
     cloud_provider = os.environ.get("PRETRAIN_ON_TEST_CLOUD_PROVIDER")
+    # Env var b/c it's reasonable to run this script many times in one session. So just
+    # need to specify the env var once
     create_data_handlers = cloud_provider_to_create_data_handlers[cloud_provider]
     data_handlers = create_data_handlers()
     run(experiment, **data_handlers)

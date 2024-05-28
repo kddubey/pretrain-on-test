@@ -13,7 +13,7 @@ python -m pip install .
 # Set up for cloud
 python -m pip install ".[gcp]"
 export PRETRAIN_ON_TEST_CLOUD_PROVIDER="gcp"
-export GCP_BUCKET_NAME="pretrain-on-test-accuracies"
+export PRETRAIN_ON_TEST_BUCKET_NAME="pretrain-on-test-accuracies"
 
 
 ########################################################################################
