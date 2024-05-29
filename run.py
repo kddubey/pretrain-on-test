@@ -89,7 +89,7 @@ class Experiment:
 
 lm_type_to_config_creator = {
     "bert": lambda **model_independent_kwargs: pretrain_on_test.Config(
-        model_id="bert-base-uncased",
+        model_id="hf-internal-testing/tiny-random-BertModel",  # bert-base-uncased
         model_class_pretrain=BertForMaskedLM,
         model_class_classification=BertForSequenceClassification,
         mlm=True,
@@ -97,7 +97,7 @@ lm_type_to_config_creator = {
         **model_independent_kwargs,
     ),
     "gpt2": lambda **model_independent_kwargs: pretrain_on_test.Config(
-        model_id="gpt2",
+        model_id="hf-internal-testing/tiny-random-gpt2",  # gpt2
         model_class_pretrain=GPT2LMHeadModel,
         model_class_classification=GPT2ForSequenceClassification,
         **model_independent_kwargs,
