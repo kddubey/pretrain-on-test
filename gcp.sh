@@ -1,14 +1,11 @@
 #!/bin/bash
 
+
 # Set up venv
 python3 -m venv pretrain-env
-
 source pretrain-env/bin/activate
-
 git clone https://github.com/kddubey/pretrain-on-test.git
-
 cd pretrain-on-test
-
 python -m pip install .
 
 
