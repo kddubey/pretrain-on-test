@@ -1,6 +1,4 @@
 #!/bin/bash
-
-
 # Set up venv
 python3 -m venv pretrain-env
 source pretrain-env/bin/activate
@@ -16,7 +14,7 @@ export PRETRAIN_ON_TEST_BUCKET_NAME="pretrain-on-test-accuracies"
 
 
 # Run experiment
-./experiment.sh
+./experiment_mini.sh
 
 
 # Shutdown regardless of success or failure
