@@ -115,8 +115,13 @@ class UploadGCP:
             max_workers=workers,
         )
         for name, result in zip(string_paths, results, strict=True):
+            blob_name = blob_name_prefix + name
             # The results list is either `None` or an exception for each filename in
             # the input list, in order.
             if isinstance(result, Exception):
-                logger.info(f"Failed to upload {name}")
+                logger.info(
+                    f"Failed to upload {blob_name} to GCP bucket {self.bucket.name}"
+                )
                 raise result
+            else:
+                logger.info(f"Uploaded {blob_name} to GCP bucket {self.bucket.name}")
