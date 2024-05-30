@@ -11,6 +11,7 @@ git clone https://github.com/kddubey/pretrain-on-test.git
 cd pretrain-on-test
 # For CPU, don't install a bunch of nvidia packages:
 # python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+python -m pip install wheel
 python -m pip install .
 
 

@@ -168,7 +168,7 @@ def run(
         with open(os.path.join(run_id, "experiment.json"), "w") as json_file:
             experiment_as_dict = experiment.model_dump(exclude_defaults=True)
             json.dump(experiment_as_dict, json_file, indent=4)
-        upload_directory(directory=results_dir, logger=logger)
+        upload_directory(directory=run_id, logger=logger)
 
         # Create config from experiment
         model_independent_attributes = [
