@@ -1,11 +1,4 @@
 #!/bin/bash
-sudo apt update
-sudo apt -y install apache2
-cat <<EOF > /var/www/html/index.html
-<html><body><p>Linux startup script from a local file.</p></body></html>
-EOF
-# pre-amble taken from
-# https://cloud.google.com/compute/docs/instances/startup-scripts/linux#passing-local
 
 
 # TODO: check that this returns 1 on the GPU instance
@@ -20,6 +13,7 @@ no_gpu_detected() {
 
 
 # TODO: check if ok for GPU image
+sudo apt update
 sudo apt install -y python3-pip git python3.11-venv
 
 
@@ -43,8 +37,7 @@ python -m pip install .
 
 
 # Set up for cloud
-python -m pip install ".[gcp]"
-export PRETRAIN_ON_TEST_CLOUD_PROVIDER="gcp"
+python -m pip install ".[$PRETRAIN_ON_TEST_CLOUD_PROVIDER]"
 export PRETRAIN_ON_TEST_BUCKET_NAME="pretrain-on-test-accuracies"
 
 

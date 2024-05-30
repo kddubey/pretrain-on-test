@@ -1,9 +1,14 @@
 #!/bin/bash
-# TODO: add PRETRAIN_ON_TEST_BUCKET_NAME as an optional argument and export it
-# TODO: maybe make these arguments
+set -euo pipefail  # https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425
+
+
 PROJECT_NAME=$(gcloud config get-value project)  # you may need to set this manually
 INSTANCE_NAME="instance-pretrain-on-test-cpu-testing"
 ZONE="us-central1-a"
+
+
+cat ./_preamble.sh ../run.sh > run_gcp.sh
+
 
 gcloud beta compute instances create $INSTANCE_NAME \
     --project=$PROJECT_NAME \
@@ -23,12 +28,15 @@ gcloud beta compute instances create $INSTANCE_NAME \
     --shielded-integrity-monitoring \
     --labels=goog-ec-src=vm_add-gcloud \
     --reservation-affinity=any \
-    --metadata-from-file=startup-script=./gcp.sh
+    --metadata-from-file=startup-script=./run_gcp.sh
+
+
+rm run_gcp.sh
+
 
 echo ""
 echo "View raw logs here (cleaner logs are in the Logs Explorer page):"
 echo "https://console.cloud.google.com/compute/instancesDetail/zones/$ZONE/instances/$INSTANCE_NAME?project=$PROJECT_NAME&tab=monitoring&pageState=(%22timeRange%22:(%22duration%22:%22PT1H%22),%22observabilityTab%22:(%22mainContent%22:%22logs%22))"
-
 echo ""
 echo "To SSH into the instance:"
 echo "gcloud compute ssh --zone $ZONE $INSTANCE_NAME --project $PROJECT_NAME"
