@@ -1,5 +1,5 @@
 #!/bin/bash
-PROJECT_NAME="virtual-equator-423819-v6"  # you'll change this
+PROJECT_NAME=$(gcloud config get-value project)  # you may need to set this manually
 INSTANCE_NAME="instance-pretrain-on-test-cpu-testing"
 ZONE="us-central1-a"
 
