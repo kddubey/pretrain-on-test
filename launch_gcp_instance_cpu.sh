@@ -1,6 +1,8 @@
 #!/bin/bash
+PROJECT_NAME="virtual-equator-423819-v6"  # you'll change this
+
 gcloud compute instances create instance-pretrain-on-test-cpu-testing \
-    --project=virtual-equator-423819-v6 \
+    --project=$PROJECT_NAME \
     --zone=us-central1-a \
     --machine-type=e2-standard-2 \
     --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default \
@@ -17,5 +19,7 @@ gcloud compute instances create instance-pretrain-on-test-cpu-testing \
     --labels=goog-ec-src=vm_add-gcloud \
     --reservation-affinity=any
 
-# SSH into it:
-# gcloud compute ssh --zone "us-central1-a" "instance-pretrain-on-test-cpu-testing" --project "virtual-equator-423819-v6"
+gcloud compute ssh \
+    --zone "us-central1-a" \
+    "instance-pretrain-on-test-cpu-testing" \
+    --project $PROJECT_NAME
