@@ -1,10 +1,11 @@
 #!/bin/bash
 PROJECT_NAME="virtual-equator-423819-v6"  # you'll change this
 INSTANCE_NAME="instance-pretrain-on-test-cpu-testing"
+ZONE="us-central1-a"
 
 gcloud beta compute instances create $INSTANCE_NAME \
     --project=$PROJECT_NAME \
-    --zone=us-central1-a \
+    --zone=$ZONE \
     --machine-type=e2-standard-2 \
     --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default \
     --no-restart-on-failure \
@@ -14,11 +15,11 @@ gcloud beta compute instances create $INSTANCE_NAME \
     --max-run-duration=7200s \
     --service-account=$SERVICE_ACCOUNT_EMAIL \
     --scopes=https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/trace.append,https://www.googleapis.com/auth/devstorage.read_write \
-    --create-disk=auto-delete=yes,boot=yes,device-name=$INSTANCE_NAME,image=projects/debian-cloud/global/images/debian-12-bookworm-v20240515,mode=rw,size=80,type=projects/virtual-equator-423819-v6/zones/us-central1-a/diskTypes/pd-balanced \
+    --create-disk=auto-delete=yes,boot=yes,device-name=$INSTANCE_NAME,image=projects/debian-cloud/global/images/debian-12-bookworm-v20240515,mode=rw,size=80,type=projects/$PROJECT_NAME/zones/$ZONE/diskTypes/pd-balanced \
     --no-shielded-secure-boot \
     --shielded-vtpm \
     --shielded-integrity-monitoring \
     --labels=goog-ec-src=vm_add-gcloud \
     --reservation-affinity=any
 
-gcloud compute ssh --zone "us-central1-a" $INSTANCE_NAME --project "virtual-equator-423819-v6"
+gcloud compute ssh --zone $ZONE $INSTANCE_NAME --project $PROJECT_NAME
