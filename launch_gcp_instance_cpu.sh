@@ -1,3 +1,4 @@
+#!/bin/bash
 gcloud compute instances create instance-pretrain-on-test \
     --project=virtual-equator-423819-v6 \
     --zone=us-central1-a \

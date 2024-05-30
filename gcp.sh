@@ -24,5 +24,5 @@ export PRETRAIN_ON_TEST_BUCKET_NAME="pretrain-on-test-accuracies"
 ./experiment_mini.sh
 
 
-# Shutdown regardless of success or failure
+# Shut down regardless of success or failure
 sudo shutdown -h now

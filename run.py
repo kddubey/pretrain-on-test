@@ -2,14 +2,13 @@
 Main script to run the experiment.
 """
 
+import json
 import os
-import dataclasses
 from datetime import datetime
 from functools import partial
 from typing import Collection, get_args, Literal
 
-import pydantic
-from pydantic import Field
+from pydantic import BaseModel, ConfigDict, Field
 from tap import tapify
 import torch
 from transformers import (
@@ -33,11 +32,13 @@ except ModuleNotFoundError:
 _field_for_config = partial(Field, json_schema_extra={"is_for_config": True})
 
 
-@pydantic.dataclasses.dataclass(frozen=True, config=dict(extra="forbid"))
-class Experiment:
+class Experiment(BaseModel):
     """
     Experiment configuration.
     """
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    # Pydantic stuff: extra attributes are not allowed, and the object is immutable
 
     lm_type: Literal["bert", "gpt2"] = Field(description="Type of language model")
     run_name: str = Field(
@@ -89,7 +90,7 @@ class Experiment:
 
 lm_type_to_config_creator = {
     "bert": lambda **model_independent_kwargs: pretrain_on_test.Config(
-        model_id="hf-internal-testing/tiny-random-BertModel",  # bert-base-uncased
+        model_id="hf-internal-testing/tiny-random-BertModel",  # TODO: switch back to bert-base-uncased
         model_class_pretrain=BertForMaskedLM,
         model_class_classification=BertForSequenceClassification,
         mlm=True,
@@ -97,7 +98,7 @@ lm_type_to_config_creator = {
         **model_independent_kwargs,
     ),
     "gpt2": lambda **model_independent_kwargs: pretrain_on_test.Config(
-        model_id="hf-internal-testing/tiny-random-gpt2",  # gpt2
+        model_id="hf-internal-testing/tiny-random-gpt2",  # TODO: switch back to gpt2
         model_class_pretrain=GPT2LMHeadModel,
         model_class_classification=GPT2ForSequenceClassification,
         **model_independent_kwargs,
@@ -156,11 +157,24 @@ def run(
     logger.info(experiment)
 
     try:
+        # Create results_dir using core settings from the experiment: n and the LM
+        results_dir = os.path.join(
+            run_id, "accuracies", f"num_test_{experiment.num_test}", experiment.lm_type
+        )
+
+        # Upload experiment
+        if not os.path.exists(run_id):
+            os.makedirs(run_id)
+        with open(os.path.join(run_id, "experiment.json"), "w") as json_file:
+            experiment_as_dict = experiment.model_dump(exclude_defaults=True)
+            json.dump(experiment_as_dict, json_file, indent=4)
+        upload_directory(directory=results_dir, logger=logger)
+
         # Create config from experiment
         model_independent_attributes = [
-            field.name
-            for field in dataclasses.fields(Experiment)
-            if (getattr(field.default, "json_schema_extra") or {}).get(
+            field_name
+            for field_name, field_info in Experiment.model_fields.items()
+            if (getattr(field_info, "json_schema_extra") or {}).get(
                 "is_for_config", False
             )
         ]
@@ -173,11 +187,6 @@ def run(
 
         # Check that the dataset names don't conflict w/ each other
         dataset_names = _check_dataset_names(experiment.dataset_names)
-
-        # Create results_dir using core settings from the experiment: n and the LM
-        results_dir = os.path.join(
-            run_id, "accuracies", f"num_test_{experiment.num_test}", experiment.lm_type
-        )
 
         # Run experiment on each dataset
         _ = torch.manual_seed(123)

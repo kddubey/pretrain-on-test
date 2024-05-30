@@ -9,7 +9,6 @@ dependencies = [
     "pandas>=1.5.3",
     "polars>=0.18.0",
     "pydantic>=2.1.0",
-    "rich>=13.7.1",
     "scikit-learn>=1.2.2",
     "tqdm>=4.27.0",
     "transformers[torch]>=4.41.1",
