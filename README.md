@@ -157,10 +157,16 @@ run(experiment)
 1. [Create a bucket](https://cloud.google.com/storage/docs/creating-buckets) called
    `pretrain-on-test-accuracies`
 
-2. Run:
+2. cd to the GCP dir:
 
    ```bash
-   ./launch_gcp_instance_cpu.sh
+   cd cloud_scripts/gcp
+   ```
+
+3. Run
+
+   ```bash
+   ./launch_cpu_test.sh
    ```
 
 Other cloud providers are not yet supported. To support them, implement logging and file
