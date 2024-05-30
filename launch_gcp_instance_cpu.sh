@@ -1,4 +1,6 @@
 #!/bin/bash
+# TODO: add PRETRAIN_ON_TEST_BUCKET_NAME as an optional argument and export it
+# TODO: maybe make these arguments
 PROJECT_NAME=$(gcloud config get-value project)  # you may need to set this manually
 INSTANCE_NAME="instance-pretrain-on-test-cpu-testing"
 ZONE="us-central1-a"

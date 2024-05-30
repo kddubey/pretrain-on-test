@@ -73,18 +73,6 @@ score is valid. Who is right, Alice or Bob?
    python -m pip install .
    ```
 
-4. (Optional) If you'd like to log and upload data to GCP, then create a bucket and run:
-
-   ```bash
-   python -m pip install ".[gcp]"
-   export PRETRAIN_ON_TEST_CLOUD_PROVIDER="gcp"
-   export PRETRAIN_ON_TEST_BUCKET_NAME="your-bucket-name"
-   ```
-
-   Other cloud providers are not yet supported. To support them, implement logging and
-   file uploading functionality. See [`cloud.py`](./cloud.py). Then update
-   `cloud_provider_to_create_data_handlers` in [`run.py`][./run.py].
-
 
 ## Usage
 
@@ -99,7 +87,7 @@ sizes needed to be decreased.
 datasets individually in Google Colab notebook sessions :-]
 
 <details>
-<summary>Terminal</summary>
+<summary>Terminal (local)</summary>
 
 ```bash
 python run.py --lm_type bert | tee run.log
@@ -125,7 +113,7 @@ python run.py \
 
 
 <details>
-<summary>Notebook</summary>
+<summary>Notebook (local)</summary>
 
 The terminal output is quite verbose. For minimal but sufficient info, run this
 in a notebook.
@@ -157,6 +145,27 @@ experiment = Experiment(
 
 run(experiment)
 ```
+
+</details>
+
+
+<details>
+<summary>Google Cloud Platform</summary>
+
+(Currently testing this out on CPU. Will support GPU soon.)
+
+1. [Create a bucket](https://cloud.google.com/storage/docs/creating-buckets) called
+   `pretrain-on-test-accuracies`
+
+2. Run:
+
+   ```bash
+   ./launch_gcp_instance_cpu.sh
+   ```
+
+Other cloud providers are not yet supported. To support them, implement logging and file
+uploading functionality. See [`cloud.py`](./cloud.py). Then update
+`cloud_provider_to_create_data_handlers` in [`run.py`](./run.py).
 
 </details>
 
