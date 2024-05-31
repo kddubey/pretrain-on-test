@@ -235,6 +235,7 @@ To support them, implement logging and file uploading functionality. See
 [`run.py`](./run.py).
 
 You'll probably find [`./cloud_scripts/run.sh`](./cloud_scripts/run.sh) useful for cloud
-runs. Note that it assumes that the bucket name is `pretrain-on-test-accuracies`.
+runs. Note that it assumes that the bucket name is `pretrain-on-test-accuracies`, and
+that the GPU image you're using already has Python 3.10+, pip, and venv/conda on it.
 
 </details>

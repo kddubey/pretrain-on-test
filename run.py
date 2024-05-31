@@ -185,11 +185,11 @@ def run(
             run_id, "accuracies", f"num_test_{experiment.num_test}", experiment.lm_type
         )
 
-        # Upload experiment
+        # Upload experiment settings
         if not os.path.exists(run_id):
             os.makedirs(run_id)
         with open(os.path.join(run_id, "experiment.json"), "w") as json_file:
-            experiment_as_dict = experiment.model_dump(exclude_defaults=True)
+            experiment_as_dict = experiment.model_dump()
             json.dump(experiment_as_dict, json_file, indent=4)
         upload_directory(directory=run_id, logger=logger)
 
