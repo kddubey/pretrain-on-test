@@ -40,7 +40,12 @@ class Experiment(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     # Pydantic stuff: extra attributes are not allowed, and the object is immutable
 
-    lm_type: Literal["bert", "gpt2"] = Field(description="Type of language model")
+    lm_type: Literal["bert", "gpt2", "bert-tiny", "gpt2-tiny"] = Field(
+        description=(
+            "Type of language model. -tiny models have random weights and are intended "
+            "for testing."
+        )
+    )
     run_name: str = Field(
         default="",
         description=(
