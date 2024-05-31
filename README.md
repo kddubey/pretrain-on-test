@@ -211,8 +211,8 @@ First, [create a bucket](https://cloud.google.com/storage/docs/creating-buckets)
    cd cloud_scripts/gcp
    ```
 
-2. Run the mini CPU test (after ensuring your `gcloud` is set to whatever project hosts
-   the bucket):
+2. Run the GPU script (after ensuring your `gcloud` is set to whatever project hosts the
+   bucket):
 
    ```bash
    ./launch_gpu.sh
