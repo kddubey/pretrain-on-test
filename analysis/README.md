@@ -39,7 +39,8 @@ completely trivial due to the data's hierarchical dependency structure: each tri
 from (`train`, `test`), which is itself drawn from the given classification dataset.
 
 This analysis does not aim to estimate standard errors. Instead, posterior predictive
-distributions will be estimated by fitting a hierarchical model, specified below. [Slide
+distributions will be estimated by fitting and sampling from a hierarchical model,
+specified below. [Slide
 14](https://docs.google.com/presentation/d/1WiaTOMplciOHM3qp6FTu5BYRlDdlrRI5A5ayOLaBEUA/edit#slide=id.g2689f42eff3_0_108)
 contains a figure connecting the data generation process to the model.
 
@@ -90,7 +91,8 @@ stratifying by the LM type for $n = 200$.
 stratifying by the LM type for $n = 500$.
 
 [`posterior_pred.ipynb`](./posterior_pred.ipynb) visualizes the marginal effects of
-interest. **This is the main result**.
+interest. <span style="background-color: #FFFF00; font-weight: bold;">This is the main
+result</span>.
 
 [`meta.ipynb`](./meta.ipynb) assesses the importance of subsampling / replicating within
 each dataset.
