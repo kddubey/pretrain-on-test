@@ -1,4 +1,8 @@
 #!/bin/bash
+# This script launches a CPU instance which runs a mini experiment to check that your
+# cloud setup works.
+
+
 set -euo pipefail  # https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425
 
 

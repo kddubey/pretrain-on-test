@@ -163,11 +163,13 @@ run(experiment)
    cd cloud_scripts/gcp
    ```
 
-3. Run
+3. Run the CPU test to verify that your cloud setup works:
 
    ```bash
    ./launch_cpu_test.sh
    ```
+
+4. Check that data was uploaded to the bucket, `pretrain-on-test-accuracies`
 
 Other cloud providers are not yet supported. To support them, implement logging and file
 uploading functionality. See [`cloud.py`](./cloud.py). Then update

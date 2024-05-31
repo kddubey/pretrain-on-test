@@ -1,4 +1,7 @@
 #!/bin/bash
+# This startup / user data script can be run on any Linux instance.
+# It sets up the Python venv, runs the experiment, and shuts down the instance.
+set -uo pipefail  # No e b/c want to shut down regardless of success or failure
 
 
 # TODO: check that this returns 1 on the GPU instance
@@ -12,7 +15,7 @@ no_gpu_detected() {
 }
 
 
-# TODO: check if ok for GPU image
+# TODO: check if Python installs are ok for GPU image
 sudo apt update
 sudo apt install -y python3-pip git python3.11-venv
 
@@ -24,7 +27,6 @@ python -m pip install wheel
 git clone https://github.com/kddubey/pretrain-on-test.git
 cd pretrain-on-test
 
-
 # Don't install torch's nvidia deps if there's no GPU
 if no_gpu_detected; then
     echo "No GPU detected. Installing CPU version of PyTorch."
@@ -34,7 +36,6 @@ else
 fi
 
 python -m pip install .
-
 
 # Set up for cloud
 python -m pip install ".[$PRETRAIN_ON_TEST_CLOUD_PROVIDER]"
