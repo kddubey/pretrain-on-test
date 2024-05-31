@@ -82,8 +82,7 @@ GPU, which will take roughly 50 hours to finish.
 Default batch sizes are set to fit on a single T4 GPU. For some datasets, the batch
 sizes needed to be decreased.
 
-To analyze the accuracy data, see
-[`analysis/`](https://github.com/kddubey/pretrain-on-test/tree/main/analysis).
+To analyze the accuracy data, see [`analysis/`](./analysis/).
 
 
 <details>
