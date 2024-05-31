@@ -76,8 +76,8 @@ score is valid. Who is right, Alice or Bob?
 
 ## Usage
 
-Reproduce the experiment results by running `./experiment.sh` on a T4 GPU, which will
-take roughly 50 hours to finish.
+Reproduce the experiment results by running [`./experiment.sh`](./experiment.sh) on a T4
+GPU, which will take roughly 50 hours to finish.
 
 Default batch sizes are set to fit on a single T4 GPU. For some datasets, the batch
 sizes needed to be decreased.
@@ -174,7 +174,9 @@ First, [create a bucket](https://cloud.google.com/storage/docs/creating-buckets)
    the bucket):
 
    ```bash
-   PRETRAIN_ON_TEST_CLOUD_PROVIDER="gcp" PRETRAIN_ON_TEST_BUCKET_NAME="pretrain-on-test-accuracies" ./experiment_mini.sh
+   PRETRAIN_ON_TEST_CLOUD_PROVIDER="gcp" \
+   PRETRAIN_ON_TEST_BUCKET_NAME="pretrain-on-test-accuracies" \
+   ./experiment_mini.sh
    ```
 
 3. Check that data was uploaded to the bucket, `pretrain-on-test-accuracies`.
@@ -233,8 +235,7 @@ To support them, implement logging and file uploading functionality. See
 [`cloud.py`](./cloud.py). Then update `cloud_provider_to_create_data_handlers` in
 [`run.py`](./run.py).
 
-You'll probably find the [`./cloud_scripts/run.sh`](./cloud_scripts/run.sh) script
-useful for cloud runs. Note that it assumes the bucket name is
-`pretrain-on-test-accuracies`.
+You'll probably find [`./cloud_scripts/run.sh`](./cloud_scripts/run.sh) useful for cloud
+runs. Note that it assumes that the bucket name is `pretrain-on-test-accuracies`.
 
 </details>
