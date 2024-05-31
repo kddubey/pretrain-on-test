@@ -119,7 +119,7 @@ class UploadGCP:
             # The results list is either `None` or an exception for each filename in
             # the input list, in order.
             if isinstance(result, Exception):
-                logger.info(
+                logger.error(
                     f"Failed to upload {blob_name} to GCP bucket {self.bucket.name}"
                 )
                 raise result
