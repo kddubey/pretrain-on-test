@@ -82,31 +82,23 @@ take roughly 50 hours to finish.
 Default batch sizes are set to fit on a single T4 GPU. For some datasets, the batch
 sizes needed to be decreased.
 
-> :warning:   Results from running `./experiment.sh` will not be completely identical to
-`./analysis/accuracies_from_paper/` b/c torch seeds will be different. That's b/c I ran
-datasets individually in Google Colab notebook sessions :-]
+To analyze the accuracy data, see
+[`analysis/`](https://github.com/kddubey/pretrain-on-test/tree/main/analysis).
+
 
 <details>
 <summary>Terminal (local)</summary>
 
+See:
+
 ```bash
-python run.py --lm_type bert | tee run.log
+python run.py -h
 ```
 
 For a quick, CPU-friendly, local run:
 
 ```bash
-python run.py \
---lm_type bert \
---dataset_names ag_news SetFit/amazon_counterfactual_en \
---num_subsamples 1 \
---num_train 10 \
---num_test 10 \
---num_train_epochs_classification 1 \
---num_train_epochs_pretrain 1 \
---per_device_train_batch_size_pretrain 4 \
---per_device_train_batch_size_classification 4 \
---per_device_eval_batch_size_classification 4
+./experiment_mini.sh
 ```
 
 </details>
@@ -131,7 +123,7 @@ For a quick, CPU-friendly, local run:
 from run import run, Experiment
 
 experiment = Experiment(
-    lm_type="bert",
+    lm_type="bert-tiny",
     dataset_names=["ag_news", "SetFit/amazon_counterfactual_en"],
     num_subsamples=1,
     num_train=10,
@@ -150,42 +142,99 @@ run(experiment)
 
 
 <details>
-<summary>Google Cloud Platform</summary>
-
-(Currently testing this out on CPU. Will support GPU soon.)
-
-1. [Create a bucket](https://cloud.google.com/storage/docs/creating-buckets) called
-   `pretrain-on-test-accuracies`
-
-2. cd to the GCP dir:
-
-   ```bash
-   cd cloud_scripts/gcp
-   ```
-
-3. Run the CPU test to verify that your cloud setup works:
-
-   ```bash
-   ./launch_cpu_test.sh
-   ```
-
-4. Check that data was uploaded to the bucket, `pretrain-on-test-accuracies`
-
-Other cloud providers are not yet supported. To support them, implement logging and file
-uploading functionality. See [`cloud.py`](./cloud.py). Then update
-`cloud_provider_to_create_data_handlers` in [`run.py`](./run.py).
-
-</details>
-
-
-<details>
 <summary>Google Colab</summary>
 
 Run [this
 notebook](https://github.com/kddubey/pretrain-on-test/blob/main/google_colab.ipynb) on a
 T4 GPU for free in Google Colab.
 
+The free version of Colab is not feasible for most datasets and experiment
+configurations b/c sessions are too time-limited. Please consider using a cloud provider
+to fully reproduce experiment results.
+
 </details>
 
-To analyze the accuracy data, see
-[`analysis/`](https://github.com/kddubey/pretrain-on-test/tree/main/analysis).
+
+<details>
+<summary>Google Cloud Platform</summary>
+
+First, [create a bucket](https://cloud.google.com/storage/docs/creating-buckets) called
+`pretrain-on-test-accuracies`.
+
+<details>
+<summary>Consider locally testing that cloud logging and storage works</summary>
+
+1. Install the `gcp` requirements (at the repo root):
+
+   ```bash
+   python -m pip install ".[gcp]"
+   ```
+
+2. Run the mini CPU test (after ensuring your `gcloud` is set to whatever project hosts
+   the bucket):
+
+   ```bash
+   PRETRAIN_ON_TEST_CLOUD_PROVIDER="gcp" PRETRAIN_ON_TEST_BUCKET_NAME="pretrain-on-test-accuracies" ./experiment_mini.sh
+   ```
+
+3. Check that data was uploaded to the bucket, `pretrain-on-test-accuracies`.
+
+</details>
+
+<details>
+<summary>Test that cloud launches work</summary>
+
+1. cd (from the repo root):
+
+   ```bash
+   cd cloud_scripts/gcp
+   ```
+
+2. Run the mini CPU test (after ensuring your `gcloud` is set to whatever project hosts
+   the bucket):
+
+   ```bash
+   ./launch_cpu_test.sh
+   ```
+
+3. Check that data was uploaded to the bucket, `pretrain-on-test-accuracies`.
+
+</details>
+
+<details>
+<summary>Run the full experiment on GPU</summary>
+
+1. cd (from the repo root):
+
+   ```bash
+   cd cloud_scripts/gcp
+   ```
+
+2. Run the mini CPU test (after ensuring your `gcloud` is set to whatever project hosts
+   the bucket):
+
+   ```bash
+   ./launch_gpu.sh
+   ```
+
+3. Check that data was uploaded to the bucket, `pretrain-on-test-accuracies`.
+
+</details>
+
+</details>
+
+
+<details>
+<summary>Other cloud providers</summary>
+
+Other cloud providers are not yet supported, sorry.
+
+To support them, implement logging and file uploading functionality. See
+[`cloud.py`](./cloud.py). Then update `cloud_provider_to_create_data_handlers` in
+[`run.py`](./run.py).
+
+You'll probably find the [`./cloud_scripts/run.sh`](./cloud_scripts/run.sh) script
+useful for cloud runs. Note that it assumes the bucket name is
+`pretrain-on-test-accuracies`.
+
+</details>

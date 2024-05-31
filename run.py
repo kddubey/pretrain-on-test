@@ -43,7 +43,10 @@ class Experiment(BaseModel):
     lm_type: Literal["bert", "gpt2"] = Field(description="Type of language model")
     run_name: str = Field(
         default="",
-        description="Name of the run, in case it helps you remember what changed",
+        description=(
+            "Name of the run, in case it helps you remember what changed. If supplied, "
+            "this name gets appended to the run ID string: run-{timestamp}-{run_name}"
+        ),
     )
     dataset_names: list[str] | None = Field(
         default=None,
@@ -90,7 +93,7 @@ class Experiment(BaseModel):
 
 lm_type_to_config_creator = {
     "bert": lambda **model_independent_kwargs: pretrain_on_test.Config(
-        model_id="hf-internal-testing/tiny-random-BertModel",  # TODO: switch back to bert-base-uncased
+        model_id="bert-base-uncased",  # TODO: switch back to bert-base-uncased
         model_class_pretrain=BertForMaskedLM,
         model_class_classification=BertForSequenceClassification,
         mlm=True,
@@ -98,7 +101,22 @@ lm_type_to_config_creator = {
         **model_independent_kwargs,
     ),
     "gpt2": lambda **model_independent_kwargs: pretrain_on_test.Config(
-        model_id="hf-internal-testing/tiny-random-gpt2",  # TODO: switch back to gpt2
+        model_id="gpt2",
+        model_class_pretrain=GPT2LMHeadModel,
+        model_class_classification=GPT2ForSequenceClassification,
+        **model_independent_kwargs,
+    ),
+    # For quick CPU tests
+    "bert-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
+        model_id="hf-internal-testing/tiny-random-BertModel",
+        model_class_pretrain=BertForMaskedLM,
+        model_class_classification=BertForSequenceClassification,
+        mlm=True,
+        mlm_probability=0.15,
+        **model_independent_kwargs,
+    ),
+    "gpt2-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
+        model_id="hf-internal-testing/tiny-random-gpt2",
         model_class_pretrain=GPT2LMHeadModel,
         model_class_classification=GPT2ForSequenceClassification,
         **model_independent_kwargs,

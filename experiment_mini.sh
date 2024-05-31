@@ -1,6 +1,7 @@
 #!/bin/bash
 python run.py \
---lm_type bert \
+--lm_type bert-tiny \
+--run_name cpu-test-bert \
 --dataset_names ag_news SetFit/amazon_counterfactual_en \
 --num_subsamples 1 \
 --num_train 10 \
@@ -12,7 +13,8 @@ python run.py \
 --per_device_eval_batch_size_classification 4
 
 python run.py \
---lm_type gpt2 \
+--lm_type gpt2-tiny \
+--run_name cpu-test-gpt2 \
 --dataset_names ag_news SetFit/amazon_counterfactual_en \
 --num_subsamples 1 \
 --num_train 10 \
