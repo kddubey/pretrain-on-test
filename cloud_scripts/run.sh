@@ -1,10 +1,11 @@
 #!/bin/bash
 # This startup / user data script can be run on any Linux instance.
-# It sets up the Python venv, runs the experiment, and shuts down the instance.
+# It sets up the Python env, runs the experiment, and shuts down the instance.
+
+
 set -uo pipefail  # No e b/c want to shut down regardless of success or failure
 
 
-# TODO: check that this returns 1 on the GPU instance
 no_gpu_detected() {
     if command -v nvidia-smi &> /dev/null; then
         if nvidia-smi -L &> /dev/null; then
@@ -15,15 +16,34 @@ no_gpu_detected() {
 }
 
 
-# TODO: check if Python installs are ok for GPU image
-sudo apt update
-sudo apt install -y python3-pip git python3.11-venv
+sudo apt-get update
+sudo apt-get install -y git
 
 
-# Set up venv
-python3 -m venv pretrain-env
-source pretrain-env/bin/activate
-python -m pip install wheel
+# Set up Python env. GCP's GPU image can't support venv easily, only conda.
+if no_gpu_detected; then
+    sudo apt-get install -y python3-pip python3.11-venv
+else
+    echo "Assuming python3.10+, pip, venv/conda are already installed"
+fi
+
+if command -v conda &> /dev/null; then
+    echo "Creating a new conda environment"
+    if [[ -n "$CONDA_DEFAULT_ENV" ]]; then
+        conda deactivate
+    fi
+    conda create -y -n pretrain-env python=3.10
+    conda activate pretrain-env
+else
+    echo "Creating a new Python virtual environment"
+    if [[ -n "$VIRTUAL_ENV" ]]; then
+        deactivate
+    fi
+    python3 -m venv pretrain-env
+    source pretrain-env/bin/activate
+    python -m pip install wheel
+fi
+
 git clone https://github.com/kddubey/pretrain-on-test.git
 cd pretrain-on-test
 
