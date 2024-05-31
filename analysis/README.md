@@ -91,8 +91,7 @@ stratifying by the LM type for $n = 200$.
 stratifying by the LM type for $n = 500$.
 
 [`posterior_pred.ipynb`](./posterior_pred.ipynb) visualizes the marginal effects of
-interest. <span style="background-color: #FFFF00; font-weight: bold;">This is the main
-result</span>.
+interest. <span style="background-color: #FFFF00"><b>This is the main result</b></span>.
 
 [`meta.ipynb`](./meta.ipynb) assesses the importance of subsampling / replicating within
 each dataset.
