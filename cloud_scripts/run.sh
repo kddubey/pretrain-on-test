@@ -3,7 +3,7 @@
 # It sets up the Python env, runs the experiment, and shuts down the instance.
 
 
-set -uo pipefail  # No e b/c want to shut down regardless of success or failure
+set -uox pipefail  # No e b/c want to shut down regardless of success or failure
 
 
 no_gpu_detected() {
@@ -17,13 +17,23 @@ no_gpu_detected() {
 
 
 sudo apt-get update
-sudo apt-get install -y python3-pip git python3.11-venv
+sudo apt-get install -y git
+sudo apt-get install -y python3-pip python3.11-venv
 
 
-# Set up venv
-python3 -m venv pretrain-env
-source pretrain-env/bin/activate
-python -m pip install wheel
+# Set up env. GCP's GPU image can't support venv easily, only conda.
+if command -v conda &> /dev/null; then
+    echo "Creating a new conda environment"
+    conda deactivate
+    conda create -y -n pretrain-env python=3.10
+    conda activate pretrain-env
+else
+    echo "Creating a new Python virtual environment"
+    python3 -m venv pretrain-env
+    source pretrain-env/bin/activate
+    python -m pip install wheel
+fi
+
 git clone https://github.com/kddubey/pretrain-on-test.git
 cd pretrain-on-test
 
