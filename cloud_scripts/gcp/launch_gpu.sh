@@ -8,7 +8,7 @@ set -euo pipefail  # https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8
 
 PROJECT_NAME=$(gcloud config get-value project)  # you may need to set this manually
 INSTANCE_NAME="instance-pretrain-on-test-gpu"
-ZONE="us-central1-a"
+ZONE="us-west4-a"
 
 
 cat ./_preamble.sh > _preamble_gpu.sh
