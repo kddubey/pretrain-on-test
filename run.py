@@ -180,6 +180,11 @@ def run(
     logger.info(experiment)
 
     try:
+        if torch.cuda.is_available():
+            logger.info("GPU detected.")
+        else:
+            logger.info("No GPU detected.")
+
         # Create results_dir using core settings from the experiment: n and the LM
         results_dir = os.path.join(
             run_id, "accuracies", f"num_test_{experiment.num_test}", experiment.lm_type

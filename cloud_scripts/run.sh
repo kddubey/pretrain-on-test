@@ -16,6 +16,13 @@ no_gpu_detected() {
 }
 
 
+if no_gpu_detected; then
+    echo "No GPU detected."
+else
+    echo "GPU detected."
+fi
+
+
 sudo apt-get update
 sudo apt-get install -y git
 

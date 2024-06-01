@@ -11,8 +11,7 @@ INSTANCE_NAME="instance-pretrain-on-test-gpu"
 ZONE="us-west4-a"
 
 
-cat ./_preamble.sh > _preamble_gpu.sh
-echo -e 'sudo /opt/deeplearning/install-driver.sh\n\n' >> _preamble_gpu.sh
+cat ./_install_cuda.sh ./_preamble.sh > _preamble_gpu.sh
 cat _preamble_gpu.sh ../run.sh > run_gcp.sh
 rm _preamble_gpu.sh
 
