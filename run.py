@@ -263,6 +263,3 @@ if __name__ == "__main__":
     create_data_handlers = cloud_provider_to_create_data_handlers[cloud_provider]
     data_handlers = create_data_handlers()
     run(experiment, **data_handlers)
-    from time import sleep
-
-    sleep(20 * 60)  # temp

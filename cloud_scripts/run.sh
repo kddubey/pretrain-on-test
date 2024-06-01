@@ -8,6 +8,9 @@ set -uox pipefail
 # No e b/c want to shut down regardless of success or failure
 
 
+echo "Cloud provider: $PRETRAIN_ON_TEST_CLOUD_PROVIDER"  # must be set
+
+
 no_gpu_detected() {
     if command -v nvidia-smi &> /dev/null; then
         if nvidia-smi -L &> /dev/null; then
@@ -64,10 +67,10 @@ export PRETRAIN_ON_TEST_BUCKET_NAME="pretrain-on-test-accuracies"
 # Run experiment
 if no_gpu_detected; then
     echo "Running experiment_mini.sh"
-    screen -dmS experiment ./experiment_mini.sh
+    ./experiment_mini.sh
 else
     echo "Running experiment.sh"
-    screen -dmS experiment ./experiment.sh
+    ./experiment.sh
 fi
 
 
