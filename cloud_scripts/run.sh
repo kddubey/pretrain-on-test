@@ -17,33 +17,13 @@ no_gpu_detected() {
 
 
 sudo apt-get update
-sudo apt-get install -y git
+sudo apt-get install -y python3-pip git python3.11-venv
 
 
-# Set up Python env. GCP's GPU image can't support venv easily, only conda.
-if no_gpu_detected; then
-    sudo apt-get install -y python3-pip python3.11-venv
-else
-    echo "Assuming python3.10+, pip, venv/conda are already installed"
-fi
-
-if command -v conda &> /dev/null; then
-    echo "Creating a new conda environment"
-    if [[ -n "$CONDA_DEFAULT_ENV" ]]; then
-        conda deactivate
-    fi
-    conda create -y -n pretrain-env python=3.10
-    conda activate pretrain-env
-else
-    echo "Creating a new Python virtual environment"
-    if [[ -n "$VIRTUAL_ENV" ]]; then
-        deactivate
-    fi
-    python3 -m venv pretrain-env
-    source pretrain-env/bin/activate
-    python -m pip install wheel
-fi
-
+# Set up venv
+python3 -m venv pretrain-env
+source pretrain-env/bin/activate
+python -m pip install wheel
 git clone https://github.com/kddubey/pretrain-on-test.git
 cd pretrain-on-test
 
