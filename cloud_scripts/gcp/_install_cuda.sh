@@ -1,10 +1,12 @@
 #!/bin/bash
-# I don't know why I need this. W/o it, CUDA drivers don't get installed. I think it
-# might have something to do w/ this error?
+# I don't know why I ended up needing this. W/o it, CUDA drivers don't get installed. I
+# think it might have something to do w/ this error I see in the logs:
 # Error reloading service: Failed to reload-or-restart sshd.service: Unit sshd.service not found..
 
 
 set -uox
+# https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425
+
 
 # sudo apt-get -y remove --purge openssh-server
 # sudo apt-get update

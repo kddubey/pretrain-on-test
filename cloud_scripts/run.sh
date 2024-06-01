@@ -3,7 +3,9 @@
 # It sets up the Python env, runs the experiment, and shuts down the instance.
 
 
-set -uox pipefail  # No e b/c want to shut down regardless of success or failure
+set -uox pipefail
+# https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425
+# No e b/c want to shut down regardless of success or failure
 
 
 no_gpu_detected() {

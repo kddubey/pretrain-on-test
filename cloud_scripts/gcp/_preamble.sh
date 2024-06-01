@@ -1,7 +1,9 @@
 #!/bin/bash
 
 
-set -uox pipefail  # No e b/c want to shut down regardless of success or failure
+set -uox pipefail
+# https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425
+# No e b/c want to shut down regardless of success or failure
 
 
 sudo apt-get update
@@ -16,7 +18,9 @@ EOF
 export PRETRAIN_ON_TEST_CLOUD_PROVIDER="gcp"
 
 
+set +x
 source ~/.bashrc
+set -x
 # W/o this, the GPU image says conda and venv don't exist. Probably has to do w/ not
 # reloading:
 # Error reloading service: Failed to reload-or-restart sshd.service: Unit sshd.service not found..
