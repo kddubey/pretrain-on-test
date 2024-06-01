@@ -64,10 +64,10 @@ export PRETRAIN_ON_TEST_BUCKET_NAME="pretrain-on-test-accuracies"
 # Run experiment
 if no_gpu_detected; then
     echo "Running experiment_mini.sh"
-    ./experiment_mini.sh
+    screen -dmS experiment ./experiment_mini.sh
 else
     echo "Running experiment.sh"
-    ./experiment.sh
+    screen -dmS experiment ./experiment.sh
 fi
 
 
