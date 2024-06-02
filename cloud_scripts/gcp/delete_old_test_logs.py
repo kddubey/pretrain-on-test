@@ -33,7 +33,7 @@ if not log_names_delete:
 
 
 print("The following logs will be deleted:\n" + "\n".join(log_names_delete))
-message_prompt = "\nEnter y to delete them, n to cancel [y/n]: "
+message_prompt = "\nEnter y to delete them, n to cancel: [y/n] "
 does_user_approve = None
 while does_user_approve not in ["y", "n"]:
     does_user_approve = input(message_prompt)
@@ -45,7 +45,7 @@ command = ["gcloud", "logging", "logs", "delete"]
 
 for log_name in tqdm(log_names_delete):
     print()
-    print("-" * 20)
+    print("-" * 80)
     delete_log = command + [log_name]
     process = subprocess.Popen(
         delete_log,
@@ -55,7 +55,9 @@ for log_name in tqdm(log_names_delete):
         text=True,
     )
     stdout, stderr = process.communicate(input="Y\n")
-    print("Output:", stdout)
-    print("Errors:", stderr)
-    print("-" * 20)
+    if stdout:
+        print("Output:", stdout)
+    if stderr:
+        print("Errors:", stderr)
+    print("-" * 80)
     print()
