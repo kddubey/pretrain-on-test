@@ -11,7 +11,7 @@ set -uox pipefail
 echo "Cloud provider: $PRETRAIN_ON_TEST_CLOUD_PROVIDER"  # must be set
 
 
-no_gpu_detected() {
+check_if_no_gpu() {
     if command -v nvidia-smi &> /dev/null; then
         if nvidia-smi -L &> /dev/null; then
             return 1  # exit status 1 is Falsy; GPU detected
@@ -21,7 +21,7 @@ no_gpu_detected() {
 }
 
 
-if no_gpu_detected; then
+if check_if_no_gpu; then
     echo "No GPU detected."
 else
     echo "GPU detected."
@@ -32,7 +32,7 @@ sudo apt-get update
 sudo apt-get install -y git
 
 
-# Set up env. GCP's GPU image can't support venv easily, only conda.
+# Set up Python env. GCP's GPU image can't support venv easily, only conda.
 if command -v conda &> /dev/null; then
     echo "Creating a new conda environment"
     conda deactivate
@@ -50,7 +50,7 @@ git clone https://github.com/kddubey/pretrain-on-test.git
 cd pretrain-on-test
 
 # Don't install torch's nvidia deps if there's no GPU
-if no_gpu_detected; then
+if check_if_no_gpu; then
     echo "No GPU detected. Installing CPU version of PyTorch."
     python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 else
@@ -65,12 +65,12 @@ export PRETRAIN_ON_TEST_BUCKET_NAME="pretrain-on-test-accuracies"
 
 
 # Run experiment
-if no_gpu_detected; then
+if check_if_no_gpu; then
     echo "Running experiment_mini.sh"
     ./experiment_mini.sh
 else
     echo "Running experiment.sh"
-    ./experiment.sh
+    TQDM_DISABLE=1 ./experiment.sh
 fi
 
 

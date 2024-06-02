@@ -3,7 +3,7 @@ python run.py \
 --lm_type bert-tiny \
 --run_name cpu-test-bert \
 --dataset_names ag_news SetFit/amazon_counterfactual_en \
---num_subsamples 1 \
+--num_subsamples 2 \
 --num_train 10 \
 --num_test 10 \
 --num_train_epochs_classification 1 \
@@ -16,7 +16,7 @@ python run.py \
 --lm_type gpt2-tiny \
 --run_name cpu-test-gpt2 \
 --dataset_names ag_news SetFit/amazon_counterfactual_en \
---num_subsamples 1 \
+--num_subsamples 2 \
 --num_train 10 \
 --num_test 10 \
 --num_train_epochs_classification 1 \
