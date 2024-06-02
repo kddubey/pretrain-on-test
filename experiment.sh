@@ -55,7 +55,7 @@ python run.py \
 python run.py \
 --lm_type bert \
 --dataset_names \
-    enron_spam \
+    SetFit/enron_spam \
     yelp_review_full \
 --num_test 200 \
 --num_subsamples 50 \
@@ -127,7 +127,7 @@ python run.py \
 python run.py \
 --lm_type gpt2 \
 --dataset_names \
-    enron_spam \
+    SetFit/enron_spam \
     yelp_review_full \
 --num_test 200 \
 --num_subsamples 50 \
@@ -201,7 +201,7 @@ python run.py \
 python run.py \
 --lm_type bert \
 --dataset_names \
-    enron_spam \
+    SetFit/enron_spam \
     yelp_review_full \
 --num_test 500 \
 --num_subsamples 20 \
@@ -273,7 +273,7 @@ python run.py \
 python run.py \
 --lm_type gpt2 \
 --dataset_names \
-    enron_spam \
+    SetFit/enron_spam \
     yelp_review_full \
 --num_test 500 \
 --num_subsamples 20 \
