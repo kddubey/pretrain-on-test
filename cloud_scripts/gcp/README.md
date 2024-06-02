@@ -3,6 +3,9 @@
 First, [create a bucket](https://cloud.google.com/storage/docs/creating-buckets) called
 `pretrain-on-test-accuracies`.
 
+Also consider adding an email alert for any errors that pop up during the experiment.
+
+
 <details>
 <summary>Consider locally testing that cloud logging and storage works</summary>
 
@@ -43,6 +46,12 @@ uploaded to GCP.
 
 2. Check that stuff was logged (search for the latest log group with the name `run-`)
    and that data was uploaded to the bucket `pretrain-on-test-accuracies`.
+
+3. Consider deleting these logs:
+
+   ```bash
+   python delete_old_test_logs.py
+   ```
 
 </details>
 
