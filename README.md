@@ -188,8 +188,8 @@ Run a mini experiment on your computer and check that data was uploaded to GCP.
 <details>
 <summary>Test that cloud launches work</summary>
 
-Launch an instance which will run a mini experiment in the cloud, and check that data
-was uploaded to GCP.
+Launch a cloud instance which will run a mini experiment, and check that data was
+uploaded to GCP.
 
 1. cd (from the repo root):
 
@@ -212,7 +212,7 @@ was uploaded to GCP.
 <details>
 <summary>Run the full experiment on GPU</summary>
 
-Launch an instance which will run the full experiment in the cloud, and check that data
+Launch a cloud GPU ($$) instance which will run the full experiment, and check that data
 was uploaded to GCP.
 
 1. cd (from the repo root):
