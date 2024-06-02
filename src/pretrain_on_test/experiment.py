@@ -208,7 +208,8 @@ def replicate(
         )
         accuracy_records.append(accuracies_subsample)
         # Save df_test_with_pred_probs
-        os.makedirs(dataset_dir)
+        if not os.path.exists(dataset_dir):
+            os.makedirs(dataset_dir)
         file_path_subsample = os.path.join(
             dataset_dir, f"subsample_test_{str(subsample_idx).zfill(n_digits)}.csv"
         )
