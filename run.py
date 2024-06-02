@@ -180,8 +180,6 @@ def run(
     logger.info(experiment)
 
     try:
-        raise ValueError("temp email test")
-
         if torch.cuda.is_available():
             logger.info("GPU detected.")
         else:
