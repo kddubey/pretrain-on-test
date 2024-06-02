@@ -163,6 +163,8 @@ First, [create a bucket](https://cloud.google.com/storage/docs/creating-buckets)
 <details>
 <summary>Consider locally testing that cloud logging and storage works</summary>
 
+Run a mini experiment on your computer and check that data was uploaded to GCP.
+
 1. Install the `gcp` requirements (at the repo root):
 
    ```bash
@@ -178,12 +180,16 @@ First, [create a bucket](https://cloud.google.com/storage/docs/creating-buckets)
    ./experiment_mini.sh
    ```
 
-3. Check that data was uploaded to the bucket, `pretrain-on-test-accuracies`.
+3. Check that stuff was logged (search for the latest log group with the name `run-`)
+   and that data was uploaded to the bucket `pretrain-on-test-accuracies`.
 
 </details>
 
 <details>
 <summary>Test that cloud launches work</summary>
+
+Launch an instance which will run a mini experiment in the cloud, and check that data
+was uploaded to GCP.
 
 1. cd (from the repo root):
 
@@ -198,12 +204,16 @@ First, [create a bucket](https://cloud.google.com/storage/docs/creating-buckets)
    ./launch_cpu_test.sh
    ```
 
-3. Check that data was uploaded to the bucket, `pretrain-on-test-accuracies`.
+3. Check that stuff was logged (search for the latest log group with the name `run-`)
+   and that data was uploaded to the bucket `pretrain-on-test-accuracies`.
 
 </details>
 
 <details>
 <summary>Run the full experiment on GPU</summary>
+
+Launch an instance which will run the full experiment in the cloud, and check that data
+was uploaded to GCP.
 
 1. cd (from the repo root):
 
@@ -218,7 +228,8 @@ First, [create a bucket](https://cloud.google.com/storage/docs/creating-buckets)
    ./launch_gpu.sh
    ```
 
-3. Check that data was uploaded to the bucket, `pretrain-on-test-accuracies`.
+3. Check that stuff was logged (search for the latest log group with the name `run-`)
+   and that data was uploaded to the bucket `pretrain-on-test-accuracies`.
 
 </details>
 
