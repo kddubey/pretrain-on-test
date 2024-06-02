@@ -1,5 +1,5 @@
 #!/bin/bash
-# This startup / user data script can be run on any Linux instance.
+# This startup / user data script can be run on any Debian instance.
 # It sets up the Python env, runs the experiment, and shuts down the instance.
 
 
