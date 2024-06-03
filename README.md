@@ -88,10 +88,8 @@ To analyze the accuracy data, see [`analysis/`](./analysis/).
 <details>
 <summary>Terminal (local)</summary>
 
-See:
-
 ```bash
-python run.py -h
+python run.py --help
 ```
 
 For a quick, CPU-friendly, local run:
@@ -112,7 +110,7 @@ in a notebook.
 ```python
 from run import run, Experiment
 
-experiment = Experiment(lm_type="bert")
+experiment = Experiment(lm_type="bert", dataset_names=...)
 run(experiment)
 ```
 
