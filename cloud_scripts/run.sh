@@ -69,7 +69,7 @@ if check_if_no_gpu; then
     echo "Running experiment_mini.sh"
     ./experiment_mini.sh
 else
-    echo "Running experiment.sh"
+    echo "Running experiment_gcp.sh"
     TQDM_DISABLE=1 ./experiment_gcp.sh
 fi
 
