@@ -1,6 +1,5 @@
 #!/bin/bash
-# This script launches a CPU instance which runs a mini experiment to check that your
-# cloud setup works.
+# This script launches a GPU instance which runs the full experiment.
 
 
 set -euo pipefail
