@@ -32,7 +32,9 @@ HuggingFaceDatasetNames = Literal[
     "yahoo_answers_topics",
     "yelp_review_full",
 ]
-"Default set of classification datasets."
+"""
+Default set of classification datasets. All of these are small-enough to fit in CPU RAM
+"""
 
 
 _ProcessDataFrame = Callable[[pd.DataFrame], pd.DataFrame]
@@ -128,11 +130,11 @@ def load_classification_data_from_hf(
     )
     if "text" not in df.columns:
         raise ValueError(
-            'The dataframe is missing a "text" column. ' + required_format_message
+            f'The dataframe is missing a "text" column. {required_format_message}'
         )
     if "label" not in df.columns:
         raise ValueError(
-            'The dataframe is missing a "label" column. ' + required_format_message
+            f'The dataframe is missing a "label" column. {required_format_message}'
         )
 
     df["text"] = df["text"].astype(str)

@@ -29,7 +29,7 @@ class UploadDirectory(Protocol):
 ######################################## Local #########################################
 
 
-def create_logger_local(name: str):
+def create_logger_local(name: str) -> logging.Logger:
     """
     Returns a logger which logs to stdout at level INFO.
     """
@@ -51,7 +51,7 @@ def create_logger_local(name: str):
 ######################################## GCP ###########################################
 
 
-def create_logger_gcp(name: str):
+def create_logger_gcp(name: str) -> logging.Logger:
     """
     Returns a logger which logs to stdout at level INFO and GCP with
     `python_logger` set to `name`.
