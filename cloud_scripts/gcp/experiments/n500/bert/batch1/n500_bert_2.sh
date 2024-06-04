@@ -1,7 +1,6 @@
 #!/bin/bash
 TQDM_DISABLE=1 python run.py \
---lm_type gpt2 \
---run_name n500_gpt2_1 \
+--lm_type bert \
 --dataset_names \
     SetFit/enron_spam \
     yelp_review_full \
