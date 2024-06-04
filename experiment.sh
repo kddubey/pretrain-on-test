@@ -41,7 +41,7 @@ python run.py \
 --lm_type bert \
 --dataset_names \
     blog_authorship_corpus \
-    craigslist_bargains \
+    aladar/craigslist_bargains \
     classla/FRENK-hate-en \
     movie_rationales \
 --num_test 200 \
@@ -113,7 +113,7 @@ python run.py \
 --lm_type gpt2 \
 --dataset_names \
     blog_authorship_corpus \
-    craigslist_bargains \
+    aladar/craigslist_bargains \
     classla/FRENK-hate-en \
     movie_rationales \
 --num_test 200 \
@@ -187,7 +187,7 @@ python run.py \
 --lm_type bert \
 --dataset_names \
     blog_authorship_corpus \
-    craigslist_bargains \
+    aladar/craigslist_bargains \
     classla/FRENK-hate-en \
     movie_rationales \
 --num_test 500 \
@@ -259,7 +259,7 @@ python run.py \
 --lm_type gpt2 \
 --dataset_names \
     blog_authorship_corpus \
-    craigslist_bargains \
+    aladar/craigslist_bargains \
     classla/FRENK-hate-en \
     movie_rationales \
 --num_test 500 \
