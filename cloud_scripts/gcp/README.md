@@ -37,17 +37,23 @@ Run a mini experiment on your computer and check that data was uploaded to GCP.
 Launch a cloud instance which will run a mini experiment, and check that data was
 uploaded to GCP. Note that the instance will stop even if there's an error.
 
-1. Run the mini CPU test (after ensuring your `gcloud` is set to whatever project hosts
+1. Set the `SERVICE_ACCOUNT_EMAIL` environment variable:
+
+   ```bash
+   export SERVICE_ACCOUNT_EMAIL="xxxxxxxxxxxx-compute@developer.gserviceaccount.com"
+   ```
+
+2. Run the mini CPU test (after ensuring your `gcloud` is set to whatever project hosts
    the bucket):
 
    ```bash
-   ./launch_cpu_test.sh
+   python launch.py --cpu_test_or_gpu "cpu-test"
    ```
 
-2. Check that stuff was logged (search for the latest log group with the name `run-`)
+3. Check that stuff was logged (search for the latest log group with the name `run-`)
    and that data was uploaded to the bucket `pretrain-on-test-accuracies`.
 
-3. Consider deleting these logs:
+4. Consider deleting these logs:
 
    ```bash
    python delete_old_test_logs.py
@@ -61,14 +67,20 @@ uploaded to GCP. Note that the instance will stop even if there's an error.
 Launch a cloud GPU ($$) instance which will run the full experiment, and check that data
 was uploaded to GCP. Note that the instance will stop even if there's an error.
 
-1. Run the GPU script (after ensuring your `gcloud` is set to whatever project hosts the
+1. Set the `SERVICE_ACCOUNT_EMAIL` environment variable:
+
+   ```bash
+   export SERVICE_ACCOUNT_EMAIL="xxxxxxxxxxxx-compute@developer.gserviceaccount.com"
+   ```
+
+2. Run the GPU script (after ensuring your `gcloud` is set to whatever project hosts the
    bucket):
 
    ```bash
-   ./launch_gpu.sh
+   python launch.py --cpu_test_or_gpu "gpu"
    ```
 
-2. Check that stuff was logged (search for the latest log group with the name `run-`)
+3. Check that stuff was logged (search for the latest log group with the name `run-`)
    and that data was uploaded to the bucket `pretrain-on-test-accuracies`.
 
 </details>
