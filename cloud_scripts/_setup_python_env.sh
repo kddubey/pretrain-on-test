@@ -1,6 +1,7 @@
 #!/bin/bash
-# This startup / user data script can be run on any Debian instance.
-# It sets up the Python env, runs the experiment, and shuts down the instance.
+# This script sets up the Python environment required to run the experiment.
+# It can be run on any Debian instance with the env var PRETRAIN_ON_TEST_CLOUD_PROVIDER
+# Don't forget to shut down the instance after the experiment: sudo shutdown -h now
 
 
 set -uox pipefail
@@ -62,17 +63,3 @@ python -m pip install .
 # Set up for cloud
 python -m pip install ".[$PRETRAIN_ON_TEST_CLOUD_PROVIDER]"
 export PRETRAIN_ON_TEST_BUCKET_NAME="pretrain-on-test-accuracies"
-
-
-# Run experiment
-if check_if_no_gpu; then
-    echo "Running experiment_mini.sh"
-    ./experiment_mini.sh
-else
-    echo "Running experiment_gcp.sh"
-    TQDM_DISABLE=1 ./experiment_gcp.sh
-fi
-
-
-# Shut down regardless of success or failure
-sudo shutdown -h now
