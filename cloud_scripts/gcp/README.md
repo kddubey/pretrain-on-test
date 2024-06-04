@@ -43,10 +43,10 @@ Run a mini experiment on your computer and check that data was uploaded to GCP.
 Launch a cloud instance which will run a mini experiment, and check that data was
 uploaded to GCP. Note that the instance will stop even if there's an error.
 
-1. Set the `SERVICE_ACCOUNT_EMAIL` environment variable:
+1. Set the `GCP_SERVICE_ACCOUNT_EMAIL` environment variable:
 
    ```bash
-   export SERVICE_ACCOUNT_EMAIL="xxxxxxxxxxxx-compute@developer.gserviceaccount.com"
+   export GCP_SERVICE_ACCOUNT_EMAIL="xxxxxxxxxxxx-compute@developer.gserviceaccount.com"
    ```
 
 2. Run the mini CPU test (after ensuring your `gcloud` is set to whatever project hosts
@@ -73,10 +73,10 @@ uploaded to GCP. Note that the instance will stop even if there's an error.
 Launch a cloud GPU ($$) instance which will run the full experiment, and check that data
 was uploaded to GCP. Note that the instance will stop even if there's an error.
 
-1. Set the `SERVICE_ACCOUNT_EMAIL` environment variable:
+1. Set the `GCP_SERVICE_ACCOUNT_EMAIL` environment variable:
 
    ```bash
-   export SERVICE_ACCOUNT_EMAIL="xxxxxxxxxxxx-compute@developer.gserviceaccount.com"
+   export GCP_SERVICE_ACCOUNT_EMAIL="xxxxxxxxxxxx-compute@developer.gserviceaccount.com"
    ```
 
 2. Run the GPU script (after ensuring your `gcloud` is set to whatever project hosts the

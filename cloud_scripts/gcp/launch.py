@@ -71,7 +71,7 @@ gcloud compute instances create {instance_name} \
     --maintenance-policy=TERMINATE \
     --provisioning-model=SPOT \
     --instance-termination-action=DELETE \
-    --service-account={service_account_email} \
+    --service-account={gcp_service_account_email} \
     --scopes=https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/trace.append,https://www.googleapis.com/auth/devstorage.read_write \
     --create-disk=auto-delete=yes,boot=yes,device-name={instance_name},image=projects/debian-cloud/global/images/debian-12-bookworm-v20240515,mode=rw,size=80,type=projects/{project_name}/zones/{zone}/diskTypes/pd-balanced \
     --no-shielded-secure-boot \
@@ -91,7 +91,7 @@ gcloud compute instances create {instance_name} \
     --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default \
     --maintenance-policy=TERMINATE \
     --provisioning-model=STANDARD \
-    --service-account={service_account_email} \
+    --service-account={gcp_service_account_email} \
     --scopes=https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/trace.append,https://www.googleapis.com/auth/devstorage.read_write \
     --accelerator=count=1,type=nvidia-tesla-t4 \
     --create-disk=auto-delete=yes,boot=yes,device-name={instance_name},image=projects/ml-images/global/images/c2-deeplearning-pytorch-2-2-cu121-v20240514-debian-11,mode=rw,size=80,type=projects/{project_name}/zones/{zone}/diskTypes/pd-balanced \
@@ -177,7 +177,7 @@ def create_instance(
         project_name=project_name,
         instance_name=instance_name,
         zone=zone,
-        service_account_email=os.environ["SERVICE_ACCOUNT_EMAIL"],
+        gcp_service_account_email=os.environ["GCP_SERVICE_ACCOUNT_EMAIL"],
         startup_script_name=startup_script.name,
     )
     create_message = run_command(create_instance_command)
