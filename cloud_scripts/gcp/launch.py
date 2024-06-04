@@ -113,18 +113,16 @@ def service_account_email(
         '"xxxxxxxxxxxx-compute@developer.gserviceaccount.com"'
     )
     try:
-        result = run_command("gcloud iam service-accounts list")
-    except subprocess.CalledProcessError:  # may be missing perms
+        email = run_command(
+            "gcloud iam service-accounts list "
+            f'--filter="displayName:{display_name}" '
+            '--format="value(email)"'
+        ).strip(" \n")
+    except subprocess.CalledProcessError:  # missing perms or wrong display name
         raise exception
     else:
-        email = (
-            result[result.find(display_name) :]
-            .removeprefix(display_name)
-            .lstrip()
-            .split()
-        )
-        if email and "@" in email[0]:
-            return email[0]
+        if email and "@" in email:
+            return email
         else:
             raise exception
 
