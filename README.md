@@ -139,20 +139,6 @@ run(experiment)
 
 
 <details>
-<summary>Google Colab</summary>
-
-Run [this
-notebook](https://github.com/kddubey/pretrain-on-test/blob/main/google_colab.ipynb) on a
-T4 GPU for free in Google Colab.
-
-The free version of Colab is not feasible for most datasets and experiment
-configurations b/c sessions are too time-limited. Please consider using a cloud provider
-to fully reproduce experiment results.
-
-</details>
-
-
-<details>
 <summary>Google Cloud Platform</summary>
 
 [`cloud_scripts/gcp`](./cloud_scripts/gcp)
