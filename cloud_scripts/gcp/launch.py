@@ -107,19 +107,15 @@ gcloud compute instances create {instance_name} \
 def service_account_email(
     display_name: str = "Compute Engine default service account",
 ) -> str:
-    failure_message = (
-        "Couldn't find your GCP service account. Please set the environment variable: "
-        "GCP_SERVICE_ACCOUNT_EMAIL="
+    exception = ValueError(
+        "Couldn't find your GCP service account. Please input it as an argument: "
+        "--gcp_service_account_email "
         '"xxxxxxxxxxxx-compute@developer.gserviceaccount.com"'
     )
     try:
         result = run_command("gcloud iam service-accounts list")
     except subprocess.CalledProcessError:  # may be missing perms
-        try:
-            return os.environ["GCP_SERVICE_ACCOUNT_EMAIL"]
-        except KeyError as exception:
-            print(failure_message)
-            raise exception
+        raise exception
     else:
         email = (
             result[result.find(display_name) :]
@@ -130,7 +126,7 @@ def service_account_email(
         if email and "@" in email[0]:
             return email[0]
         else:
-            raise ValueError(failure_message)
+            raise exception
 
 
 def post_create_message(project_name: str, instance_name: str, zone: str) -> None:
@@ -155,6 +151,7 @@ def create_instance(
     is_cpu_test: bool = False,
     project_name: str | None = None,
     instance_name_prefix: str = "instance-pretrain-on-test",
+    gcp_service_account_email: str | None = None,
 ):
     # Set up gcloud instance create arguments
     is_experiment_default = experiment_file_name is None
@@ -199,6 +196,8 @@ def create_instance(
             .replace("_", "-"),
         )
     )
+    if gcp_service_account_email is None:
+        gcp_service_account_email = service_account_email()
 
     # Create instance
     startup_script = concatenate_files(startup_script_filenames)
@@ -206,7 +205,7 @@ def create_instance(
         project_name=project_name,
         instance_name=instance_name,
         zone=zone,
-        gcp_service_account_email=service_account_email(),
+        gcp_service_account_email=gcp_service_account_email,
         startup_script_name=startup_script.name,
     )
     create_message = run_command(create_instance_command)
@@ -220,6 +219,7 @@ def create_instances(
     is_cpu_test: bool = False,
     project_name: str | None = None,
     instance_name_prefix: str = "instance-pretrain-on-test",
+    gcp_service_account_email: str | None = None,
 ):
     """
     Creates GPU instances which run the experiment files in `experiment_dir`, where one
@@ -242,6 +242,9 @@ def create_instances(
         project`
     instance_name_prefix : str, optional
         Prefix of the name of the instance
+    gcp_service_account_email : str | None, optional
+        Your Google Cloud service account. By default it's the one with display name
+        "Compute Engine default service account".
     """
     if experiment_dir is None:
         sh_files = [None]
@@ -267,6 +270,7 @@ def create_instances(
             is_cpu_test=is_cpu_test,
             project_name=project_name,
             instance_name_prefix=instance_name_prefix,
+            gcp_service_account_email=gcp_service_account_email,
         )
         print(("-" * os.get_terminal_size().columns) + "\n")
 
