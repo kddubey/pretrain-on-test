@@ -104,6 +104,35 @@ gcloud compute instances create {instance_name} \
 """.strip("\n")
 
 
+def service_account_email(
+    display_name: str = "Compute Engine default service account",
+) -> str:
+    failure_message = (
+        "Couldn't find your GCP service account. Please set the environment variable: "
+        "GCP_SERVICE_ACCOUNT_EMAIL="
+        '"xxxxxxxxxxxx-compute@developer.gserviceaccount.com"'
+    )
+    try:
+        result = run_command("gcloud iam service-accounts list")
+    except subprocess.CalledProcessError:  # may be missing perms
+        try:
+            return os.environ["GCP_SERVICE_ACCOUNT_EMAIL"]
+        except KeyError as exception:
+            print(failure_message)
+            raise exception
+    else:
+        email = (
+            result[result.find(display_name) :]
+            .removeprefix(display_name)
+            .lstrip()
+            .split()
+        )
+        if email and "@" in email[0]:
+            return email[0]
+        else:
+            raise ValueError(failure_message)
+
+
 def post_create_message(project_name: str, instance_name: str, zone: str) -> None:
     print(
         "View raw logs here (cleaner logs are in the Logs Explorer page):\n"
@@ -177,7 +206,7 @@ def create_instance(
         project_name=project_name,
         instance_name=instance_name,
         zone=zone,
-        gcp_service_account_email=os.environ["GCP_SERVICE_ACCOUNT_EMAIL"],
+        gcp_service_account_email=service_account_email(),
         startup_script_name=startup_script.name,
     )
     create_message = run_command(create_instance_command)
