@@ -3,7 +3,13 @@
 First, [create a bucket](https://cloud.google.com/storage/docs/creating-buckets) called
 `pretrain-on-test-accuracies`.
 
-Also consider adding an email alert for any errors that pop up during the experiment.
+Also consider:
+
+1. Adding an email alert for any errors that pop up during the experiment.
+
+2. [Increasing your quotas](https://console.cloud.google.com/iam-admin/quotas) for
+   `GPUS_ALL_REGIONS` and `NVIDIA_T4_GPUS` (default region is `us-west4`) to at least
+   1—more than 1 for running experiments in parallel.
 
 
 <details>
