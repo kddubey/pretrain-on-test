@@ -53,9 +53,11 @@ gcloud compute instances create {instance_name} \
 
 
 def run_command(command: str) -> str:
-    return subprocess.run(
-        shlex.split(command), capture_output=True, text=True, check=True
-    ).stdout
+    result = subprocess.run(shlex.split(command), capture_output=True, text=True)
+    if result.stderr:
+        print(result.stderr)
+    result.check_returncode()
+    return result.stdout
 
 
 def remove_file_if_exists(filename: str):
