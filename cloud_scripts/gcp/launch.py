@@ -38,24 +38,21 @@ def concatenate_files(filenames: Sequence[str]):
     return write_temp_file(lines)
 
 
-def write_default_cpu_test_experiment_file():
-    default_experiment = "./experiment_mini.sh"
+def _write_default_experiment_file(filename: str):
     lines = (
-        'echo "Running experiment_mini.sh"\n',
-        f"{default_experiment}\n",
+        f'echo "Running {filename}"\n',
+        f"{filename}\n",
     )
-    print(f"Creating instance for running {default_experiment}")
+    print(f"Creating instance for running {filename}")
     return write_temp_file(lines)
 
 
-def write_default_gpu_experiment_file():
-    default_experiment = "./experiment.sh"
-    lines = (
-        'echo "Running experiment.sh"\n',
-        f"{default_experiment}\n",
-    )
-    print(f"Creating instance for running {default_experiment}")
-    return write_temp_file(lines)
+def write_default_experiment_file_cpu_test():
+    return _write_default_experiment_file("./experiment_mini.sh")
+
+
+def write_default_experiment_file_gpu():
+    return _write_default_experiment_file("./experiment.sh")
 
 
 ######################################### GCP ##########################################
@@ -156,7 +153,7 @@ def create_instance(
     if is_cpu_test:
         create_instance_command_template = create_instance_command_template_cpu_test
         if is_experiment_default:
-            experiment_file_name = write_default_cpu_test_experiment_file().name
+            experiment_file_name = write_default_experiment_file_cpu_test().name
         startup_script_filenames = (
             "./_preamble.sh",
             "../_setup_python_env.sh",
@@ -168,7 +165,7 @@ def create_instance(
     else:
         create_instance_command_template = create_instance_command_template_gpu
         if is_experiment_default:
-            experiment_file_name = write_default_gpu_experiment_file().name
+            experiment_file_name = write_default_experiment_file_gpu().name
         startup_script_filenames = (
             "./_install_cuda.sh",
             "./_preamble.sh",
