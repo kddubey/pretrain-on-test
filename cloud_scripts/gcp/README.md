@@ -47,7 +47,7 @@ uploaded to GCP. Note that the instance will stop even if there's an error.
    the bucket):
 
    ```bash
-   python launch.py --cpu_test_or_gpu "cpu-test"
+   python launch.py --is_cpu_test
    ```
 
 3. Check that stuff was logged (search for the latest log group with the name `run-`)
@@ -77,7 +77,7 @@ was uploaded to GCP. Note that the instance will stop even if there's an error.
    bucket):
 
    ```bash
-   python launch.py --cpu_test_or_gpu "gpu"
+   python launch.py
    ```
 
 3. Check that stuff was logged (search for the latest log group with the name `run-`)

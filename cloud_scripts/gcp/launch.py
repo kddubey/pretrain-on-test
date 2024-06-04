@@ -4,7 +4,7 @@ import os
 import subprocess
 import shlex
 import tempfile
-from typing import Literal, Sequence
+from typing import Sequence
 
 from tap import tapify
 
@@ -121,15 +121,15 @@ def post_create_message(project_name: str, instance_name: str, zone: str) -> Non
 
 
 def create_instance(
-    cpu_test_or_gpu: Literal["cpu-test", "gpu"],
+    experiment_file_name: str | None = None,
+    zone: str | None = None,
+    is_cpu_test: bool = False,
     project_name: str | None = None,
     instance_name_prefix: str = "instance-pretrain-on-test",
-    zone: str | None = None,
-    experiment_file_name: str | None = None,
 ):
     # Set up gcloud instance create arguments
     is_experiment_default = experiment_file_name is None
-    if cpu_test_or_gpu == "cpu-test":
+    if is_cpu_test:
         create_instance_command_template = create_instance_command_template_cpu_test
         if is_experiment_default:
             experiment_file_name = write_default_cpu_test_experiment_file().name
@@ -141,7 +141,7 @@ def create_instance(
         )
         if zone is None:
             zone = "us-central1-a"
-    elif cpu_test_or_gpu == "gpu":
+    else:
         create_instance_command_template = create_instance_command_template_gpu
         if is_experiment_default:
             experiment_file_name = write_default_gpu_experiment_file().name
@@ -158,14 +158,17 @@ def create_instance(
     if project_name is None:
         project_name = run_command("gcloud config get-value project").strip("\n")
     current_time = datetime.now().strftime("%Y%m%d%H%M%S")
-    if is_experiment_default:
-        instance_name_suffix = ""
-    else:
-        instance_name_suffix = "-" + os.path.basename(
-            experiment_file_name
-        ).removesuffix(".sh").replace("_", "-")
-    instance_name = (
-        f"{instance_name_prefix}-{cpu_test_or_gpu}-{current_time}{instance_name_suffix}"
+    instance_name = "-".join(
+        (
+            instance_name_prefix,
+            "cpu-test" if is_cpu_test else "gpu",
+            current_time,
+            ""
+            if is_experiment_default
+            else os.path.basename(experiment_file_name)
+            .removesuffix(".sh")
+            .replace("_", "-"),
+        )
     )
 
     # Create instance
@@ -183,32 +186,33 @@ def create_instance(
 
 
 def create_instances(
-    cpu_test_or_gpu: Literal["cpu-test", "gpu"],
+    experiment_dir: str | None = None,
+    zone: str | None = None,
+    is_cpu_test: bool = False,
     project_name: str | None = None,
     instance_name_prefix: str = "instance-pretrain-on-test",
-    zone: str | None = None,
-    experiment_dir: str | None = None,
 ):
     """
-    Creates GPU instances which run the experiment files in `experiment_dir`—one
-    instance per experiment.
+    Creates GPU instances which run the experiment files in `experiment_dir`, where one
+    instance corresponds to one experiment file.
 
     Parameters
     ----------
-    cpu_test_or_gpu : Literal["cpu-test", "gpu"]
-        Whether or not this is a CPU test or a full GPU run
+    experiment_dir : str | None, optional
+        Directory containing bash .sh files which will be run from the repo root by the
+        cloud instance. Assume all cloud and Python env set up is complete. By default
+        ./experiment_mini.sh for CPU ./experiment.sh for GPU
+    zone : str | None, optional
+        Zone with CPU/GPU availability, by default us-central1-a for CPU and us-west4-a
+        for GPU. Consider trying us-west4-b if the default fails.
+    is_cpu_test : bool
+        Whether or not this is a CPU test or a full GPU run. By default, it's a full GPU
+        run
     project_name : str | None, optional
         Name of the project for this experiment, by default `gcloud config get-value
         project`
     instance_name_prefix : str, optional
         Prefix of the name of the instance
-    zone : str | None, optional
-        Zone with CPU/GPU availability, by default us-central1-a for CPU and us-west4-a
-        for GPU. Consider trying us-west4-b if the default fails.
-    experiment_dir : str | None, optional
-        Directory containing bash .sh files which will be run from the repo root by the
-        cloud instance. Assume all cloud and Python env set up is complete. By default,
-        ./experiment_mini.sh for CPU ./experiment.sh for GPU
     """
     if experiment_dir is None:
         sh_files = [None]
@@ -229,11 +233,11 @@ def create_instances(
         if experiment_file_name is not None:
             print(f"Creating instance for running {experiment_file_name}")
         create_instance(
-            cpu_test_or_gpu,
+            experiment_file_name=experiment_file_name,
+            zone=zone,
+            is_cpu_test=is_cpu_test,
             project_name=project_name,
             instance_name_prefix=instance_name_prefix,
-            zone=zone,
-            experiment_file_name=experiment_file_name,
         )
         print(("-" * os.get_terminal_size().columns) + "\n")
 
