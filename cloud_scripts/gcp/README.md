@@ -8,8 +8,9 @@ Also consider:
 1. Adding an email alert for any errors that pop up during the experiment.
 
 2. [Increasing your quotas](https://console.cloud.google.com/iam-admin/quotas) for
-   `GPUS_ALL_REGIONS` and `NVIDIA_T4_GPUS` (default region is `us-west4`) to at least
-   1—more than 1 for running experiments in parallel.
+   `GPUS_ALL_REGIONS` and `NVIDIA_T4_GPUS` to at least 1 (or `n > 1` for running
+   experiments in parallel) and `SSD_TOTAL_GB` to `250 * n`. The default region is
+   `us-west4`.
 
 
 <details>
@@ -76,5 +77,25 @@ was uploaded to GCP. Note that the instance will stop even if there's an error.
 
 2. Check that stuff was logged (search for the latest log group with the name `run-`)
    and that data was uploaded to the bucket `pretrain-on-test-accuracies`.
+
+</details>
+
+
+## Transient errors
+
+These are errors which are not yet handled (b/c I don't know what they mean or I don't
+know a reliable way to handle them) but don't seem to impact correctness.
+
+<details>
+<summary>OSError: [Errno 9] Bad file descriptor</summary>
+
+[Link](https://console.cloud.google.com/errors/detail/COfTgoi5qYyDUg?project=virtual-equator-423819-v6).
+
+This error was raised when attempting to upload local CSVs to the bucket. Strange b/c
+all of the CSVs were correctly uploaded, and it happened once in 50 calls across
+independent runs.
+
+If you see this, double check that the CSVs for that dataset were uploaded correctly,
+and then trigger another experiment run excluding that dataset.
 
 </details>

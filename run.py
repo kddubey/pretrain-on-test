@@ -235,7 +235,10 @@ def run(
             # Sync w/ cloud
             upload_directory(directory=dataset_dir, logger=logger)
     except Exception as exception:
-        logger.error(exception, exc_info=True)
+        logger.error(
+            f"Encountered an error with dataset {dataset_name}: {exception}",
+            exc_info=True,
+        )
         raise
 
 
