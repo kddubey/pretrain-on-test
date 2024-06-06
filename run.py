@@ -98,7 +98,7 @@ class Experiment(BaseModel):
 
 lm_type_to_config_creator = {
     "bert": lambda **model_independent_kwargs: pretrain_on_test.Config(
-        model_id="bert-base-uncased",  # TODO: switch back to bert-base-uncased
+        model_id="bert-base-uncased",
         model_class_pretrain=BertForMaskedLM,
         model_class_classification=BertForSequenceClassification,
         mlm=True,
