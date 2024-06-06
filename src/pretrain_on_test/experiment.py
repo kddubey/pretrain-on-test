@@ -116,15 +116,17 @@ def _experiment(
         df_extra["text"].tolist(), config
     )  # saved pretrained model in config.model_path_pretrained
     logger.info("Extra - training")
-    trained_classifier = classification.train(
-        df_train["text"].tolist(),
-        df_train["label"].tolist(),
-        num_labels=num_labels,
-        config=config,
-        pretrained_model_name_or_path=config.model_path_pretrained,
-    )
-    shutil.rmtree(config.model_path_pretrained)
-    shutil.rmtree(config.model_path_classification)
+    try:
+        trained_classifier = classification.train(
+            df_train["text"].tolist(),
+            df_train["label"].tolist(),
+            num_labels=num_labels,
+            config=config,
+            pretrained_model_name_or_path=config.model_path_pretrained,
+        )
+    finally:
+        shutil.rmtree(config.model_path_pretrained)
+        shutil.rmtree(config.model_path_classification)
     logger.info("Extra - testing")
     model_type_to_test_probs["extra"] = classification.predict_proba(
         df_test["text"].tolist(), trained_classifier, config
@@ -136,15 +138,17 @@ def _experiment(
         df_test["text"].tolist(), config
     )  # saved pretrained model in config.model_path_pretrained
     logger.info("Test - training")
-    trained_classifier = classification.train(
-        df_train["text"].tolist(),
-        df_train["label"].tolist(),
-        num_labels=num_labels,
-        config=config,
-        pretrained_model_name_or_path=config.model_path_pretrained,
-    )
-    shutil.rmtree(config.model_path_pretrained)
-    shutil.rmtree(config.model_path_classification)
+    try:
+        trained_classifier = classification.train(
+            df_train["text"].tolist(),
+            df_train["label"].tolist(),
+            num_labels=num_labels,
+            config=config,
+            pretrained_model_name_or_path=config.model_path_pretrained,
+        )
+    finally:
+        shutil.rmtree(config.model_path_pretrained)
+        shutil.rmtree(config.model_path_classification)
     logger.info("Test - testing")
     model_type_to_test_probs["test"] = classification.predict_proba(
         df_test["text"].tolist(), trained_classifier, config
