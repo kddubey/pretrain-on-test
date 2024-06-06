@@ -4,3 +4,5 @@
 __pycache__/
 subsample_test_*
 *.nc
+analysis/dirty_file_processing/runs/*
+analysis/dirty_file_processing/accuracies/*
