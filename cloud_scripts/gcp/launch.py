@@ -124,17 +124,25 @@ def service_account_email(
             raise exception
 
 
-def post_create_message(project_name: str, instance_name: str, zone: str) -> None:
+def post_create_message(
+    project_name: str, instance_name: str, zone: str, dont_run_experiment: bool
+) -> None:
     print(
         "View raw logs here (cleaner logs are in the Logs Explorer page):\n"
-        f"https://console.cloud.google.com/compute/instancesDetail/zones/{zone}/instances/{instance_name}?project={project_name}&tab=monitoring&pageState=(%22timeRange%22:(%22duration%22:%22PT1H%22),%22observabilityTab%22:(%22mainContent%22:%22logs%22))"
+        f"https://console.cloud.google.com/compute/instancesDetail/zones/{zone}"
+        f"/instances/{instance_name}?project={project_name}&tab=monitoring&pageState="
+        f"(%22timeRange%22:(%22duration%22:%22PT1H%22),%22observabilityTab%22:(%22main"
+        "Content%22:%22logs%22))"
     )
     print()
-    print(
-        "To SSH into the instance:\n"
-        f'gcloud compute ssh --zone "{zone}" "{instance_name}" --project "{project_name}"'
-    )
-    print()
+    if dont_run_experiment:
+        print(
+            "To SSH into the instance, wait 1-2 minutes and then (in a new terminal "
+            "tab) run:\n"
+            f'gcloud compute ssh --zone "{zone}" "{instance_name}" --project '
+            f'"{project_name}"'
+        )
+        print()
 
 
 ######################################### Main #########################################
@@ -147,6 +155,7 @@ def create_instance(
     project_name: str | None = None,
     instance_name_prefix: str = "instance-pretrain-on-test",
     gcp_service_account_email: str | None = None,
+    dont_run_experiment: bool = False,
 ):
     # Set up gcloud instance create arguments
     is_experiment_default = experiment_file_name is None
@@ -190,9 +199,11 @@ def create_instance(
             .removesuffix(".sh")
             .replace("_", "-"),
         )
-    )
+    ).rstrip("-")
     if gcp_service_account_email is None:
         gcp_service_account_email = service_account_email()
+    if dont_run_experiment:
+        startup_script_filenames = ("./_preamble.sh",)
 
     # Create instance
     startup_script = concatenate_files(startup_script_filenames)
@@ -205,7 +216,7 @@ def create_instance(
     )
     create_message = run_command(create_instance_command)
     print("\n" + create_message + "\n")
-    post_create_message(project_name, instance_name, zone)
+    post_create_message(project_name, instance_name, zone, dont_run_experiment)
 
 
 def create_instances(
@@ -215,9 +226,10 @@ def create_instances(
     project_name: str | None = None,
     instance_name_prefix: str = "instance-pretrain-on-test",
     gcp_service_account_email: str | None = None,
+    dont_run_experiment: bool = False,
 ):
     """
-    Creates GPU instances which run the experiment files in `experiment_dir`, where one
+    Creates instances which run the experiment files in `experiment_dir`, where one
     instance corresponds to one experiment file.
 
     Parameters
@@ -225,21 +237,24 @@ def create_instances(
     experiment_dir : str | None, optional
         Directory containing bash .sh files which will be run from the repo root by the
         cloud instance. Assume all cloud and Python env set up is complete. By default
-        ./experiment_mini.sh for CPU ./experiment.sh for GPU
+        ./experiment_mini.sh for CPU ./experiment.sh for GPU.
     zone : str | None, optional
         Zone with CPU/GPU availability, by default us-central1-a for CPU and us-west4-a
         for GPU. Consider trying us-west4-b if the default fails.
-    is_cpu_test : bool
+    is_cpu_test : bool, optional
         Whether or not this is a CPU test or a full GPU run. By default, it's a full GPU
-        run
+        run.
     project_name : str | None, optional
         Name of the project for this experiment, by default `gcloud config get-value
-        project`
+        project`.
     instance_name_prefix : str, optional
-        Prefix of the name of the instance
+        Prefix of the name of the instance.
     gcp_service_account_email : str | None, optional
         Your Google Cloud service account. By default it's the one with display name
         "Compute Engine default service account".
+    dont_run_experiment : bool, optional
+        Just set up the instance for SSHing into instead of running the experiment. By
+        default, the instance will run the experiment.
     """
     if experiment_dir is None:
         sh_files = [None]
@@ -266,6 +281,7 @@ def create_instances(
             project_name=project_name,
             instance_name_prefix=instance_name_prefix,
             gcp_service_account_email=gcp_service_account_email,
+            dont_run_experiment=dont_run_experiment,
         )
         print(("-" * os.get_terminal_size().columns) + "\n")
 
