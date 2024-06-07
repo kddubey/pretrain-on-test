@@ -1,12 +1,13 @@
-"""
-Dumb script which deletes old test logs.
-"""
-
 import subprocess
+
+from tap import tapify
 from tqdm.auto import tqdm
 
 
 def main():
+    """
+    Delete all log entries from log groups with the name run-*-cpu-test-*
+    """
     # Seems like the Python API requires listing every entry:
     # https://stackoverflow.com/questions/45760906/retrieve-list-of-log-names-from-google-cloud-stackdriver-api-with-python
     # Gonna use CLI instead
@@ -66,4 +67,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    tapify(main)
