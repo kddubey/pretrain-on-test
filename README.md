@@ -155,8 +155,10 @@ To support them, implement logging and file uploading functionality. See
 [`cloud.py`](./cloud.py). Then update `cloud_provider_to_create_data_handlers` in
 [`run.py`](./run.py).
 
-You'll probably find [`./cloud_scripts/run.sh`](./cloud_scripts/run.sh) useful for cloud
-runs. Note that it assumes that the bucket name is `pretrain-on-test-accuracies`, and
-that the GPU image you're using already has Python 3.10+, pip, and venv/conda on it.
+You'll probably find
+[`./cloud_scripts/_setup_python_env.sh`](./cloud_scripts/_setup_python_env.sh) useful
+for cloud runs. Note that it assumes that the bucket name is
+`pretrain-on-test-accuracies`, and that the GPU image you're using already has Python
+3.10+, pip, and venv/conda on it.
 
 </details>
