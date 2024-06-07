@@ -7,7 +7,7 @@ TQDM_DISABLE=1 python run.py \
     christinacdl/clickbait_notclickbait_dataset \
     climate_fever \
     disaster_response_messages \
-    emo \
+    aladar/emo \
     dair-ai/emotion \
     financial_phrasebank \
     hyperpartisan_news_detection \

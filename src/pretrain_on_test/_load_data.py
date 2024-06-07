@@ -14,7 +14,7 @@ HuggingFaceDatasetNames = Literal[
     "climate_fever",
     "aladar/craigslist_bargains",
     "disaster_response_messages",
-    "emo",
+    "aladar/emo",
     "dair-ai/emotion",
     "SetFit/enron_spam",
     "financial_phrasebank",
