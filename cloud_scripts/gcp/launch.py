@@ -157,12 +157,21 @@ def create_instance(
     gcp_service_account_email: str | None = None,
     dont_run_experiment: bool = False,
 ):
+    if experiment_file_name is not None and dont_run_experiment:
+        raise TypeError(
+            "Don't provide an experiment file/dir if it's not going to be run"
+        )
+
     # Set up gcloud instance create arguments
+    # TODO: fix this really bad code
     is_experiment_default = experiment_file_name is None
     if is_cpu_test:
         create_instance_command_template = create_instance_command_template_cpu_test
         if is_experiment_default:
-            experiment_file_name = write_default_experiment_file_cpu_test().name
+            if dont_run_experiment:
+                experiment_file_name = "none"
+            else:
+                experiment_file_name = write_default_experiment_file_cpu_test().name
         startup_script_filenames = (
             "./_preamble.sh",
             "../_setup_python_env.sh",
@@ -174,7 +183,10 @@ def create_instance(
     else:
         create_instance_command_template = create_instance_command_template_gpu
         if is_experiment_default:
-            experiment_file_name = write_default_experiment_file_gpu().name
+            if dont_run_experiment:
+                experiment_file_name = "none"
+            else:
+                experiment_file_name = write_default_experiment_file_gpu().name
         startup_script_filenames = (
             "./_install_cuda.sh",
             "./_preamble.sh",
@@ -185,6 +197,8 @@ def create_instance(
         if zone is None:
             zone = "us-west4-a"
 
+    if dont_run_experiment:
+        startup_script_filenames = ("./_preamble.sh",)
     if project_name is None:
         project_name = run_command("gcloud config get-value project").strip("\n")
     current_time = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -202,8 +216,6 @@ def create_instance(
     ).rstrip("-")
     if gcp_service_account_email is None:
         gcp_service_account_email = service_account_email()
-    if dont_run_experiment:
-        startup_script_filenames = ("./_preamble.sh",)
 
     # Create instance
     startup_script = concatenate_files(startup_script_filenames)
