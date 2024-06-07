@@ -2,6 +2,7 @@ from pathlib import Path
 import shutil
 
 from tap import tapify
+from tqdm.auto import tqdm
 
 
 def merge(runs_dir: str, destination_dir: str):
@@ -26,7 +27,7 @@ def merge(runs_dir: str, destination_dir: str):
 
     destination_dir_path = Path(destination_dir)
     destination_dir_path.mkdir(exist_ok=True)
-    for dataset_dir in dataset_dirs:
+    for dataset_dir in tqdm(dataset_dirs, desc="Copying directories"):
         dst = destination_dir_path / Path(*dataset_dir.parts[3:])
         shutil.copytree(dataset_dir, dst, dirs_exist_ok=True)
 
