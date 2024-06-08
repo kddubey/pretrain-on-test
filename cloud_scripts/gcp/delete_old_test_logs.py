@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 from tap import tapify
@@ -36,7 +37,10 @@ def main():
         print("There are no test logs to delete.")
         exit()
 
-    print("The following logs will be deleted:\n" + "\n".join(log_names_delete))
+    print(
+        "All entries from the following logs will be deleted:\n"
+        + "\n".join(log_names_delete)
+    )
     message_prompt = "\nEnter y to delete them, n to cancel: [y/n] "
     does_user_approve = None
     while does_user_approve not in ["y", "n"]:
@@ -48,7 +52,7 @@ def main():
 
     for log_name in tqdm(log_names_delete):
         print()
-        print("-" * 80)
+        print("-" * os.get_terminal_size().columns)
         delete_log = command + [log_name]
         process = subprocess.Popen(
             delete_log,
@@ -62,7 +66,7 @@ def main():
             print("Output:", stdout)
         if stderr:
             print("Errors:", stderr)
-        print("-" * 80)
+        print("-" * os.get_terminal_size().columns)
         print()
 
 

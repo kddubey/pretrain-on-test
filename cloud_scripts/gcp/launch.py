@@ -61,21 +61,6 @@ def write_experiment_full():
 ######################################### GCP ##########################################
 
 
-@runtime_checkable
-class CreateInstanceCommand(Protocol):
-    def __call__(
-        self,
-        instance_name: str,
-        project_name: str,
-        zone: str,
-        gcp_service_account_email: str,
-        startup_script_filename: str,
-    ) -> str:
-        """
-        Returns a `gcloud compute instances create` command
-        """
-
-
 def create_instance_command_cpu(
     instance_name: str,
     project_name: str,
@@ -187,6 +172,21 @@ def create_startup_script_filenames(experiment_file_name: str):
         experiment_file_name,
         "../_shutdown.sh",
     )
+
+
+@runtime_checkable
+class CreateInstanceCommand(Protocol):
+    def __call__(
+        self,
+        instance_name: str,
+        project_name: str,
+        zone: str,
+        gcp_service_account_email: str,
+        startup_script_filename: str,
+    ) -> str:
+        """
+        Returns a `gcloud compute instances create` command
+        """
 
 
 class ExperimentInfo(BaseModel):
