@@ -1,11 +1,14 @@
 import atexit
 from datetime import datetime
 import os
-import subprocess
+import re
 import shlex
+import subprocess
 import tempfile
-from typing import Sequence
+from time import sleep
+from typing import Callable, Literal, Protocol, Sequence, runtime_checkable
 
+from pydantic import BaseModel, ConfigDict
 from tap import tapify
 
 
@@ -47,58 +50,87 @@ def _write_default_experiment_file(filename: str):
     return write_temp_file(lines)
 
 
-def write_default_experiment_file_cpu_test():
+def write_experiment_mini():
     return _write_default_experiment_file("./experiment_mini.sh")
 
 
-def write_default_experiment_file_gpu():
+def write_experiment_full():
     return _write_default_experiment_file("./experiment.sh")
 
 
 ######################################### GCP ##########################################
 
 
-create_instance_command_template_cpu_test = """
-gcloud compute instances create {instance_name} \
-    --project={project_name} \
-    --zone={zone} \
-    --machine-type=e2-standard-2 \
-    --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default \
-    --no-restart-on-failure \
-    --maintenance-policy=TERMINATE \
-    --provisioning-model=SPOT \
-    --instance-termination-action=DELETE \
-    --service-account={gcp_service_account_email} \
-    --scopes=https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/trace.append,https://www.googleapis.com/auth/devstorage.read_write \
-    --create-disk=auto-delete=yes,boot=yes,device-name={instance_name},image=projects/debian-cloud/global/images/debian-12-bookworm-v20240515,mode=rw,size=80,type=projects/{project_name}/zones/{zone}/diskTypes/pd-balanced \
-    --no-shielded-secure-boot \
-    --shielded-vtpm \
-    --shielded-integrity-monitoring \
-    --labels=goog-ec-src=vm_add-gcloud \
-    --reservation-affinity=any \
-    --metadata-from-file=startup-script={startup_script_name}
-""".strip("\n")
+@runtime_checkable
+class CreateInstanceCommand(Protocol):
+    def __call__(
+        self,
+        instance_name: str,
+        project_name: str,
+        zone: str,
+        gcp_service_account_email: str,
+        startup_script_filename: str,
+    ) -> str:
+        """
+        Returns a `gcloud compute instances create` command
+        """
 
 
-create_instance_command_template_gpu = """
-gcloud compute instances create {instance_name} \
-    --project={project_name} \
-    --zone={zone} \
-    --machine-type=n1-highmem-2 \
-    --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default \
-    --maintenance-policy=TERMINATE \
-    --provisioning-model=STANDARD \
-    --service-account={gcp_service_account_email} \
-    --scopes=https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/trace.append,https://www.googleapis.com/auth/devstorage.read_write \
-    --accelerator=count=1,type=nvidia-tesla-t4 \
-    --create-disk=auto-delete=yes,boot=yes,device-name={instance_name},image=projects/ml-images/global/images/c2-deeplearning-pytorch-2-2-cu121-v20240514-debian-11,mode=rw,size=80,type=projects/{project_name}/zones/{zone}/diskTypes/pd-balanced \
-    --no-shielded-secure-boot \
-    --shielded-vtpm \
-    --shielded-integrity-monitoring \
-    --labels=goog-ec-src=vm_add-gcloud \
-    --reservation-affinity=any \
-    --metadata-from-file=startup-script={startup_script_name}
-""".strip("\n")
+def create_instance_command_cpu(
+    instance_name: str,
+    project_name: str,
+    zone: str,
+    gcp_service_account_email: str,
+    startup_script_filename: str,
+):
+    return (
+        f"gcloud compute instances create {instance_name} "
+        f"--project={project_name} "
+        f"--zone={zone} "
+        f"--machine-type=e2-standard-2 "
+        f"--network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default "
+        f"--no-restart-on-failure "
+        f"--maintenance-policy=TERMINATE "
+        f"--provisioning-model=SPOT "
+        f"--instance-termination-action=DELETE "
+        f"--service-account={gcp_service_account_email} "
+        f"--scopes=https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/trace.append,https://www.googleapis.com/auth/devstorage.read_write "
+        f"--create-disk=auto-delete=yes,boot=yes,device-name={instance_name},image=projects/debian-cloud/global/images/debian-12-bookworm-v20240515,mode=rw,size=80,type=projects/{project_name}/zones/{zone}/diskTypes/pd-balanced "
+        f"--no-shielded-secure-boot "
+        f"--shielded-vtpm "
+        f"--shielded-integrity-monitoring "
+        f"--labels=goog-ec-src=vm_add-gcloud "
+        f"--reservation-affinity=any "
+        f"--metadata-from-file=startup-script={startup_script_filename}"
+    )
+
+
+def create_instance_command_gpu(
+    instance_name: str,
+    project_name: str,
+    zone: str,
+    gcp_service_account_email: str,
+    startup_script_filename: str,
+):
+    return (
+        f"gcloud compute instances create {instance_name} "
+        f"--project={project_name} "
+        f"--zone={zone} "
+        f"--machine-type=n1-highmem-2 "
+        f"--network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default "
+        f"--maintenance-policy=TERMINATE "
+        f"--provisioning-model=STANDARD "
+        f"--service-account={gcp_service_account_email} "
+        f"--scopes=https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/trace.append,https://www.googleapis.com/auth/devstorage.read_write "
+        f"--accelerator=count=1,type=nvidia-tesla-t4 "
+        f"--create-disk=auto-delete=yes,boot=yes,device-name={instance_name},image=projects/ml-images/global/images/c2-deeplearning-pytorch-2-2-cu121-v20240514-debian-11,mode=rw,size=80,type=projects/{project_name}/zones/{zone}/diskTypes/pd-balanced "
+        f"--no-shielded-secure-boot "
+        f"--shielded-vtpm "
+        f"--shielded-integrity-monitoring "
+        f"--labels=goog-ec-src=vm_add-gcloud "
+        f"--reservation-affinity=any "
+        f"--metadata-from-file=startup-script={startup_script_filename}"
+    )
 
 
 def service_account_email(
@@ -148,65 +180,111 @@ def post_create_message(
 ######################################### Main #########################################
 
 
+def create_startup_script_filenames(experiment_file_name: str):
+    return (
+        "./_preamble.sh",
+        "../_setup_python_env.sh",
+        experiment_file_name,
+        "../_shutdown.sh",
+    )
+
+
+class ExperimentInfo(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True, arbitrary_types_allowed=True)
+    # Pydantic stuff: extra attributes are not allowed, and the object is immutable
+
+    create_instance_command: CreateInstanceCommand
+    write_default_experiment_file: Callable[[], tempfile._TemporaryFileWrapper]
+    default_zone: str
+    create_startup_script_filenames: Callable[[str], tuple[str]]
+
+
+ExperimentTypes = Literal["cpu-test", "gpu", "gpu-test"]
+
+
+experiment_type_to_info: dict[ExperimentTypes, ExperimentInfo] = {
+    "cpu-test": ExperimentInfo(
+        create_instance_command=create_instance_command_cpu,
+        write_default_experiment_file=write_experiment_mini,
+        default_zone="us-central1-a",
+        create_startup_script_filenames=create_startup_script_filenames,
+    ),
+    "gpu": ExperimentInfo(
+        create_instance_command=create_instance_command_gpu,
+        write_default_experiment_file=write_experiment_full,
+        default_zone="us-west4-a",
+        create_startup_script_filenames=lambda experiment_file_name: (
+            "./_install_cuda.sh",
+        )
+        + create_startup_script_filenames(experiment_file_name),
+    ),
+    "gpu-test": ExperimentInfo(
+        create_instance_command=create_instance_command_gpu,
+        write_default_experiment_file=write_experiment_mini,
+        default_zone="us-west4-a",
+        create_startup_script_filenames=lambda experiment_file_name: (
+            "./_install_cuda.sh",
+        )
+        + create_startup_script_filenames(experiment_file_name),
+    ),
+}
+
+
+def pretty_command(command: str) -> str:
+    # FYI: written by ChatGPT
+    initial_command, *arguments = command.split(" --", 1)
+    # Re-add the '--' to the start of each argument
+    arguments = "--" + arguments[0] if arguments else ""
+    pattern = r"(--\S+?)(?:=(.*?))?(?=\s--|$)"  # matches --argument or --argument=value
+    matches = re.findall(pattern, arguments)
+    # Re-join command
+    delim = " \\\n\t"
+    return (
+        initial_command
+        + delim
+        + (delim.join(f"{arg}={val}" if val else arg for arg, val in matches))
+    )
+
+
 def create_instance(
     experiment_file_name: str | None = None,
     zone: str | None = None,
-    is_cpu_test: bool = False,
+    experiment_type: ExperimentTypes = "gpu",
     project_name: str | None = None,
     instance_name_prefix: str = "instance-pretrain-on-test",
     gcp_service_account_email: str | None = None,
     dont_run_experiment: bool = False,
+    is_dry_run: bool = False,
 ):
-    if experiment_file_name is not None and dont_run_experiment:
+    is_experiment_default = experiment_file_name is None
+    if not is_experiment_default and dont_run_experiment:
         raise TypeError(
-            "Don't provide an experiment file/dir if it's not going to be run"
+            "Don't provide an experiment file/dir if it's not going to be run."
         )
 
     # Set up gcloud instance create arguments
-    # TODO: fix this really bad code
-    is_experiment_default = experiment_file_name is None
-    if is_cpu_test:
-        create_instance_command_template = create_instance_command_template_cpu_test
-        if is_experiment_default:
-            if dont_run_experiment:
-                experiment_file_name = "none"
-            else:
-                experiment_file_name = write_default_experiment_file_cpu_test().name
-        startup_script_filenames = (
-            "./_preamble.sh",
-            "../_setup_python_env.sh",
-            experiment_file_name,
-            "../_shutdown.sh",
-        )
-        if zone is None:
-            zone = "us-central1-a"
-    else:
-        create_instance_command_template = create_instance_command_template_gpu
-        if is_experiment_default:
-            if dont_run_experiment:
-                experiment_file_name = "none"
-            else:
-                experiment_file_name = write_default_experiment_file_gpu().name
-        startup_script_filenames = (
-            "./_install_cuda.sh",
-            "./_preamble.sh",
-            "../_setup_python_env.sh",
-            experiment_file_name,
-            "../_shutdown.sh",
-        )
-        if zone is None:
-            zone = "us-west4-a"
-
-    if dont_run_experiment:
+    experiment_info = experiment_type_to_info[experiment_type]
+    if zone is None:
+        zone = experiment_info.default_zone
+    if is_experiment_default and dont_run_experiment:
+        experiment_file_name = ""  # bleh
         startup_script_filenames = ("./_preamble.sh",)
+    else:
+        if is_experiment_default:
+            experiment_file_name = experiment_info.write_default_experiment_file().name
+        else:
+            print(f"Creating instance for running {experiment_file_name}")
+        startup_script_filenames = experiment_info.create_startup_script_filenames(
+            experiment_file_name
+        )
+
     if project_name is None:
         project_name = run_command("gcloud config get-value project").strip("\n")
-    current_time = datetime.now().strftime("%Y%m%d%H%M%S")
     instance_name = "-".join(
         (
             instance_name_prefix,
-            "cpu-test" if is_cpu_test else "gpu",
-            current_time,
+            experiment_type,
+            datetime.now().strftime("%Y%m%d%H%M%S"),
             ""
             if is_experiment_default
             else os.path.basename(experiment_file_name)
@@ -218,27 +296,36 @@ def create_instance(
         gcp_service_account_email = service_account_email()
 
     # Create instance
-    startup_script = concatenate_files(startup_script_filenames)
-    create_instance_command = create_instance_command_template.format(
+    startup_script_file = concatenate_files(startup_script_filenames)
+    create_instance_command = experiment_info.create_instance_command(
         project_name=project_name,
         instance_name=instance_name,
         zone=zone,
         gcp_service_account_email=gcp_service_account_email,
-        startup_script_name=startup_script.name,
+        startup_script_filename=startup_script_file.name,
     )
-    create_message = run_command(create_instance_command)
-    print("\n" + create_message + "\n")
-    post_create_message(project_name, instance_name, zone, dont_run_experiment)
+    if is_dry_run:
+        print("Here is what the instance will do:")
+        sleep(1)  # give some time to process
+        print("\n" + run_command(f"cat {startup_script_file.name}") + "\n")
+        print("Here is the create instance command:")
+        sleep(1)
+        print(pretty_command(create_instance_command))
+    else:
+        create_message = run_command(create_instance_command)
+        print("\n" + create_message + "\n")
+        post_create_message(project_name, instance_name, zone, dont_run_experiment)
 
 
 def create_instances(
     experiment_dir: str | None = None,
     zone: str | None = None,
-    is_cpu_test: bool = False,
+    experiment_type: ExperimentTypes = "gpu",
     project_name: str | None = None,
     instance_name_prefix: str = "instance-pretrain-on-test",
     gcp_service_account_email: str | None = None,
     dont_run_experiment: bool = False,
+    is_dry_run: bool = False,
 ):
     """
     Creates instances which run the experiment files in `experiment_dir`, where one
@@ -248,14 +335,15 @@ def create_instances(
     ----------
     experiment_dir : str | None, optional
         Directory containing bash .sh files which will be run from the repo root by the
-        cloud instance. Assume all cloud and Python env set up is complete. By default
-        ./experiment_mini.sh for CPU ./experiment.sh for GPU.
+        cloud instance. Assume all cloud and Python env set up is complete. By default,
+        ./experiment_mini.sh for "cpu-test / gpu-test" experiment types, else
+        ./experiment.sh.
     zone : str | None, optional
         Zone with CPU/GPU availability, by default us-central1-a for CPU and us-west4-a
         for GPU. Consider trying us-west4-b if the default fails.
-    is_cpu_test : bool, optional
-        Whether or not this is a CPU test or a full GPU run. By default, it's a full GPU
-        run.
+    experiment_type : ExperimentTypes, optional
+        Whether or not this is a CPU test, a full GPU run, or a GPU test (which runs a
+        mini experiment with random-weight models). By default, it's a full GPU run.
     project_name : str | None, optional
         Name of the project for this experiment, by default `gcloud config get-value
         project`.
@@ -267,6 +355,10 @@ def create_instances(
     dont_run_experiment : bool, optional
         Just set up the instance for SSHing into instead of running the experiment. By
         default, the instance will run the experiment.
+    is_dry_run : bool, optional
+        Don't create the instance and run the experiment, just print out what the
+        startup script will look like / what the instance will do, and print out the
+        create instance command.
     """
     if experiment_dir is None:
         sh_files = [None]
@@ -284,16 +376,15 @@ def create_instances(
             )
 
     for experiment_file_name in sh_files:
-        if experiment_file_name is not None:
-            print(f"Creating instance for running {experiment_file_name}")
         create_instance(
             experiment_file_name=experiment_file_name,
             zone=zone,
-            is_cpu_test=is_cpu_test,
+            experiment_type=experiment_type,
             project_name=project_name,
             instance_name_prefix=instance_name_prefix,
             gcp_service_account_email=gcp_service_account_email,
             dont_run_experiment=dont_run_experiment,
+            is_dry_run=is_dry_run,
         )
         print(("-" * os.get_terminal_size().columns) + "\n")
 

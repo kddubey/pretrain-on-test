@@ -53,7 +53,7 @@ uploaded to GCP. Note that the instance will stop even if there's an error.
    the bucket):
 
    ```bash
-   python launch.py --is_cpu_test
+   python launch.py --experiment_type cpu-test
    ```
 
 2. Check that stuff was logged (search for the latest log group with the name `run-`)
