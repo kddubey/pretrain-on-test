@@ -1,6 +1,7 @@
 """
 Load and analyze data
 """
+
 import os
 from typing import Any, Callable, Sequence
 
@@ -301,6 +302,8 @@ def create_model(
     priors = {
         "Intercept": bmb.Prior("Normal", mu=0, sigma=1),
         "method": bmb.Prior("Normal", mu=method_mu, sigma=method_sigma),
+        # SkewNormal w/ alpha=5 doesn't change posteriors but is arguably a more
+        # reasonable prior b/c it's way less likely for their to be negative effects
     }
     if "dataset" in num_correct_df_melted.columns:
         priors["1|dataset"] = bmb.Prior(

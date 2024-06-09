@@ -4,6 +4,9 @@ TQDM_DISABLE=1 python run.py \
 --run_name n500_gpt2_2 \
 --dataset_names \
     SetFit/enron_spam \
+    blog_authorship_corpus \
+    aladar/craigslist_bargains \
+    movie_rationales \
     yelp_review_full \
 --num_test 500 \
 --num_subsamples 20 \
