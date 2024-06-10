@@ -174,6 +174,12 @@ def create_startup_script_filenames(experiment_file_name: str):
     )
 
 
+def create_startup_script_filenames_gpu(experiment_file_name: str):
+    return ("./_install_cuda.sh",) + create_startup_script_filenames(
+        experiment_file_name
+    )
+
+
 @runtime_checkable
 class CreateInstanceCommand(Protocol):
     def __call__(
@@ -213,19 +219,13 @@ experiment_type_to_info: dict[ExperimentTypes, ExperimentInfo] = {
         create_instance_command=create_instance_command_gpu,
         write_default_experiment_file=write_experiment_full,
         default_zone="us-west4-a",
-        create_startup_script_filenames=lambda experiment_file_name: (
-            "./_install_cuda.sh",
-        )
-        + create_startup_script_filenames(experiment_file_name),
+        create_startup_script_filenames=create_startup_script_filenames_gpu,
     ),
     "gpu-test": ExperimentInfo(
         create_instance_command=create_instance_command_gpu,
         write_default_experiment_file=write_experiment_mini,
         default_zone="us-west4-a",
-        create_startup_script_filenames=lambda experiment_file_name: (
-            "./_install_cuda.sh",
-        )
-        + create_startup_script_filenames(experiment_file_name),
+        create_startup_script_filenames=create_startup_script_filenames_gpu,
     ),
 }
 
