@@ -259,21 +259,26 @@ def violin_plot_multiple_lms(accuracy_df: pl.DataFrame, num_test: int):
     fig.tight_layout()
 
 
-def _summarize_differences(accuracy_df: pl.DataFrame) -> pl.DataFrame:
+def _summarize_differences(
+    accuracy_df: pl.DataFrame, groups: tuple[str] = ("dataset",)
+) -> pl.DataFrame:
     """
-    Mean and standard error of `diff` column for each dataset.
+    Mean and standard error of `diff` column for each group.
     """
-    num_subsamples: int = accuracy_df.group_by("dataset").count()["count"][0]
+    num_subsamples: int = accuracy_df.group_by(*groups).count()["count"][0]
     num_subsamples_sqrt: float = num_subsamples**0.5
     return (
-        accuracy_df.group_by("dataset")
+        accuracy_df.group_by(*groups)
         .agg(mean=pl.col("diff").mean(), se=pl.col("diff").std() / num_subsamples_sqrt)
-        .sort(by="dataset")
+        .sort(by=groups)
     )
 
 
 def eda(
-    accuracy_df: pl.DataFrame, treatment: str, control: str
+    accuracy_df: pl.DataFrame,
+    treatment: str,
+    control: str,
+    groups: tuple[str] = ("dataset",),
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
     """
     Returns the mean and standard error of the raw and relative difference between
@@ -284,7 +289,8 @@ def eda(
     subsamples are technical replicates.
     """
     summary = _summarize_differences(
-        accuracy_df.with_columns(diff=pl.col(treatment) - pl.col(control))
+        accuracy_df.with_columns(diff=pl.col(treatment) - pl.col(control)),
+        groups=groups,
     )
     num_datasets = accuracy_df["dataset"].unique().len()
     num_datasets_sqrt: float = num_datasets**0.5
@@ -301,7 +307,8 @@ def eda(
     summary_relative = _summarize_differences(
         accuracy_df.with_columns(
             diff=(pl.col(treatment) - pl.col(control)) / pl.col(control)
-        )
+        ),
+        groups=groups,
     )
     print(
         summary_relative.select(
