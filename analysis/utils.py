@@ -3,7 +3,7 @@ Load and analyze data
 """
 
 import os
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Sequence, cast
 
 import arviz as az
 import bambi as bmb
@@ -161,13 +161,13 @@ def violin_plot(
 ) -> plt.Axes:
     """
     ```
-        {title}
+          {title}
 
     dataset 1   👄
 
     dataset 2   🫦
 
-    ...
+       ...      ...
 
     dataset N   👄
     ```
@@ -213,6 +213,50 @@ def violin_plot(
     if is_ax_none:
         plt.show()
     return ax
+
+
+def violin_plot_multiple_lms(accuracy_df: pl.DataFrame, num_test: int):
+    """
+    ```
+    [ legend ]  Accuracy difference distributions
+                (n = {num_test} test observations)
+
+               lm_type1   lm_type2  ...  lm_type M
+
+    dataset 1    👄         🫦      ...     👄
+
+    dataset 2    🫦         👄      ...     👄
+
+       ...      ...         ...     ...     ...
+
+    dataset N    👄         🫦      ...     🫦
+    ```
+    """
+    num_lm_types = accuracy_df["lm_type"].unique().len()
+    fig, axes = plt.subplots(
+        nrows=1,
+        ncols=accuracy_df["lm_type"].unique().len(),
+        figsize=(4 * num_lm_types, 16),
+    )
+    xlim = (-0.5, 0.5)
+    axes = cast(list[plt.Axes], axes)
+    for subplot_idx, (lm_type, accuracy_df_lm) in enumerate(
+        accuracy_df.group_by("lm_type", maintain_order=True)
+    ):
+        ax = axes[subplot_idx]
+        ax.set_xlim(xlim)
+        _ = violin_plot(accuracy_df_lm, title=lm_type_to_name[lm_type], ax=ax)
+        if subplot_idx > 0:
+            ax.set_yticklabels([])
+            ax.set_ylabel(" ")
+    fig.suptitle(
+        f"Accuracy difference distributions\n(n = {num_test} test observations)",
+        y=1,
+        x=0.65,
+    )
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper left")
+    fig.tight_layout()
 
 
 def _summarize_differences(accuracy_df: pl.DataFrame) -> pl.DataFrame:
