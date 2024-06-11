@@ -125,7 +125,13 @@ be used for analysis.
    python merge_runs.py --runs_dir runs --destination_dir accuracies
    ```
 
-4. When you're ready to analyze this data, copy-paste `accuracies` into the analysis
+4. Verify that the datasets are the same:
+
+   ```bash
+   diff <(ls accuracies/n100/bert) <(ls accuracies/n100/gpt2)
+   ```
+
+5. When you're ready to analyze this data, copy-paste `accuracies` into the analysis
    dir:
 
    ```bash
@@ -147,7 +153,7 @@ correctness.
 [Link](https://console.cloud.google.com/errors/detail/COfTgoi5qYyDUg?project=virtual-equator-423819-v6).
 
 This error was raised when attempting to upload local CSVs to the bucket. Strange b/c
-all of the CSVs were correctly uploaded, and it happened once in 50 calls across
+all of the CSVs were correctly uploaded, and it happened twice in 100 calls across
 independent runs.
 
 If you see this, double check that the CSVs for that dataset were uploaded correctly,
