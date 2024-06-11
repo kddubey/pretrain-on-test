@@ -6,7 +6,7 @@ from tap import tapify
 import utils
 
 
-def analysis(num_test: Literal[100, 200, 500]) -> None:
+def analysis(num_test: Literal[100, 200, 500], cores: int = 4) -> None:
     """
     Fit the hierarchical model, and save its inference data.
 
@@ -14,6 +14,8 @@ def analysis(num_test: Literal[100, 200, 500]) -> None:
     ----------
     num_test : Literal[100, 200, 500]
         The dataset of accuracies which you'd like to analyze.
+    cores : int, optional
+        The number of CPU cores for running the analysis in parallel, by default 4
     """
     accuracies_home_dir = "accuracies_from_paper"
     num_correct_df = utils.load_all_num_correct(accuracies_home_dir, num_test)
@@ -28,6 +30,7 @@ def analysis(num_test: Literal[100, 200, 500]) -> None:
         control="base",
         equation=equation,
         id_vars=id_vars,
+        cores=cores,
         plot=False,
     )
     summary_control.to_netcdf(filename=f"main_{num_test}_control.nc")
@@ -41,6 +44,7 @@ def analysis(num_test: Literal[100, 200, 500]) -> None:
         control="extra",
         equation=equation,
         id_vars=id_vars,
+        cores=cores,
         plot=False,
     )
     summary_bias.to_netcdf(filename=f"main_{num_test}_treatment.nc")
