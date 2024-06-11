@@ -414,7 +414,7 @@ def stat_model(
         tune=tune,
     )
     if sample_posterior_predictive:
-        print("Sampling posterior predictive")
+        print("Sampling posterior predictive. This will take 1-3 hrs")
         model.predict(fit_summary, kind="pps")
 
     # Analyze model
