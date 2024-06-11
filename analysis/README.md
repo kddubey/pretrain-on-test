@@ -102,3 +102,140 @@ each dataset.
 LM type—BERT and GPT-2. I don't think there's a great reason to be really interested in
 this analysis b/c [`posterior_pred.ipynb`](./posterior_pred.ipynb) can be edited to
 stratify posterior predictions.
+
+
+## Usage
+
+All of the analysis can be run locally, but I was hitting performance issues for $n =
+50$ and $100$ b/c the number of subsamples is doubled to $100$. Also, multicore isn't
+working locally for me. I ran it in the cloud instead.
+
+Here are instructions for Google Cloud (currently extremely manual b/c this project is
+just me doing stupid stuff rn hopefully once or twice):
+
+1. cd to the cloud scripts dir:
+
+   ```bash
+   cd ../cloud_scripts/gcp
+   ```
+
+2. Launch a high-memory CPU instance:
+
+   ```bash
+   python launch.py \
+       --experiment_type cpu \
+       --instance_name_prefix instance-analysis \
+       --dont_run_experiment
+   ```
+
+3. SSH into it using the command printed by step 2
+
+4. You are now in the instance. Indicate your cloud provider:
+
+   ```bash
+   export PRETRAIN_ON_TEST_CLOUD_PROVIDER="gcp"
+   ```
+
+5. Just in case:
+
+   ```bash
+   sudo apt-get update
+   sudo apt-get install -y git
+   ```
+
+6. Clone this repo:
+
+   ```bash
+   git clone https://github.com/kddubey/pretrain-on-test.git
+   ```
+
+7. cd to the repo:
+
+   ```bash
+   cd pretrain-on-test
+   ```
+
+8. Move the setup script here:
+
+   ```bash
+   mv cloud_scripts/_setup_python_env_analysis.sh .
+   ```
+
+9. Run it:
+
+   ```bash
+   ./_setup_python_env_analysis.sh
+   ```
+
+10. You should now be in a Python virtual environment called `pretrain-env`. You're now
+    ready to run the analysis. Consider opening a new `screen` for it (ctrl+a + d to exit
+    it):
+
+    ```bash
+    screen -S analysis
+
+    activate_pretrain_env
+    ```
+
+11. cd to `analysis`:
+
+    ```bash
+    cd analysis
+    ```
+
+12. Run it for your desired set of scores, e.g.,
+
+    ```bash
+    export NUM_TEST=100
+    ```
+
+    ```bash
+    python run.py --num_test $NUM_TEST
+    ```
+
+13. Move the newly created netcdf files to a new dir:
+
+    ```bash
+    export TIMESTAMP=$(python -c 'from datetime import datetime; print(datetime.now().strftime("%Y%m%d%H%M%S"))')
+    ```
+
+    ```bash
+    export NETCDF_DIR="n${NUM_TEST}_${TIMESTAMP}"
+    ```
+
+    ```bash
+    mkdir NETCDF_DIR
+    ```
+
+    ```bash
+    mv main_${NUM_TEST}_control.nc $NETCDF_DIR
+    ```
+
+    ```bash
+    mv main_${NUM_TEST}_treatment.nc $NETCDF_DIR
+    ```
+
+14. cd to the repo root, and then upload the netcdf files to the bucket:
+
+    ```bash
+    cd ..
+    ```
+
+    ```bash
+    python
+    ```
+
+    ```python
+    import logging
+    import os
+
+    import cloud
+
+    logger = logging.getLogger(__name__)
+
+    netcdf_dir = os.path.join("analysis", os.environ["NETCDF_DIR"])
+
+    cloud.UploadGCP(os.environ["PRETRAIN_ON_TEST_BUCKET_NAME"]).upload_directory(
+        netcdf_dir, logger
+    )
+    ```
