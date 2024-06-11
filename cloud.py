@@ -119,9 +119,16 @@ class UploadGCP:
             # The results list is either `None` or an exception for each filename in
             # the input list, in order.
             if isinstance(result, Exception):
-                logger.error(
-                    f"Failed to upload {blob_name} to GCP bucket {self.bucket.name}"
-                )
-                raise result
+                if isinstance(result, OSError) and result.errno == 9:
+                    logger.warning(
+                        f"'Bad file descriptor' when attempting to upload {blob_name} "
+                        f"to GCP bucket {self.bucket.name}. Please double check that "
+                        "it was uploaded correctly."
+                    )
+                else:
+                    logger.error(
+                        f"Failed to upload {blob_name} to GCP bucket {self.bucket.name}"
+                    )
+                    raise result
             else:
                 logger.info(f"Uploaded {blob_name} to GCP bucket {self.bucket.name}")
