@@ -384,6 +384,8 @@ def stat_model(
     chains: int = 4,
     cores: int = 1,
     random_seed: int = 123,
+    draws: int = 1000,
+    tune: int = 500,
 ) -> tuple[bmb.Model, az.InferenceData, pl.DataFrame]:
     """
     See the README for the specification of the model.
@@ -408,7 +410,8 @@ def stat_model(
         chains=chains,
         cores=cores,
         random_seed=random_seed,
-        tune=500,
+        draws=draws,
+        tune=tune,
     )
     if sample_posterior_predictive:
         print("Sampling posterior predictive")
