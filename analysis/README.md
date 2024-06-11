@@ -106,9 +106,9 @@ stratify posterior predictions.
 
 ## Usage
 
-All of the analysis can be run locally, but I was hitting performance issues for $n =
-50$ and $100$ b/c the number of subsamples is doubled to $100$. Also, multicore isn't
-working locally for me. I ran it in the cloud instead.
+All of the analyses can be run locally, but I was hitting performance issues for $n =
+50$ and $100$ b/c the number of subsamples for each dataset is $100$. Also, multicore
+isn't working locally. I ran it in the cloud instead.
 
 Here are instructions for Google Cloud (currently extremely manual b/c this project is
 just me doing stupid stuff rn hopefully once or twice):
