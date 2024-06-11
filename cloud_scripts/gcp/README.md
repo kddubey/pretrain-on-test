@@ -146,17 +146,3 @@ One day, I might make this process simpler or obsolete.
 These are errors in cloud runs which are not yet handled (b/c I don't know what they
 mean or I don't know a reliable way to handle them) but don't seem to impact
 correctness.
-
-<details>
-<summary>OSError: [Errno 9] Bad file descriptor</summary>
-
-[Link](https://console.cloud.google.com/errors/detail/COfTgoi5qYyDUg?project=virtual-equator-423819-v6).
-
-This error was raised when attempting to upload local CSVs to the bucket. Strange b/c
-all of the CSVs were correctly uploaded, and it happened twice in 100 calls across
-independent runs.
-
-If you see this, double check that the CSVs for that dataset were uploaded correctly,
-and then trigger another experiment run excluding that dataset.
-
-</details>

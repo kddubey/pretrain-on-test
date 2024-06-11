@@ -1,5 +1,6 @@
 import atexit
 from datetime import datetime
+from functools import partial
 import os
 import re
 import shlex
@@ -42,11 +43,8 @@ def concatenate_files(filenames: Sequence[str]):
 
 
 def _write_default_experiment_file(filename: str):
-    lines = (
-        f'echo "Running {filename}"\n',
-        f"{filename}\n",
-    )
     print(f"Creating instance for running {filename}")
+    lines = (f"{filename}\n",)
     return write_temp_file(lines)
 
 
@@ -67,17 +65,14 @@ def create_instance_command_cpu(
     zone: str,
     gcp_service_account_email: str,
     startup_script_filename: str,
+    machine_type: str = "e2-standard-2",
 ):
     return (
         f"gcloud compute instances create {instance_name} "
         f"--project={project_name} "
         f"--zone={zone} "
-        f"--machine-type=e2-standard-2 "
+        f"--machine-type={machine_type} "
         f"--network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default "
-        f"--no-restart-on-failure "
-        f"--maintenance-policy=TERMINATE "
-        f"--provisioning-model=SPOT "
-        f"--instance-termination-action=DELETE "
         f"--service-account={gcp_service_account_email} "
         f"--scopes=https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/trace.append,https://www.googleapis.com/auth/devstorage.read_write "
         f"--create-disk=auto-delete=yes,boot=yes,device-name={instance_name},image=projects/debian-cloud/global/images/debian-12-bookworm-v20240515,mode=rw,size=80,type=projects/{project_name}/zones/{zone}/diskTypes/pd-balanced "
@@ -205,12 +200,22 @@ class ExperimentInfo(BaseModel):
     create_startup_script_filenames: Callable[[str], tuple[str]]
 
 
-ExperimentTypes = Literal["cpu-test", "gpu", "gpu-test"]
+ExperimentTypes = Literal["cpu-test", "cpu", "gpu", "gpu-test"]
 
 
 experiment_type_to_info: dict[ExperimentTypes, ExperimentInfo] = {
     "cpu-test": ExperimentInfo(
-        create_instance_command=create_instance_command_cpu,
+        create_instance_command=partial(
+            create_instance_command_cpu, machine_type="e2-standard-2"
+        ),
+        write_default_experiment_file=write_experiment_mini,
+        default_zone="us-central1-a",
+        create_startup_script_filenames=create_startup_script_filenames,
+    ),
+    "cpu": ExperimentInfo(
+        create_instance_command=partial(
+            create_instance_command_cpu, machine_type="e2-highmem-8"
+        ),
         write_default_experiment_file=write_experiment_mini,
         default_zone="us-central1-a",
         create_startup_script_filenames=create_startup_script_filenames,
