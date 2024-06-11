@@ -1,3 +1,4 @@
+import os
 from typing import Literal
 
 from tap import tapify
@@ -20,7 +21,7 @@ def analysis(num_test: Literal[100, 200, 500]) -> None:
     equation = "p(num_correct, num_test) ~ method + lm_type + (1|dataset/pair)"
     id_vars = ["num_test", "pair", "lm_type", "dataset"]
 
-    # extra - base
+    print("Analyzing extra - base\n")
     model_control, summary_control, az_summary_control = utils.stat_model(
         num_correct_df,
         treatment="extra",
@@ -30,8 +31,10 @@ def analysis(num_test: Literal[100, 200, 500]) -> None:
         plot=False,
     )
     summary_control.to_netcdf(filename=f"main_{num_test}_control.nc")
+    del summary_control
 
-    # test - extra
+    print("\n" + ("#" * os.get_terminal_size().columns) + "\n")
+    print("Analyzing test - extra\n")
     model_bias, summary_bias, az_summary_bias = utils.stat_model(
         num_correct_df,
         treatment="test",
