@@ -33,7 +33,9 @@ def analysis(num_test: Literal[100, 200, 500], cores: int = 4) -> None:
         cores=cores,
         plot=False,
     )
+    print("Writing control inference data")
     summary_control.to_netcdf(filename=f"main_{num_test}_control.nc")
+    del model_control
     del summary_control
 
     print("\n" + ("#" * os.get_terminal_size().columns) + "\n")
@@ -47,6 +49,7 @@ def analysis(num_test: Literal[100, 200, 500], cores: int = 4) -> None:
         cores=cores,
         plot=False,
     )
+    print("Writing treatment inference data")
     summary_bias.to_netcdf(filename=f"main_{num_test}_treatment.nc")
 
 

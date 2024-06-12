@@ -66,6 +66,7 @@ def create_instance_command_cpu(
     gcp_service_account_email: str,
     startup_script_filename: str,
     machine_type: str = "e2-standard-2",
+    boot_disk_size: int = 80,
 ):
     return (
         f"gcloud compute instances create {instance_name} "
@@ -75,7 +76,7 @@ def create_instance_command_cpu(
         f"--network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default "
         f"--service-account={gcp_service_account_email} "
         f"--scopes=https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/trace.append,https://www.googleapis.com/auth/devstorage.read_write "
-        f"--create-disk=auto-delete=yes,boot=yes,device-name={instance_name},image=projects/debian-cloud/global/images/debian-12-bookworm-v20240515,mode=rw,size=80,type=projects/{project_name}/zones/{zone}/diskTypes/pd-balanced "
+        f"--create-disk=auto-delete=yes,boot=yes,device-name={instance_name},image=projects/debian-cloud/global/images/debian-12-bookworm-v20240515,mode=rw,size={boot_disk_size},type=projects/{project_name}/zones/{zone}/diskTypes/pd-balanced "
         f"--no-shielded-secure-boot "
         f"--shielded-vtpm "
         f"--shielded-integrity-monitoring "
@@ -205,16 +206,14 @@ ExperimentTypes = Literal["cpu-test", "cpu", "gpu", "gpu-test"]
 
 experiment_type_to_info: dict[ExperimentTypes, ExperimentInfo] = {
     "cpu-test": ExperimentInfo(
-        create_instance_command=partial(
-            create_instance_command_cpu, machine_type="e2-standard-2"
-        ),
+        create_instance_command=create_instance_command_cpu,
         write_default_experiment_file=write_experiment_mini,
         default_zone="us-central1-a",
         create_startup_script_filenames=create_startup_script_filenames,
     ),
     "cpu": ExperimentInfo(
         create_instance_command=partial(
-            create_instance_command_cpu, machine_type="e2-highmem-8"
+            create_instance_command_cpu, machine_type="e2-highmem-8", boot_disk_size=100
         ),
         write_default_experiment_file=write_experiment_mini,
         default_zone="us-central1-a",

@@ -204,7 +204,7 @@ just me doing stupid stuff rn hopefully once or twice):
     ```
 
     ```bash
-    mkdir NETCDF_DIR
+    mkdir $NETCDF_DIR
     ```
 
     ```bash
