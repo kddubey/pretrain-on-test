@@ -167,13 +167,9 @@ just me doing stupid stuff rn hopefully once or twice):
    ./_setup_python_env_analysis.sh
    ```
 
-10. You should now be in a Python virtual environment called `pretrain-env`. You're now
-    ready to run the analysis. Consider opening a new `screen` for it (ctrl+a + d to exit
-    it):
+10. You should now be able to activate a Python environment called `pretrain-env`.
 
     ```bash
-    screen -S analysis
-
     activate_pretrain_env
     ```
 

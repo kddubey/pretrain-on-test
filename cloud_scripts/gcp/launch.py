@@ -213,7 +213,9 @@ experiment_type_to_info: dict[ExperimentTypes, ExperimentInfo] = {
     ),
     "cpu": ExperimentInfo(
         create_instance_command=partial(
-            create_instance_command_cpu, machine_type="e2-highmem-8", boot_disk_size=100
+            create_instance_command_cpu,
+            machine_type="e2-highmem-8",
+            boot_disk_size=100,
         ),
         write_default_experiment_file=write_experiment_mini,
         default_zone="us-central1-a",
