@@ -167,10 +167,20 @@ just me doing stupid stuff rn hopefully once or twice):
    ./_setup_python_env_analysis.sh
    ```
 
-10. You should now be able to activate a Python environment called `pretrain-env`.
+10. Create a new `screen` session and activate the environment:
+
+    ```bash
+    screen -S run
+    ```
 
     ```bash
     activate_pretrain_env
+    ```
+
+    OR
+
+    ```bash
+    source ~/pretrain-on-test/pretrain-env/bin/activate
     ```
 
 11. cd to `analysis`:
@@ -189,7 +199,11 @@ just me doing stupid stuff rn hopefully once or twice):
     python run.py --num_test $NUM_TEST
     ```
 
-13. Move the newly created netcdf files to a new dir:
+    Then ctrl+a + d to exit the `screen` session. You can `logout` and do something else
+    for the next few hours. To check the run's progress, SSH back in and then re-attach
+    with `screen -r`.
+
+13. After the script is done, move the newly created netcdf files to a new dir:
 
     ```bash
     export TIMESTAMP=$(python -c 'from datetime import datetime; print(datetime.now().strftime("%Y%m%d%H%M%S"))')
