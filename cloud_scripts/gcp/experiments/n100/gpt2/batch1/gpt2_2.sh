@@ -3,9 +3,9 @@ TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name n100_gpt2_2 \
 --dataset_names \
-    SetFit/enron_spam \
     blog_authorship_corpus \
     aladar/craigslist_bargains \
+    SetFit/enron_spam \
     movie_rationales \
     yelp_review_full \
 --num_test 100 \
