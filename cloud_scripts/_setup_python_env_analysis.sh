@@ -54,7 +54,6 @@ python -m pip install ".[stat]"
 
 # Set up for cloud
 python -m pip install ".[$PRETRAIN_ON_TEST_CLOUD_PROVIDER]"
-export PRETRAIN_ON_TEST_BUCKET_NAME="pretrain-on-test-accuracies"
 
 
 # Utility to activate env

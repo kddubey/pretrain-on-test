@@ -130,10 +130,11 @@ just me doing stupid stuff rn hopefully once or twice):
 
 3. SSH into it using the command printed by step 2
 
-4. You are now in the instance. Indicate your cloud provider:
+4. You are now in the instance. Indicate your cloud provider and bucket:
 
    ```bash
    export PRETRAIN_ON_TEST_CLOUD_PROVIDER="gcp"
+   export PRETRAIN_ON_TEST_BUCKET_NAME="pretrain-on-test-accuracies"
    ```
 
 5. Just in case:
