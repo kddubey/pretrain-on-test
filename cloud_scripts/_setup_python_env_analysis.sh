@@ -65,3 +65,5 @@ activate_pretrain_env() {
         source ~/pretrain-on-test/pretrain-env/bin/activate
     fi
 }
+
+export -f activate_pretrain_env
