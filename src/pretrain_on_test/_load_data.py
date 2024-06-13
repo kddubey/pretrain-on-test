@@ -55,6 +55,23 @@ _dataset_to_config_name: dict[str, str] = {
 }
 
 
+_datasets_which_require_trust_remote_code: set[str] = {
+    "classla/FRENK-hate-en",
+    "blog_authorship_corpus",
+    "disaster_response_messages",
+    "dair-ai/emotion",
+    "financial_phrasebank",
+    "hyperpartisan_news_detection",
+    "limit",
+    "movie_rationales",
+    "mteb/mtop_domain",
+    "silicone",
+    "trec",
+    "tweets_hate_speech_detection",
+    "yahoo_answers_topics",
+}
+
+
 # Sometimes need to filter out ginormous texts, so limit to < 1_000 characters
 _NUM_CHARACTERS_MAX = 1_000
 _dataset_to_processor: dict[str, _ProcessDataFrame] = {
@@ -105,7 +122,15 @@ def load_classification_data_from_hf(
     try:
         # We'll later split the training split into train, test, extra
         df = pd.DataFrame(
-            load_dataset(huggingface_dataset_name, config_name, split="train")
+            load_dataset(
+                huggingface_dataset_name,
+                config_name,
+                split="train",
+                trust_remote_code=(
+                    huggingface_dataset_name
+                    in _datasets_which_require_trust_remote_code
+                ),
+            )
         )
     except ValueError as exception:
         if not str(exception).startswith('Unknown split "train"'):
