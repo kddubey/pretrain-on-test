@@ -393,7 +393,7 @@ def try_zones(create_instance):  # I want @protocol to typify signatures
                 print(stderr)
                 if any(code in stderr for code in no_resources_available_codes):
                     # Show that we got a "Resources exhausted" error, then clear it
-                    print("\nAuto-retrying the next zone in 3 seconds...")
+                    print("Auto-retrying the next zone in 3 seconds...")
                     sleep(3)
                     os.system("cls" if os.name == "nt" else "clear")
                 else:
