@@ -185,7 +185,6 @@ t4_gpu_zones = [
     "us-west2-c",
     "us-west3-b",
 ]
-t4_gpu_zones_cycle = cycle(t4_gpu_zones)
 
 
 ######################################### Main #########################################
@@ -373,6 +372,7 @@ def all_sh_files(
     return sh_files
 
 
+t4_gpu_zones_cycle = cycle(t4_gpu_zones)
 ZONE_FROM_CYCLE = next(t4_gpu_zones_cycle)
 
 
@@ -384,7 +384,6 @@ def try_zones(create_instance):  # I want @protocol to typify signatures
 
     @wraps(create_instance)
     def wrapper(**kwargs):
-        global ZONE_FROM_CYCLE
         # To iterate through zones, we're not going to do:
         #
         # for zone in cycle(t4_gpu_zones)
@@ -397,6 +396,7 @@ def try_zones(create_instance):  # I want @protocol to typify signatures
         # means we need state across function calls. Can make this an object, but no
         # real need b/c can use global. Also, for personal projects, I enjoy writing bad
         # code that works
+        global ZONE_FROM_CYCLE
         while True:
             print(f"Trying {ZONE_FROM_CYCLE}...")
             kwargs["zone"] = ZONE_FROM_CYCLE
