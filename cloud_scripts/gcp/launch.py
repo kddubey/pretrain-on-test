@@ -185,6 +185,7 @@ t4_gpu_zones = [
     "us-west2-c",
     "us-west3-b",
 ]
+t4_gpu_zones_cycle = cycle(t4_gpu_zones)
 
 
 ######################################### Main #########################################
@@ -291,7 +292,7 @@ def create_instance(
     gcp_service_account_email: str | None = None,
     dont_run_experiment: bool = False,
     dry_run: bool = False,
-):
+) -> None:
     is_experiment_default = experiment_file_name is None
     if not is_experiment_default and dont_run_experiment:
         raise TypeError(
@@ -372,18 +373,33 @@ def all_sh_files(
     return sh_files
 
 
+ZONE_FROM_CYCLE = next(t4_gpu_zones_cycle)
+
+
 def try_zones(create_instance):  # I want @protocol to typify signatures
     no_resources_available_codes = (
         "code: ZONE_RESOURCE_POOL_EXHAUSTED",
         "code: ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS",
-    )
-    # ty https://github.com/doitintl/gpu-finder/issues/1
+    )  # ty https://github.com/doitintl/gpu-finder/issues/1
 
     @wraps(create_instance)
     def wrapper(**kwargs):
-        for zone in cycle(t4_gpu_zones):
-            print(f"Trying {zone}...")
-            kwargs["zone"] = zone
+        global ZONE_FROM_CYCLE
+        # To iterate through zones, we're not going to do:
+        #
+        # for zone in cycle(t4_gpu_zones)
+        #
+        # i.e., we're not going to start the cycle from whatever the start of
+        # t4_gpu_zones is. We should instead start from whatever zone last worked, b/c
+        # if this zone had availability for 1 instance, it probably has availability for
+        # more. We'll stay in that zone for future instances we need to create until it
+        # doesn't work, at which point we'll move to the next zone in the cycle. This
+        # means we need state across function calls. Can make this an object, but no
+        # real need b/c can use global. Also, for personal projects, I enjoy writing bad
+        # code that works
+        while True:
+            print(f"Trying {ZONE_FROM_CYCLE}...")
+            kwargs["zone"] = ZONE_FROM_CYCLE
             f = io.StringIO()
             try:
                 with redirect_stderr(f):
@@ -392,10 +408,13 @@ def try_zones(create_instance):  # I want @protocol to typify signatures
                 stderr = f.getvalue()
                 print(stderr)
                 if any(code in stderr for code in no_resources_available_codes):
-                    # Show that we got a "Resources exhausted" error, then clear it
-                    print("Auto-retrying the next zone in 3 seconds...")
-                    sleep(3)
+                    print(
+                        "Clearing your terminal screen and auto-retrying the next zone "
+                        "in 5 seconds..."
+                    )
+                    sleep(5)
                     os.system("cls" if os.name == "nt" else "clear")
+                    ZONE_FROM_CYCLE = next(t4_gpu_zones_cycle)
                 else:
                     raise exception
             else:
