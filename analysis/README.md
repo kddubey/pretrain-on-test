@@ -119,7 +119,7 @@ just me doing stupid stuff rn hopefully once or twice):
    cd ../cloud_scripts/gcp
    ```
 
-2. Launch a high-memory CPU instance:
+2. Launch a high-memory, 4-core CPU instance:
 
    ```bash
    python launch.py \
@@ -137,7 +137,7 @@ just me doing stupid stuff rn hopefully once or twice):
    export PRETRAIN_ON_TEST_BUCKET_NAME="pretrain-on-test-accuracies"
    ```
 
-5. Just in case:
+5. Prolly gotta:
 
    ```bash
    sudo apt-get update
@@ -175,13 +175,17 @@ just me doing stupid stuff rn hopefully once or twice):
     ```
 
     ```bash
-    activate_pretrain_env
+    activate_pretrain_env() {
+       if command -v conda &> /dev/null; then
+          conda activate pretrain-env
+       else
+          source ~/pretrain-on-test/pretrain-env/bin/activate
+       fi
+    }
     ```
 
-    OR
-
     ```bash
-    source ~/pretrain-on-test/pretrain-env/bin/activate
+    activate_pretrain_env
     ```
 
 11. cd to `analysis`:

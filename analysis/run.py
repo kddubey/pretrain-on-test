@@ -1,19 +1,18 @@
 import os
-from typing import Literal
 
 from tap import tapify
 
 import utils
 
 
-def analysis(num_test: Literal[100, 200, 500], cores: int = 4) -> None:
+def analysis(num_test: int, cores: int = 4) -> None:
     """
     Fit the hierarchical model, and save its inference data.
 
     Parameters
     ----------
-    num_test : Literal[100, 200, 500]
-        The dataset of accuracies which you'd like to analyze.
+    num_test : int
+        The dataset of accuracies which you'd like to analyze, e.g., 50, 100, 200, 500
     cores : int, optional
         The number of CPU cores for running the analysis in parallel, by default 4
     """

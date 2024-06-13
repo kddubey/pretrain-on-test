@@ -54,15 +54,3 @@ python -m pip install ".[stat]"
 
 # Set up for cloud
 python -m pip install ".[$PRETRAIN_ON_TEST_CLOUD_PROVIDER]"
-
-
-# Utility to activate env
-activate_pretrain_env() {
-    if command -v conda &> /dev/null; then
-        conda activate pretrain-env
-    else
-        source ~/pretrain-on-test/pretrain-env/bin/activate
-    fi
-}
-
-export -f activate_pretrain_env
