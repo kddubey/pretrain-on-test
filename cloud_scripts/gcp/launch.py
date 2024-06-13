@@ -1,10 +1,14 @@
 import atexit
+from contextlib import redirect_stderr
 from datetime import datetime
-from functools import partial
+from functools import partial, wraps
+import io
+from itertools import cycle
 import os
 import re
 import shlex
 import subprocess
+import sys
 import tempfile
 from time import sleep
 from typing import Callable, Literal, Protocol, Sequence, runtime_checkable
@@ -19,7 +23,7 @@ from tap import tapify
 def run_command(command: str) -> str:
     result = subprocess.run(shlex.split(command), capture_output=True, text=True)
     if result.stderr:
-        print(result.stderr)
+        print(result.stderr, file=sys.stderr)
     result.check_returncode()
     return result.stdout
 
@@ -56,7 +60,10 @@ def write_experiment_full():
     return _write_default_experiment_file("./experiment.sh")
 
 
-######################################### GCP ##########################################
+################################# GCP-specific things ##################################
+
+
+# TODO: The GCP Python API is not very nice. But I should use that instead
 
 
 def create_instance_command_cpu(
@@ -158,6 +165,28 @@ def post_create_message(
         print()
 
 
+# ty https://github.com/doitintl/gpu-finder
+t4_gpu_zones = [
+    "us-west4-a",
+    "us-west4-b",
+    # ^ These zones tend to be more available than others IME
+    "us-central1-a",
+    "us-central1-b",
+    "us-central1-c",
+    "us-central1-f",
+    "us-east1-c",
+    "us-east1-d",
+    "us-east4-a",
+    "us-east4-b",
+    "us-east4-c",
+    "us-west1-a",
+    "us-west1-b",
+    "us-west2-b",
+    "us-west2-c",
+    "us-west3-b",
+]
+
+
 ######################################### Main #########################################
 
 
@@ -253,6 +282,7 @@ def pretty_command(command: str) -> str:
 
 
 def create_instance(
+    *,
     experiment_file_name: str | None = None,
     zone: str | None = None,
     experiment_type: ExperimentTypes = "gpu",
@@ -260,7 +290,7 @@ def create_instance(
     instance_name_prefix: str = "instance-pretrain-on-test",
     gcp_service_account_email: str | None = None,
     dont_run_experiment: bool = False,
-    is_dry_run: bool = False,
+    dry_run: bool = False,
 ):
     is_experiment_default = experiment_file_name is None
     if not is_experiment_default and dont_run_experiment:
@@ -310,7 +340,7 @@ def create_instance(
         gcp_service_account_email=gcp_service_account_email,
         startup_script_filename=startup_script_file.name,
     )
-    if is_dry_run:
+    if dry_run:
         print("Here is what the instance will do:")
         sleep(1)  # give some time to process
         print("\n" + run_command(f"cat {startup_script_file.name}") + "\n")
@@ -323,6 +353,57 @@ def create_instance(
         post_create_message(project_name, instance_name, zone, dont_run_experiment)
 
 
+def all_sh_files(
+    experiment_dir: None | str,
+) -> tuple[None] | list[str]:  # I want UnionMatch
+    if experiment_dir is None:
+        return (None,)
+    experiment_file_names = sorted(os.listdir(experiment_dir))
+    sh_files = [
+        os.path.join(experiment_dir, filename)
+        for filename in experiment_file_names
+        if filename.endswith(".sh")
+    ]
+    if not sh_files:
+        non_sh_files = "\n".join(experiment_file_names)
+        raise ValueError(
+            f"Expected bash .sh files in {experiment_dir}. Got:\n{non_sh_files}"
+        )
+    return sh_files
+
+
+def try_zones(create_instance):  # I want @protocol to typify signatures
+    no_resources_available_codes = (
+        "code: ZONE_RESOURCE_POOL_EXHAUSTED",
+        "code: ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS",
+    )
+    # ty https://github.com/doitintl/gpu-finder/issues/1
+
+    @wraps(create_instance)
+    def wrapper(**kwargs):
+        for zone in cycle(t4_gpu_zones):
+            print(f"Trying {zone}...")
+            kwargs["zone"] = zone
+            f = io.StringIO()
+            try:
+                with redirect_stderr(f):
+                    create_instance(**kwargs)
+            except subprocess.CalledProcessError as exception:
+                stderr = f.getvalue()
+                print(stderr)
+                if any(code in stderr for code in no_resources_available_codes):
+                    # Show that we got a "Resources exhausted" error, then clear it
+                    print("\nAuto-retrying the next zone in 3 seconds...")
+                    sleep(3)
+                    os.system("cls" if os.name == "nt" else "clear")
+                else:
+                    raise exception
+            else:
+                return
+
+    return wrapper
+
+
 def create_instances(
     experiment_dir: str | None = None,
     zone: str | None = None,
@@ -331,7 +412,8 @@ def create_instances(
     instance_name_prefix: str = "instance-pretrain-on-test",
     gcp_service_account_email: str | None = None,
     dont_run_experiment: bool = False,
-    is_dry_run: bool = False,
+    dry_run: bool = False,
+    any_zone: bool = False,
 ):
     """
     Creates instances which run the experiment files in `experiment_dir`, where one
@@ -342,8 +424,8 @@ def create_instances(
     experiment_dir : str | None, optional
         Directory containing bash .sh files which will be run from the repo root by the
         cloud instance. Assume all cloud and Python env set up is complete. By default,
-        ./experiment_mini.sh for "cpu-test / gpu-test" experiment types, else
-        ./experiment.sh.
+        the experiment file is ./experiment_mini.sh for "cpu-test / gpu-test" experiment
+        types, else ./experiment.sh.
     zone : str | None, optional
         Zone with CPU/GPU availability, by default us-central1-a for CPU and us-west4-a
         for GPU. Consider trying us-west4-b if the default fails.
@@ -361,28 +443,19 @@ def create_instances(
     dont_run_experiment : bool, optional
         Just set up the instance for SSHing into instead of running the experiment. By
         default, the instance will run the experiment.
-    is_dry_run : bool, optional
+    dry_run : bool, optional
         Don't create the instance and run the experiment, just print out what the
         startup script will look like / what the instance will do, and print out the
         create instance command.
+    any_zone : bool, optional
+        Try to find a zone with the relevant resource (T4 GPU for GPU runs) available.
+        **Adding this flag will cause the script to run indefinitely.** It'll keep
+        running until it creates an instance for each experiment file in
+        `experiment_dir`. Go do something else.
     """
-    if experiment_dir is None:
-        sh_files = [None]
-    else:
-        experiment_file_names = sorted(os.listdir(experiment_dir))
-        sh_files = [
-            os.path.join(experiment_dir, filename)
-            for filename in experiment_file_names
-            if filename.endswith(".sh")
-        ]
-        if not sh_files:
-            non_sh_files = "\n".join(experiment_file_names)
-            raise ValueError(
-                f"Expected bash .sh files in {experiment_dir}. Got:\n{non_sh_files}"
-            )
-
-    for experiment_file_name in sh_files:
-        create_instance(
+    create_instance_func = try_zones(create_instance) if any_zone else create_instance
+    for experiment_file_name in all_sh_files(experiment_dir):
+        create_instance_func(
             experiment_file_name=experiment_file_name,
             zone=zone,
             experiment_type=experiment_type,
@@ -390,7 +463,7 @@ def create_instances(
             instance_name_prefix=instance_name_prefix,
             gcp_service_account_email=gcp_service_account_email,
             dont_run_experiment=dont_run_experiment,
-            is_dry_run=is_dry_run,
+            dry_run=dry_run,
         )
         print(("-" * os.get_terminal_size().columns) + "\n")
 

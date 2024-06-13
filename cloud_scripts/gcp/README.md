@@ -87,6 +87,10 @@ uploaded to GCP. Note that the instance will stop even if there's an error.
    python launch.py --experiment_dir experiments/n500/bert/batch1/
    ```
 
+   If you're getting an error with code `ZONE_RESOURCE_POOL_EXHAUSTED` (b/c there aren't
+   any T4 GPUs available in the requested zone), then consider adding the stupid flag
+   `--any_zone`, which will do funny stuff.
+
 2. Check that stuff was logged (search for the latest log group with the name `run-`)
    and that data was uploaded to the bucket `pretrain-on-test-accuracies`.
 
@@ -137,12 +141,3 @@ be used for analysis.
    ```bash
    cp -a accuracies ../
    ```
-
-One day, I might make this process simpler or obsolete.
-
-
-## Transient errors
-
-These are errors in cloud runs which are not yet handled (b/c I don't know what they
-mean or I don't know a reliable way to handle them) but don't seem to impact
-correctness.
