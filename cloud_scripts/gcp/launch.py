@@ -169,6 +169,7 @@ def post_create_message(
 t4_gpu_zones = [
     "us-west4-a",
     "us-west4-b",
+    "us-west3-b",
     # ^ These zones tend to be more available than others IME
     "us-central1-a",
     "us-central1-b",
@@ -183,7 +184,6 @@ t4_gpu_zones = [
     "us-west1-b",
     "us-west2-b",
     "us-west2-c",
-    "us-west3-b",
 ]
 
 
