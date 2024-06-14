@@ -393,9 +393,8 @@ def try_zones(create_instance):  # I want @protocol to typify signatures
         # if this zone had availability for 1 instance, it probably has availability for
         # more. We'll stay in that zone for future instances we need to create until it
         # doesn't work, at which point we'll move to the next zone in the cycle. This
-        # means we need state across function calls. Can make this an object, but no
-        # real need b/c can use global. Also, for personal projects, I enjoy writing bad
-        # code that works
+        # means we need state across function calls. This state should be global so that
+        # any call from anywhere will try the most recently available zone.
         global ZONE_FROM_CYCLE
         while True:
             print(f"Trying {ZONE_FROM_CYCLE}...")
@@ -403,7 +402,7 @@ def try_zones(create_instance):  # I want @protocol to typify signatures
             f = io.StringIO()
             try:
                 with redirect_stderr(f):
-                    create_instance(**kwargs)
+                    return create_instance(**kwargs)
             except subprocess.CalledProcessError as exception:
                 stderr = f.getvalue()
                 print(stderr)
@@ -417,8 +416,6 @@ def try_zones(create_instance):  # I want @protocol to typify signatures
                     ZONE_FROM_CYCLE = next(t4_gpu_zones_cycle)
                 else:
                     raise exception
-            else:
-                return
 
     return wrapper
 
