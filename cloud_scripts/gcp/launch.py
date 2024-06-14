@@ -16,6 +16,8 @@ from typing import Callable, Literal, Protocol, Sequence, runtime_checkable
 from pydantic import BaseModel, ConfigDict
 from tap import tapify
 
+import _zones
+
 
 ######################################## Utils #########################################
 
@@ -163,28 +165,6 @@ def post_create_message(
             f'"{project_name}"'
         )
         print()
-
-
-# ty https://github.com/doitintl/gpu-finder
-t4_gpu_zones = [
-    "us-west4-a",
-    "us-west4-b",
-    "us-west3-b",
-    # ^ These zones tend to be more available than others IME
-    "us-central1-a",
-    "us-central1-b",
-    "us-central1-c",
-    "us-central1-f",
-    "us-east1-c",
-    "us-east1-d",
-    "us-east4-a",
-    "us-east4-b",
-    "us-east4-c",
-    "us-west1-a",
-    "us-west1-b",
-    "us-west2-b",
-    "us-west2-c",
-]
 
 
 ######################################### Main #########################################
@@ -372,7 +352,7 @@ def all_sh_files(
     return sh_files
 
 
-t4_gpu_zones_cycle = cycle(t4_gpu_zones)
+t4_gpu_zones_cycle = cycle(_zones.t4_gpu_zones)
 ZONE_FROM_CYCLE = next(t4_gpu_zones_cycle)
 
 
