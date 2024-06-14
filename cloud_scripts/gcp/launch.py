@@ -356,7 +356,11 @@ t4_gpu_zones_cycle = cycle(_zones.t4_gpu_zones)
 ZONE_FROM_CYCLE = next(t4_gpu_zones_cycle)
 
 
-def try_zones(create_instance):  # I want @protocol to typify signatures
+def try_zones(create_instance: Callable):
+    """
+    Decorator which tries to create an instance anywhere in the world with T4 GPU
+    availability.
+    """
     no_resources_available_codes = (
         "code: ZONE_RESOURCE_POOL_EXHAUSTED",
         "code: ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS",
@@ -372,9 +376,9 @@ def try_zones(create_instance):  # I want @protocol to typify signatures
         # t4_gpu_zones is. We should instead start from whatever zone last worked, b/c
         # if this zone had availability for 1 instance, it probably has availability for
         # more. We'll stay in that zone for future instances we need to create until it
-        # doesn't work, at which point we'll move to the next zone in the cycle. This
-        # means we need state across function calls. This state should be global so that
-        # any call from anywhere will try the most recently available zone.
+        # runs out, at which point we'll move to the next zone in the cycle. This means
+        # we need state across function calls. This state is global so that any call
+        # from anywhere will try the most recently available zone.
         global ZONE_FROM_CYCLE
         while True:
             print(f"Trying {ZONE_FROM_CYCLE}...")
