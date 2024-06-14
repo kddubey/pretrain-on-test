@@ -80,6 +80,7 @@ _dataset_to_processor: dict[str, _ProcessDataFrame] = {
         label=df["gender"].map({"female": 0, "male": 1})
     ).copy()[df["text"].str.len() < _NUM_CHARACTERS_MAX],
     "climate_fever": lambda df: df.assign(text=df["claim"], label=df["claim_label"]),
+    "aladar/craigslist_bargains": lambda df: df.copy()[df["text"].str.len() > 0],
     "disaster_response_messages": lambda df: df.assign(
         text=df["message"], label=df["genre"].map({"direct": 0, "news": 1, "social": 2})
     ).copy()[df["message"].str.len() < _NUM_CHARACTERS_MAX],
