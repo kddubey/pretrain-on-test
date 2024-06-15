@@ -355,7 +355,7 @@ def create_instance(
 
 def all_sh_files(
     sh_dir_or_filename: None | str,
-) -> tuple[str] | list[str]:  # I want UnionMatch
+) -> tuple[None] | list[str]:  # I want UnionMatch
     if sh_dir_or_filename is None:
         return (None,)
 
