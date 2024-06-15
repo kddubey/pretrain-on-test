@@ -177,6 +177,7 @@ just me doing stupid stuff rn hopefully once or twice):
     ```bash
     activate_pretrain_env() {
        if command -v conda &> /dev/null; then
+          conda deactivate
           conda activate pretrain-env
        else
           source ~/pretrain-on-test/pretrain-env/bin/activate
