@@ -141,4 +141,8 @@ if __name__ == "__main__":
     cloud_provider = os.environ.get("PRETRAIN_ON_TEST_CLOUD_PROVIDER")
     create_data_handlers = cloud.cloud_provider_to_create_data_handlers[cloud_provider]
     data_handlers = create_data_handlers()
-    run(analysis, **data_handlers)
+    run(
+        analysis,
+        create_logger=data_handlers.create_logger,
+        upload_directory=data_handlers.upload_directory,
+    )

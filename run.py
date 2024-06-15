@@ -253,4 +253,8 @@ if __name__ == "__main__":
     # need to specify the env var once
     create_data_handlers = cloud.cloud_provider_to_create_data_handlers[cloud_provider]
     data_handlers = create_data_handlers()
-    run(experiment, **data_handlers)
+    run(
+        experiment,
+        create_logger=data_handlers.create_logger,
+        upload_directory=data_handlers.upload_directory,
+    )
