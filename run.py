@@ -187,7 +187,11 @@ def run(
 
         # Create results_dir using core settings from the experiment: n and the LM
         results_dir = os.path.join(
-            run_id, "accuracies", f"n{experiment.num_test}", experiment.lm_type
+            run_id,
+            "accuracies",
+            f"m{experiment.num_train}",
+            f"n{experiment.num_test}",
+            experiment.lm_type,
         )
 
         # Upload experiment settings
