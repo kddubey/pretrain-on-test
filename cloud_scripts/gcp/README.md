@@ -53,7 +53,7 @@ uploaded to GCP. Note that the instance will stop even if there's an error.
    the bucket):
 
    ```bash
-   python launch.py --experiment_type cpu-test
+   python launch.py --run_type cpu-test
    ```
 
 2. Check that stuff was logged (search for the latest log group with the name `run-`)
@@ -84,7 +84,7 @@ uploaded to GCP. Note that the instance will stop even if there's an error.
    [`./experiments/n500/bert/batch1/`](./experiments/n500/bert/batch1/)) and run:
 
    ```bash
-   python launch.py --experiment_dir experiments/n500/bert/batch1/
+   python launch.py --sh_dir_or_filename experiments/n500/bert/batch1/
    ```
 
    If you're getting an error with code `ZONE_RESOURCE_POOL_EXHAUSTED` (b/c there aren't
@@ -154,7 +154,7 @@ Launch a high-memory, 4-core CPU instance which will run the analyses, e.g., in
 
 ```bash
 python launch.py \
-   --experiment_dir analyses/m100 \
-   --experiment_type cpu-analysis \
+   --sh_dir_or_filename analyses/m100 \
+   --run_type cpu-analysis \
    --instance_name_prefix instance-analysis
 ```
