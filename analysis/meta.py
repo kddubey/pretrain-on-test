@@ -1,6 +1,6 @@
 """
 Run a meta-analysis to assess the importance of replicating/subsampling. Will save
-posterior means to ./meta_means_{num_test}_{comparison}.csv.
+posterior means to ./meta_means_m{num_train}_n{num_test}_{comparison}.csv.
 
 Runs stuff in parallel, which makes logs messy.
 """
@@ -8,6 +8,7 @@ Runs stuff in parallel, which makes logs messy.
 from functools import partial
 from itertools import islice
 import multiprocessing
+import os
 from typing import Generator, Iterable, Literal, Sequence, TypeVar
 
 import polars as pl
@@ -108,6 +109,9 @@ def sample_posterior_mean(
 
 
 class ArgParser(Tap):
+    num_train: Literal[100] = 100
+    "The number of training observations in the accuracy data."
+
     num_test: Literal[200, 500] = 500
     "The number of test observations in the accuracy data."
 
@@ -126,7 +130,9 @@ class ArgParser(Tap):
 
 if __name__ == "__main__":
     args = ArgParser(__doc__).parse_args()
-    num_correct_df = utils.load_all_num_correct(args.accuracies_home_dir, args.num_test)
+    num_correct_df = utils.load_all_num_correct(
+        os.path.join(args.accuracies_home_dir, f"m{args.num_train}"), args.num_test
+    )
     if args.comparison == "control":
         treatment, control = "extra", "base"
     else:
@@ -134,4 +140,6 @@ if __name__ == "__main__":
     summaries = sample_posterior_mean(
         num_correct_df, treatment, control, num_samples=args.num_samples
     )
-    pl.DataFrame(summaries).write_csv(f"meta_{args.num_test}_{args.comparison}.csv")
+    pl.DataFrame(summaries).write_csv(
+        f"meta_m{args.num_train}_n{args.num_test}_{args.comparison}.csv"
+    )

@@ -25,10 +25,16 @@ class Analysis(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     # Pydantic stuff: extra attributes are not allowed, and the object is immutable
 
+    num_train: int = Field(
+        description=(
+            "Indicator for the dataset of accuracies you wanna analyze, e.g., m = 50 or"
+            "100"
+        )
+    )
     num_test: int = Field(
         description=(
-            "Indicator for the dataset of accuracies you wanna analyze, e.g., n = "
-            "50, 100, 200, or 500"
+            "Indicator for the dataset of accuracies you wanna analyze, e.g., n = 50, "
+            "100, 200, or 500"
         )
     )
     analysis_name: str = Field(
@@ -84,7 +90,8 @@ def run(
 
     # Load data
     num_correct_df = utils.load_all_num_correct(
-        analysis.accuracies_home_dir, analysis.num_test
+        os.path.join(analysis.accuracies_home_dir, f"m{analysis.num_train}"),
+        analysis.num_test,
     )
 
     # Set up model
