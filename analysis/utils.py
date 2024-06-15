@@ -259,13 +259,21 @@ def violin_plot_multiple_lms(accuracy_df: pl.DataFrame, num_test: int):
     fig.tight_layout()
 
 
+def _num_subsamples(df: pl.DataFrame) -> int:
+    if "lm_type" in df.columns:
+        group_for_subsample = ("lm_type", "dataset")
+    else:
+        group_for_subsample = ("dataset",)
+    return df.group_by(group_for_subsample).count().select("count").head(n=1).item()
+
+
 def _summarize_differences(
     accuracy_df: pl.DataFrame, groups: tuple[str] = ("dataset",)
 ) -> pl.DataFrame:
     """
     Mean and standard error of `diff` column for each group.
     """
-    num_subsamples: int = accuracy_df.group_by(*groups).count()["count"][0]
+    num_subsamples = _num_subsamples(accuracy_df)
     num_subsamples_sqrt: float = num_subsamples**0.5
     return (
         accuracy_df.group_by(*groups)
@@ -414,7 +422,12 @@ def stat_model(
         tune=tune,
     )
     if sample_posterior_predictive:
-        print("Sampling posterior predictive. This will take 1-3 hrs")
+        num_subsamples = _num_subsamples(num_correct_df)
+        sample_time_estimate_hours = num_subsamples / 50
+        print(
+            "Sampling posterior predictive. This will take at least 30 min. Maybe "
+            f"{int(np.ceil(sample_time_estimate_hours))} hrs for this size data"
+        )
         model.predict(fit_summary, kind="pps")
 
     # Analyze model
@@ -446,13 +459,7 @@ def num_correct_df_from_predicions(
     # Some data we'll need to populated the simulated DF
     num_test: int = num_correct_df.select("num_test")[0].item()
     datasets = num_correct_df["dataset"].unique(maintain_order=True)
-    num_subsamples = (
-        num_correct_df.group_by(group_for_subsample)
-        .count()
-        .select("count")
-        .head(n=1)
-        .item()
-    )
+    num_subsamples = _num_subsamples(num_correct_df)
     lm_types = num_correct_df["lm_type"].unique(maintain_order=True)
     # Inverse of melt is pivot
     # The number 2 in the code below refers to treatment and control
