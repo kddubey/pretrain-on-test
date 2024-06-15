@@ -360,20 +360,16 @@ def all_sh_files(
 
     if not os.path.isdir(sh_dir_or_filename):
         if not sh_dir_or_filename.endswith(".sh"):
-            raise ValueError(f"Expected a .sh file. Got {sh_dir_or_filename}")
+            raise ValueError(f"Expected a *.sh file. Got {sh_dir_or_filename}")
         return [sh_dir_or_filename]
 
-    sh_file_names = sorted(os.listdir(sh_dir_or_filename))
     sh_files = [
         os.path.join(sh_dir_or_filename, filename)
-        for filename in sh_file_names
+        for filename in sorted(os.listdir(sh_dir_or_filename))
         if filename.endswith(".sh")
     ]
     if not sh_files:
-        non_sh_files = "\n".join(sh_file_names)
-        raise ValueError(
-            f"Expected bash .sh files in {sh_dir_or_filename}. Got:\n{non_sh_files}"
-        )
+        raise ValueError(f"Expected *.sh files in {sh_dir_or_filename}.")
     return sh_files
 
 
@@ -446,7 +442,7 @@ def create_instances(
     Parameters
     ----------
     sh_dir_or_filename : str | None, optional
-        Either an sh file, or a directory containing bash .sh files which will be run by
+        Either a *.sh file, or a directory containing *.sh files which will be run by
         the cloud instance. Assume all cloud and Python env set up is complete. By
         default, the sh file is ./experiment_mini.sh for "cpu-test / gpu-test" run
         types, else ./experiment.sh (at the repo root).
