@@ -89,7 +89,7 @@ def _load_all(
 ) -> pl.DataFrame:
     dfs: list[pl.DataFrame] = []
     for lm_type in lm_type_to_name.keys():
-        accuracies_dir = os.path.join(accuracies_home_dir, str(num_test), lm_type)
+        accuracies_dir = os.path.join(accuracies_home_dir, f"n{num_test}", lm_type)
         df = loader(accuracies_dir, *args, **kwargs).with_columns(
             lm_type=pl.lit(lm_type)
         )
@@ -104,22 +104,23 @@ def load_all_num_correct(accuracies_home_dir: str, num_test: int) -> pl.DataFram
     directory structured like so::
 
         {accuracies_home_dir}
-        ├── bert
-            ├── {dataset1}
-                ├── accuracies.csv
-                └── ...
-            ├── {dataset2}
-                ├── accuracies.csv
-                └── ...
-            ├── ...
-        ├── gpt2
-            ├── {dataset1}
-                ├── accuracies.csv
-                └── ...
-            ├── {dataset2}
-                ├── accuracies.csv
-                └── ...
-            ├── ...
+        ├── n{num_test}
+            ├── bert
+                ├── {dataset1}
+                    ├── accuracies.csv
+                    └── ...
+                ├── {dataset2}
+                    ├── accuracies.csv
+                    └── ...
+                ├── ...
+            ├── gpt2
+                ├── {dataset1}
+                    ├── accuracies.csv
+                    └── ...
+                ├── {dataset2}
+                    ├── accuracies.csv
+                    └── ...
+                ├── ...
     """
     return _load_all(load_num_correct, accuracies_home_dir, num_test, num_test)
 
@@ -130,22 +131,23 @@ def load_all_accuracies(accuracies_home_dir: str, num_test: int) -> pl.DataFrame
     like so::
 
         {accuracies_home_dir}
-        ├── bert
-            ├── {dataset1}
-                ├── accuracies.csv
-                └── ...
-            ├── {dataset2}
-                ├── accuracies.csv
-                └── ...
-            ├── ...
-        ├── gpt2
-            ├── {dataset1}
-                ├── accuracies.csv
-                └── ...
-            ├── {dataset2}
-                ├── accuracies.csv
-                └── ...
-            ├── ...
+        ├── n{num_test}
+            ├── bert
+                ├── {dataset1}
+                    ├── accuracies.csv
+                    └── ...
+                ├── {dataset2}
+                    ├── accuracies.csv
+                    └── ...
+                ├── ...
+            ├── gpt2
+                ├── {dataset1}
+                    ├── accuracies.csv
+                    └── ...
+                ├── {dataset2}
+                    ├── accuracies.csv
+                    └── ...
+                ├── ...
     """
     return _load_all(load_accuracies, accuracies_home_dir, num_test)
 
