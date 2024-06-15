@@ -11,7 +11,7 @@ import subprocess
 import sys
 import tempfile
 from time import sleep
-from typing import Callable, Literal, Protocol, Sequence, runtime_checkable
+from typing import Callable, Literal, NoReturn, Protocol, Sequence, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict
 from tap import tapify
@@ -48,18 +48,25 @@ def concatenate_files(filenames: Sequence[str]):
     return write_temp_file(lines)
 
 
-def _write_default_experiment_file(filename: str):
+def _write_temp_file_default(filename: str):
     print(f"Creating instance for running {filename}")
     lines = (f"{filename}\n",)
     return write_temp_file(lines)
 
 
 def write_experiment_mini():
-    return _write_default_experiment_file("./experiment_mini.sh")
+    return _write_temp_file_default("./experiment_mini.sh")
 
 
 def write_experiment_full():
-    return _write_default_experiment_file("./experiment.sh")
+    return _write_temp_file_default("./experiment.sh")
+
+
+def sh_file_no_default():
+    raise ValueError(
+        "There is no default sh file for this run type. Please supply the "
+        "sh_dir_or_filename argument."
+    )
 
 
 ################################# GCP-specific things ##################################
@@ -147,7 +154,7 @@ def service_account_email(
 
 
 def post_create_message(
-    project_name: str, instance_name: str, zone: str, dont_run_experiment: bool
+    project_name: str, instance_name: str, zone: str, just_create: bool
 ) -> None:
     print(
         "View raw logs here (cleaner logs are in the Logs Explorer page):\n"
@@ -157,7 +164,7 @@ def post_create_message(
         "Content%22:%22logs%22))"
     )
     print()
-    if dont_run_experiment:
+    if just_create:
         print(
             "To SSH into the instance, wait 1-2 minutes and then (in a new terminal "
             "tab) run:\n"
@@ -170,18 +177,26 @@ def post_create_message(
 ######################################### Main #########################################
 
 
-def create_startup_script_filenames(experiment_file_name: str):
+def create_startup_script_filenames(sh_file_name: str):
     return (
         "./_preamble.sh",
         "../_setup_python_env.sh",
-        experiment_file_name,
+        sh_file_name,
         "../_shutdown.sh",
     )
 
 
-def create_startup_script_filenames_gpu(experiment_file_name: str):
-    return ("./_install_cuda.sh",) + create_startup_script_filenames(
-        experiment_file_name
+def create_startup_script_filenames_gpu(sh_file_name: str):
+    return ("./_install_cuda.sh",) + create_startup_script_filenames(sh_file_name)
+
+
+def create_startup_script_filenames_analysis(sh_file_name: str):
+    return (
+        "./_preamble.sh",
+        "../_setup_python_env.sh",
+        "../_setup_python_env_analysis.sh",
+        sh_file_name,
+        "../_shutdown.sh",
     )
 
 
@@ -200,53 +215,62 @@ class CreateInstanceCommand(Protocol):
         """
 
 
-class ExperimentInfo(BaseModel):
+class InstanceInfo(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, arbitrary_types_allowed=True)
     # Pydantic stuff: extra attributes are not allowed, and the object is immutable
 
+    instance_name_prefix: str
+    # The full instance name will add the run type, a timestamp, and the name of the
+    # file that's being run, if applicable
     create_instance_command: CreateInstanceCommand
-    write_default_experiment_file: Callable[[], tempfile._TemporaryFileWrapper]
     default_zone: str
     create_startup_script_filenames: Callable[[str], tuple[str]]
+    write_default_sh_file: Callable[[], tempfile._TemporaryFileWrapper | NoReturn] = (
+        sh_file_no_default
+    )
 
 
-ExperimentTypes = Literal["cpu-test", "cpu", "gpu", "gpu-test"]
+RunTypes = Literal["cpu-test", "analysis", "gpu", "gpu-test"]
 
 
-experiment_type_to_info: dict[ExperimentTypes, ExperimentInfo] = {
-    "cpu-test": ExperimentInfo(
+run_type_to_info: dict[RunTypes, InstanceInfo] = {
+    "cpu-test": InstanceInfo(
+        instance_name_prefix="instance-pretrain-on-test",
         create_instance_command=create_instance_command_cpu,
-        write_default_experiment_file=write_experiment_mini,
         default_zone="us-central1-a",
         create_startup_script_filenames=create_startup_script_filenames,
+        write_default_sh_file=write_experiment_mini,
     ),
-    "cpu": ExperimentInfo(
+    "gpu-test": InstanceInfo(
+        instance_name_prefix="instance-pretrain-on-test",
+        create_instance_command=create_instance_command_gpu,
+        default_zone="us-west4-a",
+        create_startup_script_filenames=create_startup_script_filenames_gpu,
+        write_default_sh_file=write_experiment_mini,
+    ),
+    "gpu": InstanceInfo(
+        instance_name_prefix="instance-pretrain-on-test",
+        create_instance_command=create_instance_command_gpu,
+        default_zone="us-west4-a",
+        create_startup_script_filenames=create_startup_script_filenames_gpu,
+        write_default_sh_file=write_experiment_full,
+    ),
+    "analysis": InstanceInfo(
+        instance_name_prefix="instance-pretrain-on-test-analysis",
         create_instance_command=partial(
             create_instance_command_cpu,
             machine_type="e2-highmem-8",
             boot_disk_size=100,
         ),
-        write_default_experiment_file=write_experiment_mini,
         default_zone="us-central1-a",
-        create_startup_script_filenames=create_startup_script_filenames,
-    ),
-    "gpu": ExperimentInfo(
-        create_instance_command=create_instance_command_gpu,
-        write_default_experiment_file=write_experiment_full,
-        default_zone="us-west4-a",
-        create_startup_script_filenames=create_startup_script_filenames_gpu,
-    ),
-    "gpu-test": ExperimentInfo(
-        create_instance_command=create_instance_command_gpu,
-        write_default_experiment_file=write_experiment_mini,
-        default_zone="us-west4-a",
-        create_startup_script_filenames=create_startup_script_filenames_gpu,
+        create_startup_script_filenames=create_startup_script_filenames_analysis,
+        write_default_sh_file=sh_file_no_default,
     ),
 }
 
 
 def pretty_command(command: str) -> str:
-    # FYI: written by ChatGPT
+    # FYI: written mostly by ChatGPT. Seems to be correct after some offline tests
     initial_command, *arguments = command.split(" --", 1)
     # Re-add the '--' to the start of each argument
     arguments = "--" + arguments[0] if arguments else ""
@@ -263,49 +287,44 @@ def pretty_command(command: str) -> str:
 
 def create_instance(
     *,
-    experiment_file_name: str | None = None,
+    sh_file_name: str | None = None,
     zone: str | None = None,
-    experiment_type: ExperimentTypes = "gpu",
+    run_type: RunTypes = "gpu",
     project_name: str | None = None,
-    instance_name_prefix: str = "instance-pretrain-on-test",
     gcp_service_account_email: str | None = None,
-    dont_run_experiment: bool = False,
+    just_create: bool = False,
     dry_run: bool = False,
 ) -> None:
-    is_experiment_default = experiment_file_name is None
-    if not is_experiment_default and dont_run_experiment:
-        raise TypeError(
-            "Don't provide an experiment file/dir if it's not going to be run."
-        )
+    is_sh_file_default = sh_file_name is None
+    if not is_sh_file_default and just_create:
+        raise TypeError("Don't provide an sh file/dir if it's not going to be run.")
 
     # Set up gcloud instance create arguments
-    experiment_info = experiment_type_to_info[experiment_type]
+    instance_info = run_type_to_info[run_type]
     if zone is None:
-        zone = experiment_info.default_zone
-    if is_experiment_default and dont_run_experiment:
-        experiment_file_name = ""  # bleh
+        zone = instance_info.default_zone
+    if is_sh_file_default and just_create:
+        sh_file_name = ""  # bleh
         startup_script_filenames = ("./_preamble.sh",)
     else:
-        if is_experiment_default:
-            experiment_file_name = experiment_info.write_default_experiment_file().name
+        if is_sh_file_default:
+            sh_file_name = instance_info.write_default_sh_file().name
         else:
-            print(f"Creating instance for running {experiment_file_name}")
-        startup_script_filenames = experiment_info.create_startup_script_filenames(
-            experiment_file_name
+            print(f"Creating instance for running {sh_file_name}")
+        startup_script_filenames = instance_info.create_startup_script_filenames(
+            sh_file_name
         )
 
     if project_name is None:
         project_name = run_command("gcloud config get-value project").strip("\n")
     instance_name = "-".join(
         (
-            instance_name_prefix,
-            experiment_type,
+            instance_info.instance_name_prefix,
+            run_type,
             datetime.now().strftime("%Y%m%d%H%M%S"),
             ""
-            if is_experiment_default
-            else os.path.basename(experiment_file_name)
-            .removesuffix(".sh")
-            .replace("_", "-"),
+            if is_sh_file_default
+            else os.path.basename(sh_file_name).removesuffix(".sh").replace("_", "-"),
         )
     ).rstrip("-")
     if gcp_service_account_email is None:
@@ -313,7 +332,7 @@ def create_instance(
 
     # Create instance
     startup_script_file = concatenate_files(startup_script_filenames)
-    create_instance_command = experiment_info.create_instance_command(
+    create_instance_command = instance_info.create_instance_command(
         project_name=project_name,
         instance_name=instance_name,
         zone=zone,
@@ -330,24 +349,30 @@ def create_instance(
     else:
         create_message = run_command(create_instance_command)
         print("\n" + create_message + "\n")
-        post_create_message(project_name, instance_name, zone, dont_run_experiment)
+        post_create_message(project_name, instance_name, zone, just_create)
 
 
 def all_sh_files(
-    experiment_dir: None | str,
-) -> tuple[None] | list[str]:  # I want UnionMatch
-    if experiment_dir is None:
+    sh_dir_or_filename: None | str,
+) -> tuple[str] | list[str]:  # I want UnionMatch
+    if sh_dir_or_filename is None:
         return (None,)
-    experiment_file_names = sorted(os.listdir(experiment_dir))
+
+    if not os.path.isdir(sh_dir_or_filename):
+        if not sh_dir_or_filename.endswith(".sh"):
+            raise ValueError(f"Expected a .sh file. Got {sh_dir_or_filename}")
+        return [sh_dir_or_filename]
+
+    sh_file_names = sorted(os.listdir(sh_dir_or_filename))
     sh_files = [
-        os.path.join(experiment_dir, filename)
-        for filename in experiment_file_names
+        os.path.join(sh_dir_or_filename, filename)
+        for filename in sh_file_names
         if filename.endswith(".sh")
     ]
     if not sh_files:
-        non_sh_files = "\n".join(experiment_file_names)
+        non_sh_files = "\n".join(sh_file_names)
         raise ValueError(
-            f"Expected bash .sh files in {experiment_dir}. Got:\n{non_sh_files}"
+            f"Expected bash .sh files in {sh_dir_or_filename}. Got:\n{non_sh_files}"
         )
     return sh_files
 
@@ -405,64 +430,60 @@ def try_zones(create_instance: Callable):
 
 
 def create_instances(
-    experiment_dir: str | None = None,
+    sh_dir_or_filename: str | None = None,
     zone: str | None = None,
-    experiment_type: ExperimentTypes = "gpu",
+    run_type: RunTypes = "gpu",
     project_name: str | None = None,
-    instance_name_prefix: str = "instance-pretrain-on-test",
     gcp_service_account_email: str | None = None,
-    dont_run_experiment: bool = False,
+    just_create: bool = False,
     dry_run: bool = False,
     any_zone: bool = False,
 ):
     """
-    Creates instances which run the experiment files in `experiment_dir`, where one
-    instance corresponds to one experiment file.
+    Creates instances which run the sh file(s) in `sh_dir_or_filename`, where one
+    instance corresponds to one sh file.
 
     Parameters
     ----------
-    experiment_dir : str | None, optional
-        Directory containing bash .sh files which will be run from the repo root by the
-        cloud instance. Assume all cloud and Python env set up is complete. By default,
-        the experiment file is ./experiment_mini.sh for "cpu-test / gpu-test" experiment
-        types, else ./experiment.sh.
+    sh_dir_or_filename : str | None, optional
+        Either an sh file, or a directory containing bash .sh files which will be run by
+        the cloud instance. Assume all cloud and Python env set up is complete. By
+        default, the sh file is ./experiment_mini.sh for "cpu-test / gpu-test" run
+        types, else ./experiment.sh (at the repo root).
     zone : str | None, optional
         Zone with CPU/GPU availability, by default us-central1-a for CPU and us-west4-a
         for GPU. Consider trying us-west4-b if the default fails.
-    experiment_type : ExperimentTypes, optional
-        Whether or not this is a CPU test, a full GPU run, or a GPU test (which runs a
-        mini experiment with random-weight models). By default, it's a full GPU run.
+    run_type : RunTypes, optional
+        Whether or not this is a CPU test, a GPU test (which runs a mini experiment with
+        random-weight models), a full GPU run, or an analysis. By default, it's a full
+        GPU run.
     project_name : str | None, optional
-        Name of the project for this experiment, by default `gcloud config get-value
-        project`.
-    instance_name_prefix : str, optional
-        Prefix of the name of the instance.
+        Name of the project for this run, by default `gcloud config get-value project`.
     gcp_service_account_email : str | None, optional
         Your Google Cloud service account. By default it's the one with display name
         "Compute Engine default service account".
-    dont_run_experiment : bool, optional
-        Just set up the instance for SSHing into instead of running the experiment. By
-        default, the instance will run the experiment.
+    just_create : bool, optional
+        Just set up the instance for SSHing into instead of running any sh files. By
+        default, the instance will run the sh files in sh_dir_or_filename.
     dry_run : bool, optional
         Don't create the instance and run the experiment, just print out what the
         startup script will look like / what the instance will do, and print out the
         create instance command.
     any_zone : bool, optional
-        Try to find a zone with the relevant resource (T4 GPU for GPU runs) available.
-        **Adding this flag will cause the script to run indefinitely.** It'll keep
-        running until it creates an instance for each experiment file in
-        `experiment_dir`. Go do something else.
+        Try to find any zone in the world with the relevant resource (T4 GPU for GPU
+        runs) available. **Adding this flag will cause the script to run indefinitely.**
+        It'll keep running until it creates an instance for each sh file in
+        `sh_dir_or_filename`. Go do something else.
     """
     create_instance_func = try_zones(create_instance) if any_zone else create_instance
-    for experiment_file_name in all_sh_files(experiment_dir):
+    for sh_file_name in all_sh_files(sh_dir_or_filename):
         create_instance_func(
-            experiment_file_name=experiment_file_name,
+            sh_file_name=sh_file_name,
             zone=zone,
-            experiment_type=experiment_type,
+            run_type=run_type,
             project_name=project_name,
-            instance_name_prefix=instance_name_prefix,
             gcp_service_account_email=gcp_service_account_email,
-            dont_run_experiment=dont_run_experiment,
+            just_create=just_create,
             dry_run=dry_run,
         )
         print(("-" * os.get_terminal_size().columns) + "\n")

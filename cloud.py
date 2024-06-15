@@ -3,14 +3,18 @@ Upload local data and log info to your cloud provider. Currently supports GCP.
 """
 
 import logging
+import os
 from pathlib import Path
 import sys
-from typing import Protocol
+from typing import Callable, Literal, Protocol, runtime_checkable
+
+from pydantic import BaseModel, ConfigDict
 
 
 ###################################### Protocols #######################################
 
 
+@runtime_checkable
 class CreateLogger(Protocol):
     def __call__(self, name: str) -> logging.Logger:
         """
@@ -19,6 +23,7 @@ class CreateLogger(Protocol):
         """
 
 
+@runtime_checkable
 class UploadDirectory(Protocol):
     def __call__(self, directory: str, logger: logging.Logger) -> None:
         """
@@ -132,3 +137,38 @@ class UploadGCP:
                     raise result
             else:
                 logger.info(f"Uploaded {blob_name} to GCP bucket {self.bucket.name}")
+
+
+######################################## Export ########################################
+
+
+class DataHandlers(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True, arbitrary_types_allowed=True)
+    # Pydantic stuff: extra attributes are not allowed, and the object is immutable
+
+    create_logger: CreateLogger
+    upload_directory: UploadDirectory
+
+
+CloudProviders = Literal[None, "gcp"]
+
+
+do_nothing = lambda *args, **kwargs: None
+
+
+cloud_provider_to_create_data_handlers: dict[
+    CloudProviders, Callable[..., DataHandlers]
+] = {
+    None: lambda: DataHandlers(
+        create_logger=create_logger_local,
+        upload_directory=do_nothing,
+    ),
+    # They're lambdas so that evaluation is delayed; cloud-specific modules aren't
+    # imported and cloud-specific env vars aren't checked until needed
+    "gcp": lambda bucket_name=None: DataHandlers(
+        create_logger=create_logger_gcp,
+        upload_directory=UploadGCP(
+            bucket_name=bucket_name or os.environ["PRETRAIN_ON_TEST_BUCKET_NAME"]
+        ).upload_directory,
+    ),
+}

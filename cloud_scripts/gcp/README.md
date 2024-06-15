@@ -141,3 +141,20 @@ be used for analysis.
    ```bash
    cp -a accuracies ../
    ```
+
+
+## Run the analysis
+
+All of the analyses can be run locally, but I was hitting performance issues for $n =
+50$ and $100$ b/c the number of subsamples for each dataset is $100$. Also, multicore
+isn't working locally. I ran it in the cloud instead.
+
+Launch a high-memory, 4-core CPU instance which will run the analyses, e.g., in
+[`./analyses/m100`](./analyses/m100):
+
+```bash
+python launch.py \
+   --experiment_dir analyses/m100 \
+   --experiment_type cpu-analysis \
+   --instance_name_prefix instance-analysis
+```

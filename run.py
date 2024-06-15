@@ -20,8 +20,8 @@ from transformers import (
 
 import pretrain_on_test
 import cloud
+from cloud import do_nothing
 
-do_nothing = lambda *args, **kwargs: None
 
 try:
     from IPython.display import clear_output
@@ -242,27 +242,11 @@ def run(
         raise
 
 
-cloud_provider_to_create_data_handlers = {
-    None: lambda: dict(
-        create_logger=cloud.create_logger_local,
-        upload_directory=do_nothing,
-    ),
-    # They're lambdas so that evaluation is delayed; cloud-specific modules aren't
-    # imported and cloud-specific env vars aren't checked until needed
-    "gcp": lambda: dict(
-        create_logger=cloud.create_logger_gcp,
-        upload_directory=cloud.UploadGCP(
-            bucket_name=os.environ["PRETRAIN_ON_TEST_BUCKET_NAME"]
-        ).upload_directory,
-    ),
-}
-
-
 if __name__ == "__main__":
     experiment = tapify(Experiment)
     cloud_provider = os.environ.get("PRETRAIN_ON_TEST_CLOUD_PROVIDER")
     # Env var b/c it's reasonable to run this script many times in one session. So just
     # need to specify the env var once
-    create_data_handlers = cloud_provider_to_create_data_handlers[cloud_provider]
+    create_data_handlers = cloud.cloud_provider_to_create_data_handlers[cloud_provider]
     data_handlers = create_data_handlers()
     run(experiment, **data_handlers)

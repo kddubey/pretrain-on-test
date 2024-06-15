@@ -1,7 +1,6 @@
 #!/bin/bash
 # This script sets up the Python environment required to run the experiment.
 # It can be run on any Debian instance with the env var PRETRAIN_ON_TEST_CLOUD_PROVIDER
-# Don't forget to shut down the instance after the experiment: sudo shutdown -h now
 
 
 set -uox pipefail
