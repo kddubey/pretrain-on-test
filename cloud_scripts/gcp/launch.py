@@ -133,7 +133,7 @@ def create_instance_command_gpu(
 def service_account_email(
     display_name: str = "Compute Engine default service account",
 ) -> str:
-    exception = ValueError(
+    something_went_wrong_exception = ValueError(
         "Couldn't find your GCP service account. Please input it as an argument: "
         "--gcp_service_account_email "
         '"xxxxxxxxxxxx-compute@developer.gserviceaccount.com"'
@@ -144,13 +144,14 @@ def service_account_email(
             f'--filter="displayName:{display_name}" '
             '--format="value(email)"'
         ).strip(" \n")
-    except subprocess.CalledProcessError:  # missing perms or wrong display name
-        raise exception
+    except subprocess.CalledProcessError as command_exception:
+        # missing perms or wrong display name
+        raise something_went_wrong_exception from command_exception
     else:
         if email and "@" in email:
             return email
         else:
-            raise exception
+            raise something_went_wrong_exception
 
 
 def post_create_message(
