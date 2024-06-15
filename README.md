@@ -5,10 +5,12 @@
 A partial, empirical answer to my [question on Cross
 Validated](https://stats.stackexchange.com/questions/611877/is-pretraining-on-test-set-texts-without-labels-ok).
 
-See [`paper.pdf`](https://github.com/kddubey/pretrain-on-test/blob/main/paper.pdf).
-
 [Slides](https://docs.google.com/presentation/d/1WiaTOMplciOHM3qp6FTu5BYRlDdlrRI5A5ayOLaBEUA/edit?usp=sharing)
 (please play the slideshow instead of scrolling through slides).
+
+**This research is a work in progress.** Currently, there are results for pretraining on
+50, 100, 200, and 500 unlabeled texts and training on 100 classification examples. See
+the plot in [`analysis/posterior_pred.ipynb`](analysis/posterior_pred.ipynb).
 
 
 ## Question
@@ -77,10 +79,11 @@ score is valid. Who is right, Alice or Bob?
 ## Usage
 
 Reproduce the experiment results by running [`./experiment.sh`](./experiment.sh) on a T4
-GPU, which will take roughly 50 hours to finish.
+GPU, which will take roughly 50 hours to finish. Batch sizes were set to maximize GPU
+utilization on a single T4 GPU.
 
-Default batch sizes are set to fit on a single T4 GPU. For some datasets, the batch
-sizes needed to be decreased.
+Experiments can be ran in parallel using [Google Cloud](./cloud_scripts/gcp). Looks like
+it'll cost ya ~$100 out of $300 in credits in the free tier.
 
 To analyze the accuracy data, see [`analysis/`](./analysis/).
 
@@ -152,8 +155,7 @@ run(experiment)
 Other cloud providers are not yet supported, sorry.
 
 To support them, implement logging and file uploading functionality. See
-[`cloud.py`](./cloud.py). Then update `cloud_provider_to_create_data_handlers` in
-[`run.py`](./run.py).
+[`cloud.py`](./cloud.py).
 
 You'll probably find
 [`./cloud_scripts/_setup_python_env.sh`](./cloud_scripts/_setup_python_env.sh) useful
