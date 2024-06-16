@@ -1,7 +1,7 @@
 #!/bin/bash
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
---run_name n100_gpt2_2 \
+--run_name m100_n100_gpt2_2 \
 --dataset_names \
     blog_authorship_corpus \
     aladar/craigslist_bargains \

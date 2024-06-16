@@ -1,11 +1,10 @@
 #!/bin/bash
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
---run_name n500_gpt2_4 \
+--run_name m100_n500_gpt2_4 \
 --dataset_names \
     ag_news \
     SetFit/amazon_counterfactual_en \
-    app_reviews \
     christinacdl/clickbait_notclickbait_dataset \
     climate_fever \
     disaster_response_messages \

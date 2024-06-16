@@ -1,7 +1,7 @@
 #!/bin/bash
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
---run_name n500_gpt2_5 \
+--run_name m100_n500_gpt2_5 \
 --dataset_names \
     hyperpartisan_news_detection \
     limit \

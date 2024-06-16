@@ -1,7 +1,7 @@
 #!/bin/bash
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
---run_name n500_bert_6 \
+--run_name m100_n500_bert_6 \
 --dataset_names \
     hyperpartisan_news_detection \
     limit \

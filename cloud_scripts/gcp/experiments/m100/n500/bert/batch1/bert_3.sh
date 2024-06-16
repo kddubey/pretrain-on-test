@@ -1,7 +1,7 @@
 #!/bin/bash
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
---run_name n500_bert_3 \
+--run_name m100_n500_bert_3 \
 --dataset_names \
     classla/FRENK-hate-en \
     blog_authorship_corpus \

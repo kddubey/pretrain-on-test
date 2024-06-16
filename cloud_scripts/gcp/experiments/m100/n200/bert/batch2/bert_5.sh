@@ -1,7 +1,7 @@
 #!/bin/bash
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
---run_name n200_bert_5 \
+--run_name m100_n200_bert_5 \
 --dataset_names \
     ag_news \
     SetFit/amazon_counterfactual_en \

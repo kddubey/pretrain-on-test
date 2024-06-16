@@ -1,7 +1,7 @@
 #!/bin/bash
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
---run_name n100_bert_4 \
+--run_name m100_n100_bert_4 \
 --dataset_names \
     aladar/craigslist_bargains \
     movie_rationales \

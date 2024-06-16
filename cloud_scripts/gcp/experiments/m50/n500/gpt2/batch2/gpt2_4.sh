@@ -5,7 +5,6 @@ TQDM_DISABLE=1 python run.py \
 --dataset_names \
     ag_news \
     SetFit/amazon_counterfactual_en \
-    app_reviews \
     christinacdl/clickbait_notclickbait_dataset \
     climate_fever \
     disaster_response_messages \

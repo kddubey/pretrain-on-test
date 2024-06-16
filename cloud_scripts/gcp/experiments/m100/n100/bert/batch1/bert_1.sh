@@ -1,7 +1,7 @@
 #!/bin/bash
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
---run_name n100_bert_1 \
+--run_name m100_n100_bert_1 \
 --dataset_names \
     yahoo_answers_topics \
 --num_test 100 \
