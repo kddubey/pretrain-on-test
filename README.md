@@ -82,8 +82,9 @@ Reproduce the experiment results by running [`./experiment.sh`](./experiment.sh)
 GPU, which will take roughly 50 hours to finish. Batch sizes were set to maximize GPU
 utilization on a single T4 GPU.
 
-Experiments can be ran in parallel using [Google Cloud](./cloud_scripts/gcp). Looks like
-it'll cost ya ~$100 out of $300 in credits in the free tier.
+Experiments can be ran in parallel using [Google
+Cloud](https://github.com/kddubey/pretrain-on-test/tree/main/cloud_scripts/gcp). Looks
+like it'll cost ya ~$100 out of $300 in credits in the free tier.
 
 To analyze the accuracy data, see [`analysis/`](./analysis/).
 
