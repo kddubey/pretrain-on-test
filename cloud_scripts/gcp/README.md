@@ -15,7 +15,8 @@ Also consider:
 2. [Increasing your quotas](https://console.cloud.google.com/iam-admin/quotas) for
    `GPUS_ALL_REGIONS` and `NVIDIA_T4_GPUS` to at least 1 (or `n > 1` for running
    experiments in parallel) and `SSD_TOTAL_GB` to `250 * n`. The default region is
-   `us-west4`.
+   `us-west4`. Make quota requests according to the error message. FYI I couldn't get my
+   quota past 4 GPUs.
 
 
 <details>
