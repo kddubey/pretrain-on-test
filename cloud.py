@@ -87,7 +87,7 @@ class UploadGCP:
         self.bucket = Client().bucket(bucket_name)
 
     def upload_directory(
-        self, directory: str, logger: logging.Logger, workers: int = 4
+        self, directory: str, logger: logging.Logger, workers: int = 1
     ) -> None:
         """
         Lightly changed from [this snippet](https://github.com/googleapis/python-storage/blob/main/samples/snippets/storage_transfer_manager_upload_directory.py).
