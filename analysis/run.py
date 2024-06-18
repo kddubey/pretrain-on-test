@@ -88,57 +88,61 @@ def run(
     logger.info(f"ID of the run: {analysis_id}")
     logger.info(analysis)
 
-    # Load data
-    num_correct_df = utils.load_all_num_correct(
-        os.path.join(analysis.accuracies_home_dir, f"m{analysis.num_train}"),
-        analysis.num_test,
-    )
+    try:
+        # Load data
+        num_correct_df = utils.load_all_num_correct(
+            os.path.join(analysis.accuracies_home_dir, f"m{analysis.num_train}"),
+            analysis.num_test,
+        )
 
-    # Set up model
-    equation = "p(num_correct, num_test) ~ method + lm_type + (1|dataset/pair)"
-    id_vars = ["num_test", "pair", "lm_type", "dataset"]
+        # Set up model
+        equation = "p(num_correct, num_test) ~ method + lm_type + (1|dataset/pair)"
+        id_vars = ["num_test", "pair", "lm_type", "dataset"]
 
-    logger.info("Analyzing extra - base")
-    _, summary_control, _ = utils.stat_model(
-        num_correct_df,
-        treatment="extra",
-        control="base",
-        equation=equation,
-        id_vars=id_vars,
-        cores=analysis.cores,
-        plot=False,
-        draws=50,
-        tune=50,
-    )
-    logger.info("Writing control inference data")
-    os.mkdir(analysis_id)
-    summary_control.to_netcdf(
-        filename=os.path.join(analysis_id, f"main_{analysis.num_test}_control.nc")
-    )
-    upload_directory(analysis_id, logger)
-    # Free up some memory? idk
-    del _
-    del summary_control
+        logger.info("Analyzing extra - base")
+        _, summary_control, _ = utils.stat_model(
+            num_correct_df,
+            treatment="extra",
+            control="base",
+            equation=equation,
+            id_vars=id_vars,
+            cores=analysis.cores,
+            plot=False,
+            draws=50,
+            tune=50,
+        )
+        logger.info("Writing control inference data")
+        os.mkdir(analysis_id)
+        summary_control.to_netcdf(
+            filename=os.path.join(analysis_id, f"main_{analysis.num_test}_control.nc")
+        )
+        upload_directory(analysis_id, logger)
+        # Free up some memory? idk
+        del _
+        del summary_control
 
-    print("\n" + ("#" * os.get_terminal_size().columns) + "\n")
+        print("\n" + ("#" * os.get_terminal_size().columns) + "\n")
 
-    logger.info("Analyzing test - extra")
-    _, summary_bias, _ = utils.stat_model(
-        num_correct_df,
-        treatment="test",
-        control="extra",
-        equation=equation,
-        id_vars=id_vars,
-        cores=analysis.cores,
-        plot=False,
-        draws=50,
-        tune=50,
-    )
-    logger.info("Writing treatment inference data")
-    summary_bias.to_netcdf(
-        filename=os.path.join(analysis_id, f"main_{analysis.num_test}_treatment.nc")
-    )
-    upload_directory(analysis_id, logger)
+        logger.info("Analyzing test - extra")
+        _, summary_bias, _ = utils.stat_model(
+            num_correct_df,
+            treatment="test",
+            control="extra",
+            equation=equation,
+            id_vars=id_vars,
+            cores=analysis.cores,
+            plot=False,
+            draws=50,
+            tune=50,
+        )
+        logger.info("Writing treatment inference data")
+        summary_bias.to_netcdf(
+            filename=os.path.join(analysis_id, f"main_{analysis.num_test}_treatment.nc")
+        )
+        upload_directory(analysis_id, logger)
+    except Exception as exception:
+        logger.error(exception, exc_info=True)
+        raise
 
 
 if __name__ == "__main__":
