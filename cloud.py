@@ -1,5 +1,5 @@
 """
-Upload local data and log info to your cloud provider. Currently supports GCP.
+Upload local files and log info to your cloud provider. Currently supports GCP.
 """
 
 import logging
@@ -27,7 +27,7 @@ class CreateLogger(Protocol):
 class UploadDirectory(Protocol):
     def __call__(self, directory: str, logger: logging.Logger) -> None:
         """
-        Uploads all content in `directory` to your cloud provider.
+        Recursively uploads all files in `directory` to your cloud provider.
         """
 
 
