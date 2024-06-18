@@ -220,12 +220,12 @@ class InstanceInfo(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, arbitrary_types_allowed=True)
     # Pydantic stuff: extra attributes are not allowed, and the object is immutable
 
-    instance_name_prefix: str
     # The full instance name will add the run type, a timestamp, and the name of the
     # file that's being run, if applicable
     create_instance_command: CreateInstanceCommand
     default_zone: str
     create_startup_script_filenames: Callable[[str], tuple[str]]
+    instance_name_prefix: str = "instance-pretrain-on-test"
     write_default_sh_file: Callable[[], tempfile._TemporaryFileWrapper | NoReturn] = (
         sh_file_no_default
     )
@@ -236,28 +236,24 @@ RunTypes = Literal["cpu-test", "analysis", "gpu", "gpu-test"]
 
 run_type_to_info: dict[RunTypes, InstanceInfo] = {
     "cpu-test": InstanceInfo(
-        instance_name_prefix="instance-pretrain-on-test",
         create_instance_command=create_instance_command_cpu,
         default_zone="us-central1-a",
         create_startup_script_filenames=create_startup_script_filenames,
         write_default_sh_file=write_experiment_mini,
     ),
     "gpu-test": InstanceInfo(
-        instance_name_prefix="instance-pretrain-on-test",
         create_instance_command=create_instance_command_gpu,
         default_zone="us-west4-a",
         create_startup_script_filenames=create_startup_script_filenames_gpu,
         write_default_sh_file=write_experiment_mini,
     ),
     "gpu": InstanceInfo(
-        instance_name_prefix="instance-pretrain-on-test",
         create_instance_command=create_instance_command_gpu,
         default_zone="us-west4-a",
         create_startup_script_filenames=create_startup_script_filenames_gpu,
         write_default_sh_file=write_experiment_full,
     ),
     "analysis": InstanceInfo(
-        instance_name_prefix="instance-pretrain-on-test-analysis",
         create_instance_command=partial(
             create_instance_command_cpu,
             machine_type="e2-highmem-8",
