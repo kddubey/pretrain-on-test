@@ -108,8 +108,6 @@ def run(
             id_vars=id_vars,
             cores=analysis.cores,
             plot=False,
-            draws=50,
-            tune=50,
         )
         logger.info("Writing control inference data")
         os.mkdir(analysis_id)
@@ -121,7 +119,7 @@ def run(
         del _
         del summary_control
 
-        print("\n" + ("#" * os.get_terminal_size().columns) + "\n")
+        print("\n" + ("#" * 50) + "\n")
 
         logger.info("Analyzing test - extra")
         _, summary_bias, _ = utils.stat_model(
@@ -132,8 +130,6 @@ def run(
             id_vars=id_vars,
             cores=analysis.cores,
             plot=False,
-            draws=50,
-            tune=50,
         )
         logger.info("Writing treatment inference data")
         summary_bias.to_netcdf(
