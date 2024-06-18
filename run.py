@@ -184,6 +184,11 @@ def run(
             logger.info("GPU detected.")
         else:
             logger.info("No GPU detected.")
+            if "cpu-test" not in experiment.run_name:
+                raise ValueError(
+                    "No GPU was detected. If this is intentional, please include "
+                    "'cpu-test' somewhere in the run_name argument."
+                )
 
         # Create results_dir using core settings from the experiment: n and the LM
         results_dir = os.path.join(
