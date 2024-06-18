@@ -107,6 +107,8 @@ def run(
         id_vars=id_vars,
         cores=analysis.cores,
         plot=False,
+        draws=50,
+        tune=50,
     )
     logger.info("Writing control inference data")
     summary_control.to_netcdf(
@@ -128,6 +130,8 @@ def run(
         id_vars=id_vars,
         cores=analysis.cores,
         plot=False,
+        draws=50,
+        tune=50,
     )
     logger.info("Writing treatment inference data")
     summary_bias.to_netcdf(
