@@ -111,6 +111,7 @@ def run(
         tune=50,
     )
     logger.info("Writing control inference data")
+    os.mkdir(analysis_id)
     summary_control.to_netcdf(
         filename=os.path.join(analysis_id, f"main_{analysis.num_test}_control.nc")
     )
