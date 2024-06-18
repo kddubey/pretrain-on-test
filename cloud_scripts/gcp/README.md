@@ -68,6 +68,7 @@ uploaded to GCP. Note that the instance will stop even if there's an error.
 
 </details>
 
+
 ## Run the experiment on GPUs
 
 Launch a cloud GPU instance which will run the full experiment, and check that data was
@@ -155,7 +156,6 @@ Launch a high-memory, 4-core CPU instance which will run the analyses, e.g., in
 
 ```bash
 python launch.py \
-   --sh_dir_or_filename analyses/m100 \
-   --run_type cpu-analysis \
-   --instance_name_prefix instance-analysis
+   --run_type analysis \
+   --sh_dir_or_filename analyses/m100
 ```
