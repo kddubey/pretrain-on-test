@@ -231,7 +231,7 @@ class InstanceInfo(BaseModel):
     )
 
 
-RunTypes = Literal["cpu-test", "analysis", "gpu", "gpu-test"]
+RunTypes = Literal["cpu-test", "gpu-test", "gpu", "analysis"]
 
 
 run_type_to_info: dict[RunTypes, InstanceInfo] = {
