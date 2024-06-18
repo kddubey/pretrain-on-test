@@ -10,13 +10,13 @@ First, [create a bucket](https://cloud.google.com/storage/docs/creating-buckets)
 
 Also consider:
 
-1. Adding an email alert for any errors that pop up during the experiment.
+1. Adding an [alert](https://cloud.google.com/monitoring/support/notification-options)
+   to notify you if any errors pop up during a cloud run.
 
 2. [Increasing your quotas](https://console.cloud.google.com/iam-admin/quotas) for
-   `GPUS_ALL_REGIONS` and `NVIDIA_T4_GPUS` to at least 1 (or `n > 1` for running
-   experiments in parallel) and `SSD_TOTAL_GB` to `250 * n`. The default region is
-   `us-west4`. Make quota requests according to the error message. FYI I couldn't get my
-   quota past 4 GPUs.
+   `GPUS_ALL_REGIONS` and `NVIDIA_T4_GPUS` to 1 (or `q > 1` for running experiments in
+   parallel) and `SSD_TOTAL_GB` to `250 * q`. The default region is `us-west4`. Or make
+   quota requests according to error messages. FYI I couldn't get my quota past 4 GPUs.
 
 
 <details>
@@ -48,7 +48,7 @@ Run a mini experiment on your computer and check that data was uploaded to GCP.
 <summary>Test that cloud launches work</summary>
 
 Launch a cloud instance which will run a mini experiment, and check that data was
-uploaded to GCP. Note that the instance will stop even if there's an error.
+uploaded to GCP.
 
 1. Run the mini CPU test (after ensuring your `gcloud` is set to whatever project hosts
    the bucket):
@@ -83,15 +83,16 @@ uploaded to GCP. Note that the instance will stop even if there's an error.
 
    To run multiple experiments in parallel / on multiple instances, put some bash files
    in a directory (e.g.,
-   [`./experiments/n500/bert/batch1/`](./experiments/n500/bert/batch1/)) and run:
+   [`./experiments/m100/n500/bert/batch1/`](./experiments/m100/n500/bert/batch1/)) and
+   run:
 
    ```bash
-   python launch.py --sh_dir_or_filename experiments/n500/bert/batch1/
+   python launch.py --sh_dir_or_filename experiments/m100/n500/bert/batch1/
    ```
 
    If you're getting an error with code `ZONE_RESOURCE_POOL_EXHAUSTED` (b/c there aren't
-   any T4 GPUs available in the requested zone), then consider adding the stupid flag
-   `--any_zone`, which will do funny stuff.
+   any T4 GPUs available in the requested zone), then consider adding the flag
+   `--any_zone`, which will automatically try to find a zone with availability.
 
 2. Check that stuff was logged (search for the latest log group with the name `run-`)
    and that data was uploaded to the bucket `pretrain-on-test-accuracies`.
@@ -115,14 +116,30 @@ be used for analysis.
    ```
 
    ```bash
+   cd runs
+   ```
+
+   ```bash
    gsutil -m cp -r \
-     "gs://pretrain-on-test-accuracies/run-2024-06-03_05-48-48" \
-     "gs://pretrain-on-test-accuracies/run-2024-06-03_07-07-16" \
-     "gs://pretrain-on-test-accuracies/run-2024-06-04_00-44-44" \
-     "gs://pretrain-on-test-accuracies/run-2024-06-04_02-30-36" \
-     "gs://pretrain-on-test-accuracies/run-2024-06-04_03-21-06" \
-     "gs://pretrain-on-test-accuracies/run-2024-06-04_04-22-47" \
-     ./runs
+     "gs://pretrain-on-test-accuracies/run-2024-06-17_06-52-44-m50_n100_gpt2_4" \
+     "gs://pretrain-on-test-accuracies/run-2024-06-17_06-52-52-m50_n100_gpt2_2" \
+     "gs://pretrain-on-test-accuracies/run-2024-06-17_06-52-52-m50_n100_gpt2_5" \
+     "gs://pretrain-on-test-accuracies/run-2024-06-17_06-53-09-m50_n100_gpt2_7" \
+     "gs://pretrain-on-test-accuracies/run-2024-06-17_14-23-58-m50_n100_gpt2_6" \
+     "gs://pretrain-on-test-accuracies/run-2024-06-17_14-24-05-m50_n100_gpt2_3" \
+     "gs://pretrain-on-test-accuracies/run-2024-06-17_14-24-48-m50_n100_gpt2_1" \
+     "gs://pretrain-on-test-accuracies/run-2024-06-17_19-59-41-m50_n100_bert_2" \
+     "gs://pretrain-on-test-accuracies/run-2024-06-17_20-18-05-m50_n100_bert_4" \
+     "gs://pretrain-on-test-accuracies/run-2024-06-17_20-19-25-m50_n100_bert_6" \
+     "gs://pretrain-on-test-accuracies/run-2024-06-17_20-21-02-m50_n100_bert_5" \
+     "gs://pretrain-on-test-accuracies/run-2024-06-17_21-46-23-m50_n100_bert_7" \
+     "gs://pretrain-on-test-accuracies/run-2024-06-18_00-25-45-m50_n100_bert_1" \
+     "gs://pretrain-on-test-accuracies/run-2024-06-18_03-00-59-m50_n100_bert_3" \
+     .
+   ```
+
+   ```bash
+   cd ..
    ```
 
 3. Merge them into a new directory, `accuracies`:

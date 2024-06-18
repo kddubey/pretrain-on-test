@@ -4,29 +4,24 @@ import subprocess
 from tap import tapify
 from tqdm.auto import tqdm
 
+from launch import run_command
+
 
 def main():
     """
-    Delete all log entries from log groups with the name run-*-cpu-test-*
+    Delete all log entries from log groups with the name run-*cpu-test*
     """
-    # Seems like the Python API requires listing every entry:
+    # Seems like the Python API requires listing every log entry:
     # https://stackoverflow.com/questions/45760906/retrieve-list-of-log-names-from-google-cloud-stackdriver-api-with-python
     # Gonna use CLI instead
-    list_log_names_command = ["gcloud", "logging", "logs", "list"]
-    list_log_names_result = subprocess.run(
-        list_log_names_command, capture_output=True, text=True
-    )
+    list_log_names_result = run_command("gcloud logging logs list")
     log_names_all = (
-        list_log_names_result.stdout.removeprefix("NAME\n")
-        .removesuffix("\n")
-        .split("\n")
+        list_log_names_result.removeprefix("NAME\n").removesuffix("\n").split("\n")
     )
 
     def is_cpu_test_run(log_name_full: str) -> bool:
-        # match "run-*-cpu-test-*" w/o regex
         log_name = log_name_full.split("/")[-1]
-        log_name_split = log_name.split("-")
-        return log_name_split[0] == "run" and log_name_split[-3:-1] == ["cpu", "test"]
+        return log_name.startswith("run-") and "cpu-test" in log_name
 
     log_names_delete = [
         log_name_full
