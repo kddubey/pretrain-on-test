@@ -350,20 +350,6 @@ def create_instance(
         post_create_message(project_name, instance_name, zone, just_create)
 
 
-def all_sh_files(sh_dir_or_filename: str) -> list[str]:
-    """
-    Also checks that there are `*.sh` files here. If there aren't raises a `ValueError`.
-    """
-    if os.path.isdir(sh_dir_or_filename):
-        file_names = [
-            os.path.join(sh_dir_or_filename, filename)
-            for filename in sorted(os.listdir(sh_dir_or_filename))
-        ]
-    else:
-        file_names = [sh_dir_or_filename]
-    return [file_name for file_name in file_names if file_name.endswith(".sh")]
-
-
 t4_gpu_zones_cycle = cycle(_zones.t4_gpu_zones)
 ZONE_FROM_CYCLE = next(t4_gpu_zones_cycle)
 
@@ -414,6 +400,20 @@ def try_zones(create_instance: Callable):
                     raise exception
 
     return wrapper
+
+
+def all_sh_files(sh_dir_or_filename: str) -> list[str]:
+    """
+    Also checks that there are `*.sh` files here. If there aren't raises a `ValueError`.
+    """
+    if os.path.isdir(sh_dir_or_filename):
+        file_names = [
+            os.path.join(sh_dir_or_filename, filename)
+            for filename in sorted(os.listdir(sh_dir_or_filename))
+        ]
+    else:
+        file_names = [sh_dir_or_filename]
+    return [file_name for file_name in file_names if file_name.endswith(".sh")]
 
 
 def move_sh_file_to_in_progress_dir(
@@ -506,7 +506,7 @@ def create_instances(
                 )
             print(("-" * os.get_terminal_size().columns) + "\n")
     finally:
-        if sh_dir_or_filename is None:
+        if sh_dir_or_filename is None or not os.path.isdir(sh_dir_or_filename):
             return
         # Successfully ran files were moved to sh_dir/in_progress/. So check if there
         # are more in sh_dir
