@@ -73,7 +73,7 @@ $k = 1, 2, \dots, 50$ (or $20$ for $n = 500$) for the subsample of dataset $j$.
 
 $l = 1, 2$ for control and treatment, respectively.
 
-$x_{ijkl} = 0$ if $l = 0$ else it's $1$. Model is fit via MCMC.
+$x_{ijkl} = 0$ if $l = 0$ else it's $1$. The model is fit via MCMC.
 
 Note: I'm still learning how to do this type of analysis.
 
@@ -84,11 +84,8 @@ Note: I'm still learning how to do this type of analysis.
 \text{acc}\_\text{extra}$ and $\text{acc}\_\text{test}$, and tests that
 $\text{E}[\text{acc}\_\text{test} - \text{acc}\_\text{extra}] = 0$ for each dataset.
 
-[`main_200.ipynb`](./main_200.ipynb) contains the posterior distribution of $\beta$ when
-stratifying by the LM type for $n = 200$.
-
-[`main_500.ipynb`](./main_500.ipynb) contains the posterior distribution of $\beta$ when
-stratifying by the LM type for $n = 500$.
+[`fit_posteriors`](./fit_posteriors) contains the posterior distribution of $\beta$ when
+stratifying by the LM type.
 
 [`posterior_pred.ipynb`](./posterior_pred.ipynb) visualizes the marginal effects of
 interest. <span style="background-color: #FFFF00"><b>This is the main result</b></span>.
