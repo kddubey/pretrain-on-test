@@ -14,6 +14,7 @@ from time import sleep
 from typing import Callable, Literal, NoReturn, Protocol, Sequence, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict
+import rich
 from tap import tapify
 
 import _zones
@@ -349,25 +350,18 @@ def create_instance(
         post_create_message(project_name, instance_name, zone, just_create)
 
 
-def all_sh_files(
-    sh_dir_or_filename: None | str,
-) -> tuple[None] | list[str]:  # I want UnionMatch
-    if sh_dir_or_filename is None:
-        return (None,)
-
-    if not os.path.isdir(sh_dir_or_filename):
-        if not sh_dir_or_filename.endswith(".sh"):
-            raise ValueError(f"Expected a *.sh file. Got {sh_dir_or_filename}")
-        return [sh_dir_or_filename]
-
-    sh_files = [
-        os.path.join(sh_dir_or_filename, filename)
-        for filename in sorted(os.listdir(sh_dir_or_filename))
-        if filename.endswith(".sh")
-    ]
-    if not sh_files:
-        raise ValueError(f"Expected *.sh files in {sh_dir_or_filename}.")
-    return sh_files
+def all_sh_files(sh_dir_or_filename: str) -> list[str]:
+    """
+    Also checks that there are `*.sh` files here. If there aren't raises a `ValueError`.
+    """
+    if os.path.isdir(sh_dir_or_filename):
+        file_names = [
+            os.path.join(sh_dir_or_filename, filename)
+            for filename in sorted(os.listdir(sh_dir_or_filename))
+        ]
+    else:
+        file_names = [sh_dir_or_filename]
+    return [file_name for file_name in file_names if file_name.endswith(".sh")]
 
 
 t4_gpu_zones_cycle = cycle(_zones.t4_gpu_zones)
@@ -422,6 +416,18 @@ def try_zones(create_instance: Callable):
     return wrapper
 
 
+def move_sh_file_to_in_progress_dir(
+    sh_file_name: str, sh_dir: str, dry_run: bool = False
+) -> None:
+    in_progress_dir = os.path.join(sh_dir, "in_progress")
+    if not os.path.exists(in_progress_dir) and not dry_run:
+        os.mkdir(in_progress_dir)
+    in_progress_file = os.path.join(in_progress_dir, os.path.basename(sh_file_name))
+    if not dry_run:
+        os.rename(sh_file_name, in_progress_file)
+    print(f"\nMoved {sh_file_name} to {in_progress_file}\n")
+
+
 def create_instances(
     sh_dir_or_filename: str | None = None,
     zone: str | None = None,
@@ -439,10 +445,10 @@ def create_instances(
     Parameters
     ----------
     sh_dir_or_filename : str | None, optional
-        Either a *.sh file, or a directory containing *.sh files which will be run by
-        the cloud instance. Assume all cloud and Python env set up is complete. By
-        default, the sh file is ./experiment_mini.sh for "cpu-test / gpu-test" run
-        types, else ./experiment.sh (at the repo root).
+        Either a *.sh file, or a directory including *.sh files which will be run by the
+        cloud instance. Assume all cloud and Python env set up is complete. By default,
+        the sh file is ./experiment_mini.sh for "cpu-test / gpu-test" run types, else
+        ./experiment.sh (at the repo root).
     zone : str | None, optional
         Zone with CPU/GPU availability, by default us-central1-a for CPU and us-west4-a
         for GPU. Consider trying us-west4-b if the default fails.
@@ -468,18 +474,48 @@ def create_instances(
         It'll keep running until it creates an instance for each sh file in
         `sh_dir_or_filename`. Go do something else.
     """
+    # Extract all sh files from sh_dir_or_filename
+    if sh_dir_or_filename is None:
+        sh_file_names = (None,)
+    else:
+        sh_file_names = all_sh_files(sh_dir_or_filename)
+        if not sh_file_names:
+            raise ValueError(f"Expected *.sh files in {sh_dir_or_filename}.")
+
     create_instance_func = try_zones(create_instance) if any_zone else create_instance
-    for sh_file_name in all_sh_files(sh_dir_or_filename):
-        create_instance_func(
-            sh_file_name=sh_file_name,
-            zone=zone,
-            run_type=run_type,
-            project_name=project_name,
-            gcp_service_account_email=gcp_service_account_email,
-            just_create=just_create,
-            dry_run=dry_run,
-        )
-        print(("-" * os.get_terminal_size().columns) + "\n")
+
+    try:
+        for sh_file_name in sh_file_names:
+            create_instance_func(
+                sh_file_name=sh_file_name,
+                zone=zone,
+                run_type=run_type,
+                project_name=project_name,
+                gcp_service_account_email=gcp_service_account_email,
+                just_create=just_create,
+                dry_run=dry_run,
+            )
+            if os.path.isdir(sh_dir_or_filename):
+                # To "auto-batch" runs, use the fact that the create_instance_func will
+                # raise an exception when the quota is exceeded.
+                move_sh_file_to_in_progress_dir(
+                    sh_file_name, sh_dir_or_filename, dry_run=dry_run
+                )
+            print(("-" * os.get_terminal_size().columns) + "\n")
+    finally:
+        if sh_dir_or_filename is None:
+            return
+        # Successfully ran files were moved to sh_dir/in_progress/. So check if there
+        # are more in sh_dir
+        if remaining_sh_files := all_sh_files(sh_dir_or_filename):
+            rich.print("[bold red]WARNING: Not every sh file was run.[/bold red]")
+            print(
+                "To run them (after you have instance capacity), run the same launch "
+                "command you just ran."
+            )
+            print("Remaining sh files to run:")
+            print("\n".join(remaining_sh_files))
+            print()
 
 
 if __name__ == "__main__":

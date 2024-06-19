@@ -83,11 +83,10 @@ uploaded to GCP. Note that the instance will stop even if there's an error.
 
    To run multiple experiments in parallel / on multiple instances, put some bash files
    in a directory (e.g.,
-   [`./experiments/m100/n500/bert/batch1/`](./experiments/m100/n500/bert/batch1/)) and
-   run:
+   [`./experiments/m100/n500/bert/`](./experiments/m100/n500/bert/)) and run:
 
    ```bash
-   python launch.py --sh_dir_or_filename experiments/m100/n500/bert/batch1/
+   python launch.py --sh_dir_or_filename experiments/m100/n500/bert/
    ```
 
    If you're getting an error with code `ZONE_RESOURCE_POOL_EXHAUSTED` (b/c there aren't

@@ -2,6 +2,9 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg?logo=python&style=for-the-badge)](https://www.python.org/downloads/release/python-3100/)
 
+There are more training runs than there are [jelly beans in this vat right
+here](https://www.youtube.com/watch?v=CCvVEszRiDI&t=225s).
+
 A partial, empirical answer to my [question on Cross
 Validated](https://stats.stackexchange.com/questions/611877/is-pretraining-on-test-set-texts-without-labels-ok).
 
