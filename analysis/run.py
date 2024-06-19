@@ -112,7 +112,10 @@ def run(
         logger.info("Writing control inference data")
         os.mkdir(analysis_id)
         summary_control.to_netcdf(
-            filename=os.path.join(analysis_id, f"main_{analysis.num_test}_control.nc")
+            filename=os.path.join(
+                analysis_id,
+                f"main_m{analysis.num_train}_n{analysis.num_test}_control.nc",
+            )
         )
         upload_directory(analysis_id, logger)
         # Free up some memory? idk
@@ -133,7 +136,10 @@ def run(
         )
         logger.info("Writing treatment inference data")
         summary_bias.to_netcdf(
-            filename=os.path.join(analysis_id, f"main_{analysis.num_test}_treatment.nc")
+            filename=os.path.join(
+                analysis_id,
+                f"main_m{analysis.num_train}_n{analysis.num_test}_treatment.nc",
+            )
         )
         upload_directory(analysis_id, logger)
     except Exception as exception:

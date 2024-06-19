@@ -150,7 +150,7 @@ be used for analysis.
 4. Verify that the datasets are the same:
 
    ```bash
-   diff <(ls accuracies/m100/n100/bert) <(ls accuracies/m100/n100/gpt2)
+   diff <(ls accuracies/m50/n100/bert) <(ls accuracies/m50/n100/gpt2)
    ```
 
 5. When you're ready to analyze this data, copy-paste `accuracies` into the analysis
