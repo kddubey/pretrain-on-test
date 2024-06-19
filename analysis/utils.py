@@ -495,7 +495,9 @@ def _marginal_mean_diffs(
     # This can be vectorized w/ some fancy stuff, but I don't want to risk incorrectness
     num_test: int = num_correct_df.select("num_test")[0].item()
     mean_diffs = []
-    for draw in tqdm(range(predictions.shape[1]), desc="Marginalizing each draw"):
+    for draw in tqdm(
+        range(predictions.shape[1]), desc=f"Marginalizing each draw (n = {num_test})"
+    ):
         num_correct_df_simulated = num_correct_df_from_predicions(
             num_correct_df, predictions[:, draw].to_numpy()
         )
