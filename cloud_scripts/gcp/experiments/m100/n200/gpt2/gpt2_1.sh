@@ -10,4 +10,4 @@ TQDM_DISABLE=1 python run.py \
 --per_device_train_batch_size_classification 4 \
 --per_device_eval_batch_size_classification 16 \
 --num_train_epochs_classification 1 \
---num_train_epochs_pretrain 2
+--num_train_epochs_pretrain 1
