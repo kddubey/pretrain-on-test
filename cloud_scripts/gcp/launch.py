@@ -481,6 +481,9 @@ def create_instances(
         sh_file_names = all_sh_files(sh_dir_or_filename)
         if not sh_file_names:
             raise ValueError(f"Expected *.sh files in {sh_dir_or_filename}.")
+        print("Attempting to create instances for the following files:")
+        print("\n".join(sh_file_names))
+        print(("-" * os.get_terminal_size().columns) + "\n")
 
     create_instance_func = try_zones(create_instance) if any_zone else create_instance
 
