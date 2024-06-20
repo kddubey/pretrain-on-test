@@ -1,4 +1,6 @@
-# experiments/m100/n100/bert/bert_1.sh#!/bin/bash
+#!/bin/bash
+
+# experiments/m100/n100/bert/bert_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n100_bert_1 \
@@ -11,7 +13,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n100/bert/bert_2.sh#!/bin/bash
+# experiments/m100/n100/bert/bert_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n100_bert_2 \
@@ -27,7 +29,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n100/bert/bert_3.sh#!/bin/bash
+# experiments/m100/n100/bert/bert_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n100_bert_3 \
@@ -43,7 +45,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n100/bert/bert_4.sh#!/bin/bash
+# experiments/m100/n100/bert/bert_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n100_bert_4 \
@@ -59,7 +61,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n100/bert/bert_5.sh#!/bin/bash
+# experiments/m100/n100/bert/bert_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n100_bert_5 \
@@ -82,7 +84,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n100/bert/bert_6.sh#!/bin/bash
+# experiments/m100/n100/bert/bert_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n100_bert_6 \
@@ -105,7 +107,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n100/gpt2/gpt2_1.sh#!/bin/bash
+# experiments/m100/n100/gpt2/gpt2_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n100_gpt2_1 \
@@ -120,7 +122,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n100/gpt2/gpt2_2.sh#!/bin/bash
+# experiments/m100/n100/gpt2/gpt2_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n100_gpt2_2 \
@@ -139,7 +141,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n100/gpt2/gpt2_3.sh#!/bin/bash
+# experiments/m100/n100/gpt2/gpt2_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n100_gpt2_3 \
@@ -154,7 +156,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n100/gpt2/gpt2_4.sh#!/bin/bash
+# experiments/m100/n100/gpt2/gpt2_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n100_gpt2_4 \
@@ -176,7 +178,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n100/gpt2/gpt2_5.sh#!/bin/bash
+# experiments/m100/n100/gpt2/gpt2_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n100_gpt2_5 \
@@ -199,7 +201,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n100/gpt2/gpt2_6.sh#!/bin/bash
+# experiments/m100/n100/gpt2/gpt2_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n100_gpt2_6 \
@@ -214,7 +216,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n200/bert/bert_1.sh#!/bin/bash
+# experiments/m100/n200/bert/bert_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n200_bert_1 \
@@ -227,7 +229,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n200/bert/bert_2.sh#!/bin/bash
+# experiments/m100/n200/bert/bert_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n200_bert_2 \
@@ -243,7 +245,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n200/bert/bert_3.sh#!/bin/bash
+# experiments/m100/n200/bert/bert_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n200_bert_3 \
@@ -259,7 +261,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n200/bert/bert_4.sh#!/bin/bash
+# experiments/m100/n200/bert/bert_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n200_bert_4 \
@@ -275,7 +277,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n200/bert/bert_5.sh#!/bin/bash
+# experiments/m100/n200/bert/bert_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n200_bert_5 \
@@ -298,7 +300,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n200/bert/bert_6.sh#!/bin/bash
+# experiments/m100/n200/bert/bert_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n200_bert_6 \
@@ -321,7 +323,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n200/gpt2/gpt2_1.sh#!/bin/bash
+# experiments/m100/n200/gpt2/gpt2_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n200_gpt2_1 \
@@ -336,7 +338,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n200/gpt2/gpt2_2.sh#!/bin/bash
+# experiments/m100/n200/gpt2/gpt2_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n200_gpt2_2 \
@@ -355,7 +357,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n200/gpt2/gpt2_3.sh#!/bin/bash
+# experiments/m100/n200/gpt2/gpt2_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n200_gpt2_3 \
@@ -370,7 +372,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n200/gpt2/gpt2_4.sh#!/bin/bash
+# experiments/m100/n200/gpt2/gpt2_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n200_gpt2_4 \
@@ -392,7 +394,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n200/gpt2/gpt2_5.sh#!/bin/bash
+# experiments/m100/n200/gpt2/gpt2_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n200_gpt2_5 \
@@ -415,7 +417,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n200/gpt2/gpt2_6.sh#!/bin/bash
+# experiments/m100/n200/gpt2/gpt2_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n200_gpt2_6 \
@@ -430,7 +432,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n50/bert/bert_1.sh#!/bin/bash
+# experiments/m100/n50/bert/bert_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n50_bert_1 \
@@ -443,7 +445,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n50/bert/bert_2.sh#!/bin/bash
+# experiments/m100/n50/bert/bert_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n50_bert_2 \
@@ -459,7 +461,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n50/bert/bert_3.sh#!/bin/bash
+# experiments/m100/n50/bert/bert_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n50_bert_3 \
@@ -475,7 +477,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n50/bert/bert_4.sh#!/bin/bash
+# experiments/m100/n50/bert/bert_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n50_bert_4 \
@@ -491,7 +493,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n50/bert/bert_5.sh#!/bin/bash
+# experiments/m100/n50/bert/bert_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n50_bert_5 \
@@ -514,7 +516,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n50/bert/bert_6.sh#!/bin/bash
+# experiments/m100/n50/bert/bert_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n50_bert_6 \
@@ -537,7 +539,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n50/gpt2/gpt2_1.sh#!/bin/bash
+# experiments/m100/n50/gpt2/gpt2_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n50_gpt2_1 \
@@ -552,7 +554,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n50/gpt2/gpt2_2.sh#!/bin/bash
+# experiments/m100/n50/gpt2/gpt2_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n50_gpt2_2 \
@@ -571,7 +573,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n50/gpt2/gpt2_3.sh#!/bin/bash
+# experiments/m100/n50/gpt2/gpt2_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n50_gpt2_3 \
@@ -586,7 +588,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n50/gpt2/gpt2_4.sh#!/bin/bash
+# experiments/m100/n50/gpt2/gpt2_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n50_gpt2_4 \
@@ -608,7 +610,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n50/gpt2/gpt2_5.sh#!/bin/bash
+# experiments/m100/n50/gpt2/gpt2_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n50_gpt2_5 \
@@ -631,7 +633,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n50/gpt2/gpt2_6.sh#!/bin/bash
+# experiments/m100/n50/gpt2/gpt2_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n50_gpt2_6 \
@@ -646,7 +648,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n500/bert/bert_1.sh#!/bin/bash
+# experiments/m100/n500/bert/bert_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n500_bert_1 \
@@ -659,7 +661,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n500/bert/bert_2.sh#!/bin/bash
+# experiments/m100/n500/bert/bert_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n500_bert_2 \
@@ -675,7 +677,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n500/bert/bert_3.sh#!/bin/bash
+# experiments/m100/n500/bert/bert_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n500_bert_3 \
@@ -691,7 +693,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n500/bert/bert_4.sh#!/bin/bash
+# experiments/m100/n500/bert/bert_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n500_bert_4 \
@@ -707,7 +709,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n500/bert/bert_5.sh#!/bin/bash
+# experiments/m100/n500/bert/bert_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n500_bert_5 \
@@ -730,7 +732,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n500/bert/bert_6.sh#!/bin/bash
+# experiments/m100/n500/bert/bert_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m100_n500_bert_6 \
@@ -753,7 +755,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m100/n500/gpt2/gpt2_1.sh#!/bin/bash
+# experiments/m100/n500/gpt2/gpt2_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n500_gpt2_1 \
@@ -768,7 +770,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n500/gpt2/gpt2_2.sh#!/bin/bash
+# experiments/m100/n500/gpt2/gpt2_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n500_gpt2_2 \
@@ -787,7 +789,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n500/gpt2/gpt2_3.sh#!/bin/bash
+# experiments/m100/n500/gpt2/gpt2_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n500_gpt2_3 \
@@ -802,7 +804,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n500/gpt2/gpt2_4.sh#!/bin/bash
+# experiments/m100/n500/gpt2/gpt2_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n500_gpt2_4 \
@@ -824,7 +826,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n500/gpt2/gpt2_5.sh#!/bin/bash
+# experiments/m100/n500/gpt2/gpt2_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n500_gpt2_5 \
@@ -847,7 +849,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m100/n500/gpt2/gpt2_6.sh#!/bin/bash
+# experiments/m100/n500/gpt2/gpt2_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m100_n500_gpt2_6 \
@@ -862,7 +864,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n100/bert/bert_1.sh#!/bin/bash
+# experiments/m50/n100/bert/bert_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n100_bert_1 \
@@ -876,7 +878,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n100/bert/bert_2.sh#!/bin/bash
+# experiments/m50/n100/bert/bert_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n100_bert_2 \
@@ -893,7 +895,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n100/bert/bert_3.sh#!/bin/bash
+# experiments/m50/n100/bert/bert_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n100_bert_3 \
@@ -910,7 +912,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n100/bert/bert_4.sh#!/bin/bash
+# experiments/m50/n100/bert/bert_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n100_bert_4 \
@@ -927,7 +929,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n100/bert/bert_5.sh#!/bin/bash
+# experiments/m50/n100/bert/bert_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n100_bert_5 \
@@ -951,7 +953,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n100/bert/bert_6.sh#!/bin/bash
+# experiments/m50/n100/bert/bert_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n100_bert_6 \
@@ -975,7 +977,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n100/gpt2/gpt2_1.sh#!/bin/bash
+# experiments/m50/n100/gpt2/gpt2_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n100_gpt2_1 \
@@ -991,7 +993,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n100/gpt2/gpt2_2.sh#!/bin/bash
+# experiments/m50/n100/gpt2/gpt2_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n100_gpt2_2 \
@@ -1011,7 +1013,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n100/gpt2/gpt2_3.sh#!/bin/bash
+# experiments/m50/n100/gpt2/gpt2_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n100_gpt2_3 \
@@ -1027,7 +1029,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n100/gpt2/gpt2_4.sh#!/bin/bash
+# experiments/m50/n100/gpt2/gpt2_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n100_gpt2_4 \
@@ -1050,7 +1052,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n100/gpt2/gpt2_5.sh#!/bin/bash
+# experiments/m50/n100/gpt2/gpt2_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n100_gpt2_5 \
@@ -1074,7 +1076,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n100/gpt2/gpt2_6.sh#!/bin/bash
+# experiments/m50/n100/gpt2/gpt2_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n100_gpt2_6 \
@@ -1090,7 +1092,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n200/bert/bert_1.sh#!/bin/bash
+# experiments/m50/n200/bert/bert_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n200_bert_1 \
@@ -1104,7 +1106,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n200/bert/bert_2.sh#!/bin/bash
+# experiments/m50/n200/bert/bert_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n200_bert_2 \
@@ -1121,7 +1123,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n200/bert/bert_3.sh#!/bin/bash
+# experiments/m50/n200/bert/bert_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n200_bert_3 \
@@ -1138,7 +1140,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n200/bert/bert_4.sh#!/bin/bash
+# experiments/m50/n200/bert/bert_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n200_bert_4 \
@@ -1155,7 +1157,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n200/bert/bert_5.sh#!/bin/bash
+# experiments/m50/n200/bert/bert_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n200_bert_5 \
@@ -1179,7 +1181,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n200/bert/bert_6.sh#!/bin/bash
+# experiments/m50/n200/bert/bert_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n200_bert_6 \
@@ -1203,7 +1205,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n200/gpt2/gpt2_1.sh#!/bin/bash
+# experiments/m50/n200/gpt2/gpt2_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n200_gpt2_1 \
@@ -1219,7 +1221,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n200/gpt2/gpt2_2.sh#!/bin/bash
+# experiments/m50/n200/gpt2/gpt2_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n200_gpt2_2 \
@@ -1239,7 +1241,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n200/gpt2/gpt2_3.sh#!/bin/bash
+# experiments/m50/n200/gpt2/gpt2_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n200_gpt2_3 \
@@ -1255,7 +1257,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n200/gpt2/gpt2_4.sh#!/bin/bash
+# experiments/m50/n200/gpt2/gpt2_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n200_gpt2_4 \
@@ -1278,7 +1280,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n200/gpt2/gpt2_5.sh#!/bin/bash
+# experiments/m50/n200/gpt2/gpt2_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n200_gpt2_5 \
@@ -1302,7 +1304,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n200/gpt2/gpt2_6.sh#!/bin/bash
+# experiments/m50/n200/gpt2/gpt2_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n200_gpt2_6 \
@@ -1318,7 +1320,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n50/bert/bert_1.sh#!/bin/bash
+# experiments/m50/n50/bert/bert_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n50_bert_1 \
@@ -1332,7 +1334,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n50/bert/bert_2.sh#!/bin/bash
+# experiments/m50/n50/bert/bert_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n50_bert_2 \
@@ -1349,7 +1351,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n50/bert/bert_3.sh#!/bin/bash
+# experiments/m50/n50/bert/bert_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n50_bert_3 \
@@ -1366,7 +1368,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n50/bert/bert_4.sh#!/bin/bash
+# experiments/m50/n50/bert/bert_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n50_bert_4 \
@@ -1383,7 +1385,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n50/bert/bert_5.sh#!/bin/bash
+# experiments/m50/n50/bert/bert_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n50_bert_5 \
@@ -1407,7 +1409,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n50/bert/bert_6.sh#!/bin/bash
+# experiments/m50/n50/bert/bert_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n50_bert_6 \
@@ -1431,7 +1433,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n50/gpt2/gpt2_1.sh#!/bin/bash
+# experiments/m50/n50/gpt2/gpt2_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n50_gpt2_1 \
@@ -1447,7 +1449,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n50/gpt2/gpt2_2.sh#!/bin/bash
+# experiments/m50/n50/gpt2/gpt2_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n50_gpt2_2 \
@@ -1467,7 +1469,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n50/gpt2/gpt2_3.sh#!/bin/bash
+# experiments/m50/n50/gpt2/gpt2_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n50_gpt2_3 \
@@ -1483,7 +1485,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n50/gpt2/gpt2_4.sh#!/bin/bash
+# experiments/m50/n50/gpt2/gpt2_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n50_gpt2_4 \
@@ -1506,7 +1508,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n50/gpt2/gpt2_5.sh#!/bin/bash
+# experiments/m50/n50/gpt2/gpt2_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n50_gpt2_5 \
@@ -1530,7 +1532,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n50/gpt2/gpt2_6.sh#!/bin/bash
+# experiments/m50/n50/gpt2/gpt2_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n50_gpt2_6 \
@@ -1546,7 +1548,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n500/bert/bert_1.sh#!/bin/bash
+# experiments/m50/n500/bert/bert_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n500_bert_1 \
@@ -1560,7 +1562,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n500/bert/bert_2.sh#!/bin/bash
+# experiments/m50/n500/bert/bert_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n500_bert_2 \
@@ -1577,7 +1579,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n500/bert/bert_3.sh#!/bin/bash
+# experiments/m50/n500/bert/bert_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n500_bert_3 \
@@ -1594,7 +1596,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n500/bert/bert_4.sh#!/bin/bash
+# experiments/m50/n500/bert/bert_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n500_bert_4 \
@@ -1611,7 +1613,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n500/bert/bert_5.sh#!/bin/bash
+# experiments/m50/n500/bert/bert_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n500_bert_5 \
@@ -1635,7 +1637,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n500/bert/bert_6.sh#!/bin/bash
+# experiments/m50/n500/bert/bert_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
 --run_name m50_n500_bert_6 \
@@ -1659,7 +1661,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 2
 
 
-# experiments/m50/n500/gpt2/gpt2_1.sh#!/bin/bash
+# experiments/m50/n500/gpt2/gpt2_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n500_gpt2_1 \
@@ -1675,7 +1677,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n500/gpt2/gpt2_2.sh#!/bin/bash
+# experiments/m50/n500/gpt2/gpt2_2.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n500_gpt2_2 \
@@ -1695,7 +1697,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n500/gpt2/gpt2_3.sh#!/bin/bash
+# experiments/m50/n500/gpt2/gpt2_3.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n500_gpt2_3 \
@@ -1711,7 +1713,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n500/gpt2/gpt2_4.sh#!/bin/bash
+# experiments/m50/n500/gpt2/gpt2_4.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n500_gpt2_4 \
@@ -1734,7 +1736,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n500/gpt2/gpt2_5.sh#!/bin/bash
+# experiments/m50/n500/gpt2/gpt2_5.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n500_gpt2_5 \
@@ -1758,7 +1760,7 @@ TQDM_DISABLE=1 python run.py \
 --num_train_epochs_pretrain 1
 
 
-# experiments/m50/n500/gpt2/gpt2_6.sh#!/bin/bash
+# experiments/m50/n500/gpt2/gpt2_6.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type gpt2 \
 --run_name m50_n500_gpt2_6 \
