@@ -84,19 +84,19 @@ contains a figure connecting the data generation process to the model.
 </details>
 
 
-## Notebooks
+## Contents
 
 [`dataset.ipynb`](./dataset.ipynb) visualizes $\text{acc}\_\text{base},
 \text{acc}\_\text{extra}$ and $\text{acc}\_\text{test}$, and tests that
 $\text{E}[\text{acc}\_\text{test} - \text{acc}\_\text{extra}] = 0$ for each dataset.
 
-[`fit_posteriors`](./fit_posteriors) contains the posterior distribution of $\beta$ when
-stratifying by the LM type.
+[`./fit_posteriors/`](./fit_posteriors/) contains the posterior distribution of $\beta$
+when stratifying by the LM type.
 
-[`results`](./results/) visualizes the marginal effects of interest. This is the main
+[`./results/`](./results/) visualizes the marginal effects of interest. This is the main
 result.
 
-[`meta.ipynb`](./meta.ipynb) assesses the importance of subsampling / replicating within
+[`./meta/`](./meta/) assesses the importance of subsampling / replicating within
 each dataset.
 
 [`test.ipynb`](./test.ipynb) tests that the inference code statistically works.

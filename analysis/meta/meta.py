@@ -1,20 +1,25 @@
 """
 Run a meta-analysis to assess the importance of replicating/subsampling. Will save
-posterior means to ./meta_means_m{num_train}_n{num_test}_{comparison}.csv.
+posterior means to ./meta_m{num_train}_n{num_test}_{comparison}.csv.
 
 Runs stuff in parallel, which makes logs messy.
+
+Took my mac around 15 minutes to complete.
 """
 
 from functools import partial
 from itertools import islice
 import multiprocessing
 import os
+import sys
 from typing import Generator, Iterable, Literal, Sequence, TypeVar
 
 import polars as pl
 from tap import Tap
 from tqdm.auto import tqdm
 
+# sys hack to import from parent
+sys.path.insert(1, os.path.join(sys.path[0], ".."))
 import utils
 
 
@@ -109,10 +114,10 @@ def sample_posterior_mean(
 
 
 class ArgParser(Tap):
-    num_train: Literal[100] = 100
+    num_train: Literal[50, 100] = 100
     "The number of training observations in the accuracy data."
 
-    num_test: Literal[200, 500] = 500
+    num_test: Literal[50, 100, 200, 500] = 500
     "The number of test observations in the accuracy data."
 
     comparison: Literal["control", "treatment"] = "treatment"
@@ -124,14 +129,15 @@ class ArgParser(Tap):
     this simulation study
     """
 
-    accuracies_home_dir: str = "accuracies_from_paper"
+    accuracies_home_dir: str = os.path.join("..", "accuracies_from_paper")
     "Directory containing accuracies for multiple LM types."
 
 
 if __name__ == "__main__":
     args = ArgParser(__doc__).parse_args()
     num_correct_df = utils.load_all_num_correct(
-        os.path.join(args.accuracies_home_dir, f"m{args.num_train}"), args.num_test
+        os.path.join(args.accuracies_home_dir, f"m{args.num_train}"),
+        args.num_test,
     )
     if args.comparison == "control":
         treatment, control = "extra", "base"
