@@ -77,13 +77,24 @@ score is valid. Who is right, Alice or Bob?
 ## Usage
 
 Reproduce the experiment results by running [`./experiment.sh`](./experiment.sh) on a T4
-GPU, which will take 4-6 days to finish. Batch sizes were set to safely avoid OOMs, but
-not too low.
+GPU. Batch sizes were set to safely avoid OOMs across the 135,000 pretraining and
+finetuning runs that will occur. But they were not set too low; GPU utilization hovers
+from 50-80%. The experiment will take 4-6 days to finish, as 81,000 models will be
+trained and evaluated.
 
 I ran experiments in parallel through [Google
 Cloud](https://github.com/kddubey/pretrain-on-test/tree/main/cloud_scripts/gcp).
 
+After finishing the experiment, move all the `run-*` directories to
+[`./analysis/dirty_file_processing/`](./analysis/dirty_file_processing/) and follow the
+[instructions
+here](https://github.com/kddubey/pretrain-on-test/tree/main/cloud_scripts/gcp#merge-data).
+
 To analyze the accuracy data, see [`analysis/`](./analysis/).
+
+The full set of accuracy data used in the paper, including observation-level per-class
+probability scores, can be downloaded at [this Google Drive
+link](https://drive.google.com/file/d/1n7N4uTKgcUJZ7hjAbZYGTpGEPoYxQVGx/view?usp=sharing).
 
 
 <details>

@@ -153,8 +153,8 @@ be used for analysis.
    diff <(ls accuracies/m50/n100/bert) <(ls accuracies/m50/n100/gpt2)
    ```
 
-5. When you're ready to analyze this data, copy-paste `accuracies` into the analysis
-   dir:
+5. When you're ready to analyze this data, copy-paste (or move, whatever you prefer)
+   `accuracies` into the analysis dir:
 
    ```bash
    cp -a accuracies ../
