@@ -1,6 +1,6 @@
 # Run the experiment in Google Cloud
 
-Note that, in total, the experiment will cost around $40 in compute credits.
+Note that, in total, the experiment will cost around $200 in compute credits.
 
 
 ## Setup
