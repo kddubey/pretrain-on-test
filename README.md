@@ -5,15 +5,10 @@
 There are more training runs than there are [jelly beans in this vat right
 here](https://www.youtube.com/watch?v=CCvVEszRiDI&t=225s).
 
-A partial, empirical answer to my [question on Cross
-Validated](https://stats.stackexchange.com/questions/611877/is-pretraining-on-test-set-texts-without-labels-ok).
-
 [Slides](https://docs.google.com/presentation/d/1WiaTOMplciOHM3qp6FTu5BYRlDdlrRI5A5ayOLaBEUA/edit?usp=sharing)
 (please play the slideshow instead of scrolling through slides).
 
-**This research is a work in progress.** Currently, there are results for pretraining on
-50, 100, 200, and 500 unlabeled texts and training on 100 classification examples. See
-the plot in [`analysis/posterior_pred.ipynb`](analysis/posterior_pred.ipynb).
+Results are summarized in [`./analysis/results/`](./analysis/results/).
 
 
 ## Question

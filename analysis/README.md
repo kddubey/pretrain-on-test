@@ -15,36 +15,7 @@ python -m pip install ".[stat]"
 ## Model
 
 <details>
-<summary>Why?</summary>
-
-The model might be fancy-looking and fancily-estimated. Here is justification for that.
-
-Reporting means is not enough, especially when studying few-shot learning. The two long
-figures in [`main_200.ipynb`](./main_200.ipynb) and [`main_500.ipynb`](./main_500.ipynb)
-demonstrate that there is considerable variance, despite pairing the accuracy
-estimators. (One source of variance is intentionally introduced: the subsamples/splits.
-The other source of variance is inherent: the added linear layer to perform
-classification is initialized with random weights.) While these visualizations tell us
-about how raw accuracy differences vary, they do not tell us how the mean accuracy
-difference varies. We seek a neat answer to the core question: on our benchmark of 25
-classification tasks, how much does the average benchmark accuracy differ between two
-modeling techniques, and how much does this average difference vary?
-
-One way to communicate the variance is to estimate the standard error of the mean
-difference across classification tasks. But the standard error statistic can be
-difficult to interpret ([Morey et al.,
-2016](https://pubmed.ncbi.nlm.nih.gov/26450628/)). Furthermore, its computation is not
-completely trivial due to the data's hierarchical dependency structure: each triple,
-($\text{acc}\_\text{extra}, \text{acc}\_\text{test}, \text{acc}\_\text{base}$), is drawn
-from (`train`, `test`), which is itself drawn from the given classification dataset.
-
-This analysis does not aim to estimate standard errors. Instead, posterior predictive
-distributions will be estimated by fitting and sampling from a hierarchical model,
-specified below. [Slide
-14](https://docs.google.com/presentation/d/1WiaTOMplciOHM3qp6FTu5BYRlDdlrRI5A5ayOLaBEUA/edit#slide=id.g2689f42eff3_0_108)
-contains a figure connecting the data generation process to the model.
-
-</details>
+<summary>Equation</summary>
 
 The model is a multilevel one which stratifies by the type of LM:
 
@@ -77,6 +48,41 @@ $x_{ijkl} = 0$ if $l = 0$ else it's $1$. The model is fit via MCMC.
 
 Note: I'm still learning how to do this type of analysis.
 
+</details>
+
+
+<details>
+<summary>Why?</summary>
+
+The model might be fancy-looking and fancily-estimated. Here is justification for that.
+
+Reporting means is not enough, especially when studying few-shot learning. The two long
+figures in [`main_200.ipynb`](./main_200.ipynb) and [`main_500.ipynb`](./main_500.ipynb)
+demonstrate that there is considerable variance, despite pairing the accuracy
+estimators. (One source of variance is intentionally introduced: the subsamples/splits.
+The other source of variance is inherent: the added linear layer to perform
+classification is initialized with random weights.) While these visualizations tell us
+about how raw accuracy differences vary, they do not tell us how the mean accuracy
+difference varies. We seek a neat answer to the core question: on our benchmark of 25
+classification tasks, how much does the average benchmark accuracy differ between two
+modeling techniques, and how much does this average difference vary?
+
+One way to communicate the variance is to estimate the standard error of the mean
+difference across classification tasks. But the standard error statistic can be
+difficult to interpret ([Morey et al.,
+2016](https://pubmed.ncbi.nlm.nih.gov/26450628/)). Furthermore, its computation is not
+completely trivial due to the data's hierarchical dependency structure: each triple,
+($\text{acc}\_\text{extra}, \text{acc}\_\text{test}, \text{acc}\_\text{base}$), is drawn
+from (`train`, `test`), which is itself drawn from the given classification dataset.
+
+This analysis does not aim to estimate standard errors. Instead, posterior predictive
+distributions will be estimated by fitting and sampling from a hierarchical model,
+specified below. [Slide
+14](https://docs.google.com/presentation/d/1WiaTOMplciOHM3qp6FTu5BYRlDdlrRI5A5ayOLaBEUA/edit#slide=id.g2689f42eff3_0_108)
+contains a figure connecting the data generation process to the model.
+
+</details>
+
 
 ## Notebooks
 
@@ -87,7 +93,7 @@ $\text{E}[\text{acc}\_\text{test} - \text{acc}\_\text{extra}] = 0$ for each data
 [`fit_posteriors`](./fit_posteriors) contains the posterior distribution of $\beta$ when
 stratifying by the LM type.
 
-[`posterior_pred.ipynb`](./posterior_pred.ipynb) visualizes the marginal effects of
+[`results`](./results/) visualizes the marginal effects of
 interest. <span style="background-color: #FFFF00"><b>This is the main result</b></span>.
 
 [`meta.ipynb`](./meta.ipynb) assesses the importance of subsampling / replicating within
@@ -97,5 +103,5 @@ each dataset.
 
 [`model.ipynb`](./model.ipynb) contains the posterior distribution of $\beta$ for each
 LM type—BERT and GPT-2. I don't think there's a great reason to be really interested in
-this analysis b/c [`posterior_pred.ipynb`](./posterior_pred.ipynb) can be edited to
-stratify posterior predictions.
+this analysis b/c [`./results/posterior_pred.py`](./results/posterior_pred.py) can be
+edited to stratify posterior predictions.
