@@ -32,21 +32,20 @@ V_{jk} \sim \text{Normal}(0, \sigma_{V}) && \text{(nested) effect of dataset sub
 \end{align*}
 $$
 
-$n = 200$ or $n = 500$ depending on the dataset of scores you want to analyze.
+$n = 50, 100, 200$ or $500$ depending on the dataset of scores you want to analyze.
 
 $i = 1, 2$ for BERT and GPT-2, respectively.
 
 $z_i = 0$ if $i = 1$ else it's $1$.
 
-$j = 1, 2, \dots, 20$ for the dataset.
+$j = 1, 2, \dots, 25$ for the dataset.
 
-$k = 1, 2, \dots, 50$ (or $20$ for $n = 500$) for the subsample of dataset $j$.
+$k = 1, 2, \dots, $ ($100$ for $n = 50$ and $100$, $50$ for $n = 200$, $20$ for $n =
+500$) for the subsample of dataset $j$.
 
 $l = 1, 2$ for control and treatment, respectively.
 
 $x_{ijkl} = 0$ if $l = 0$ else it's $1$. The model is fit via MCMC.
-
-Note: I'm still learning how to do this type of analysis.
 
 </details>
 
@@ -56,9 +55,10 @@ Note: I'm still learning how to do this type of analysis.
 
 The model might be fancy-looking and fancily-estimated. Here is justification for that.
 
-Reporting means is not enough, especially when studying few-shot learning. The two long
-figures in [`main_200.ipynb`](./main_200.ipynb) and [`main_500.ipynb`](./main_500.ipynb)
-demonstrate that there is considerable variance, despite pairing the accuracy
+Reporting means is not enough, especially when studying few-shot learning. The first
+figure in
+[`./fit_posteriors/m100/main_m100_n500.ipynb`](./fit_posteriors/m100/main_m100_n500.ipynb)
+demonstrates that there is considerable variance, despite pairing the accuracy
 estimators. (One source of variance is intentionally introduced: the subsamples/splits.
 The other source of variance is inherent: the added linear layer to perform
 classification is initialized with random weights.) While these visualizations tell us
