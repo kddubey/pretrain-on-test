@@ -88,11 +88,17 @@ test - extra (evaluation bias)
 <summary>Curves</summary>
 
 Distributions of marginal effects. These plots are much easier to interpret than ones
-about $\beta$. In other words, the distributions of $\frac{\bar{\hat{Y}}_{\cdot \cdot
-\cdot 1} - \bar{\hat{Y}}_{\cdot \cdot \cdot 0}}{n}$, i.e., the difference between the
-treatment ($1$) and control ($0$) grand means. The mean is taken across LM types,
-classification tasks, and their subsamples. We could produce conditional plots for each
-of these groups, but rn I want to summarize the results.
+about $\beta$. In other words, the distributions of—
+
+$$
+\begin{align*}
+\frac{\bar{\hat{Y}}_{\cdot \cdot \cdot 1} - \bar{\hat{Y}}_{\cdot \cdot \cdot 0}}{n}
+\end{align*}
+$$
+
+—the difference between the treatment ($1$) and control ($0$) grand means. The mean is
+taken across LM types, classification tasks, and their subsamples. We could produce
+conditional plots for each of these groups, but rn I want to summarize the results.
 
 **Required data**: posterior samples are stored in `main_*.nc` files. Obtain them by
 running the notebooks in [`../fit_posteriors/`](../fit_posteriors/). Unfortunately all
