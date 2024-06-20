@@ -93,15 +93,10 @@ $\text{E}[\text{acc}\_\text{test} - \text{acc}\_\text{extra}] = 0$ for each data
 [`fit_posteriors`](./fit_posteriors) contains the posterior distribution of $\beta$ when
 stratifying by the LM type.
 
-[`results`](./results/) visualizes the marginal effects of
-interest. <span style="background-color: #FFFF00"><b>This is the main result</b></span>.
+[`results`](./results/) visualizes the marginal effects of interest. This is the main
+result.
 
 [`meta.ipynb`](./meta.ipynb) assesses the importance of subsampling / replicating within
 each dataset.
 
 [`test.ipynb`](./test.ipynb) tests that the inference code statistically works.
-
-[`model.ipynb`](./model.ipynb) contains the posterior distribution of $\beta$ for each
-LM type—BERT and GPT-2. I don't think there's a great reason to be really interested in
-this analysis b/c [`./results/posterior_pred.py`](./results/posterior_pred.py) can be
-edited to stratify posterior predictions.
