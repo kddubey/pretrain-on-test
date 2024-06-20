@@ -114,8 +114,6 @@ these. Sorry.
 
 ![posterior_pred_m100](./posterior_pred_m100.png)
 
-Bit more stable than $m = 50$ / bit less bouncing around 0 for the evaluation bias.
-
 </details>
 
 </details>
