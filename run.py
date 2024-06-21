@@ -244,10 +244,11 @@ def run(
             # Sync w/ cloud
             upload_directory(directory=dataset_dir, logger=logger)
     except Exception as exception:
-        logger.error(
-            f"Encountered an error with dataset {dataset_name}: {exception}",
-            exc_info=True,
-        )
+        try:
+            msg = f"Encountered an error with dataset {dataset_name}: "
+        except UnboundLocalError:
+            msg = ""
+        logger.error(f"{msg}{exception}", exc_info=True)
         raise
 
 
