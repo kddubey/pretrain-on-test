@@ -87,25 +87,7 @@ test - extra (evaluation bias)
 <details>
 <summary>Curves</summary>
 
-Distributions of marginal effects. These plots are much easier to interpret than ones
-about $\beta$. In other words, the distributions of—
-
-$$
-\begin{align*}
-\frac{\bar{\hat{Y}}_{\cdot \cdot \cdot 1} - \bar{\hat{Y}}_{\cdot \cdot \cdot 0}}{n}
-\end{align*}
-$$
-
-—the difference between the treatment ($1$) and control ($0$) grand means. The mean is
-taken across LM types, classification tasks, and their subsamples. We could produce
-conditional plots for each of these groups, but rn I want to summarize the results.
-
-**Required data**: posterior samples are stored in `main_*.nc` files. Obtain them by
-running the notebooks in [`../fit_posteriors/`](../fit_posteriors/). Unfortunately all
-of the inference data was saved (including for parameters we don't care about), so these
-files are in the 10s of GBs. I'm trying to find a cheap and long-term way to share
-these. Sorry.
-
+Curves produced by [`./posterior_pred.ipynb`](./posterior_pred.ipynb)
 
 <details>
 <summary>m = 50</summary>
