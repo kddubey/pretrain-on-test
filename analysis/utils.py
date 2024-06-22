@@ -217,11 +217,11 @@ def violin_plot(
     return ax
 
 
-def violin_plot_multiple_lms(accuracy_df: pl.DataFrame, num_test: int):
+def violin_plot_multiple_lms(accuracy_df: pl.DataFrame, num_test: int, num_train: int):
     """
     ```
     [ legend ]  Accuracy difference distributions
-                (n = {num_test} test observations)
+        (m = {num_train}, n = {num_test} test observations)
 
                lm_type1   lm_type2  ...  lm_type M
 
@@ -252,7 +252,10 @@ def violin_plot_multiple_lms(accuracy_df: pl.DataFrame, num_test: int):
             ax.set_yticklabels([])
             ax.set_ylabel(" ")
     fig.suptitle(
-        f"Accuracy difference distributions\n(n = {num_test} test observations)",
+        (
+            f"Accuracy difference distributions\n($m = {num_train}$ train, "
+            f"$n = {num_test}$ test observations)"
+        ),
         y=1,
         x=0.65,
     )
