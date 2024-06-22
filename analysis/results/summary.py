@@ -22,10 +22,12 @@ def summarize(accuracies_home_dir: str = os.path.join("..", "accuracies_from_pap
     """
     pl.Config.set_tbl_hide_dataframe_shape(True)
 
-    num_trains = [
-        int(num_train_dir.lstrip("m"))
-        for num_train_dir in os.listdir(accuracies_home_dir)
-    ]
+    num_trains = sorted(
+        [
+            int(num_train_dir.lstrip("m"))
+            for num_train_dir in os.listdir(accuracies_home_dir)
+        ]
+    )
 
     for num_train in num_trains:
         print("\n" + ("-" * os.get_terminal_size().columns) + "\n")

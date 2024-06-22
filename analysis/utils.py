@@ -262,10 +262,11 @@ def violin_plot_multiple_lms(accuracy_df: pl.DataFrame, num_test: int):
 
 
 def _num_subsamples(df: pl.DataFrame) -> int:
+    group_for_subsample = ("dataset",)
     if "lm_type" in df.columns:
-        group_for_subsample = ("lm_type", "dataset")
-    else:
-        group_for_subsample = ("dataset",)
+        group_for_subsample = ("lm_type",) + group_for_subsample
+    if "num_test" in df.columns:
+        group_for_subsample = ("num_test",) + group_for_subsample
     return df.group_by(group_for_subsample).count().select("count").head(n=1).item()
 
 
