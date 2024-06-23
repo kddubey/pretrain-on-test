@@ -77,10 +77,6 @@ class UploadGCP:
     Upload to a GCP bucket.
     """
 
-    # Alternate design is to make this one function whose `bucket_name` argument can be
-    # partial'd out. Partial objects are opaque, and I'm not sure if re-creating the
-    # bucket is bad, so I decided to make it a class.
-
     def __init__(self, bucket_name: str) -> None:
         from google.cloud.storage import Client
 
