@@ -34,7 +34,7 @@ def _down_sample(
     experiment which does not replicate within each dataset.
     """
     return num_correct_df.filter(
-        pl.int_range(0, pl.count()).shuffle(seed=seed).over(*group) < sample_size
+        pl.int_range(0, pl.len()).shuffle(seed=seed).over(*group) < sample_size
     )
 
 
