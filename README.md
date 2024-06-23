@@ -172,3 +172,49 @@ for cloud runs. Note that it assumes that the bucket name is
 3.10+, pip, and venv/conda on it.
 
 </details>
+
+
+## Numbers
+
+<details>
+<summary>81,000 models evaluated</summary>
+
+```
+[
+    3 models evaluated per LM type per task per repeat x
+    2 LM types x
+    25 tasks x
+    (
+        100 repeats for n=50 +
+        100 repeats for n=100 +
+        50 repeats for n=200 +
+        20 repeats for n=500
+    )
+] x 2 (for m = 50, 100) = 81,000 models evaluated
+```
+
+</details>
+
+
+<details>
+<summary>135,000 training runs</summary>
+
+```
+[
+    (
+        (1 classification training for base) +
+        (1 pretraining + 1 classification training for extra) +
+        (1 pretraining + 1 classification training for test) +
+    ) training runs per LM type per task per repeat x
+    2 LM types x
+    25 tasks x
+    (
+        100 repeats for n=50 +
+        100 repeats for n=100 +
+        50 repeats for n=200 +
+        20 repeats for n=500
+    )
+] x 2 (for m = 50, 100) = 135,000 training runs
+```
+
+</details>
