@@ -181,7 +181,7 @@ for cloud runs. Note that it assumes that the bucket name is
 
 ```
 [
-    3 models evaluated per LM type per task per repeat x
+    3 models evaluated (base, extra, test) per LM type per task per repeat x
     2 LM types x
     25 tasks x
     (
