@@ -8,7 +8,7 @@ here](https://www.youtube.com/watch?v=CCvVEszRiDI&t=225s).
 [Slides](https://docs.google.com/presentation/d/1WiaTOMplciOHM3qp6FTu5BYRlDdlrRI5A5ayOLaBEUA/edit?usp=sharing)
 (please play the slideshow instead of scrolling through slides).
 
-Results are summarized in [`./analysis/results/`](./analysis/results/).
+[Paper](./paper.pdf).
 
 
 ## Question
