@@ -9,6 +9,7 @@ import arviz as az
 import bambi as bmb
 from IPython.display import display
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
 import numpy as np
 import pandas as pd
 import polars as pl
@@ -211,7 +212,8 @@ def violin_plot(
     ax.set_title(title)
     ax.yaxis.grid(True)
     ax.set_ylabel("Text classification dataset")
-    ax.set_xlabel("Accuracy difference")
+    ax.set_xlabel("accuracy difference")
+    ax.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1, decimals=0))
     if is_ax_none:
         plt.show()
     return ax
