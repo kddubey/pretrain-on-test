@@ -10,6 +10,9 @@ here](https://www.youtube.com/watch?v=CCvVEszRiDI&t=225s).
 
 [Paper](./prepreprint.pdf).
 
+Coming soon: experiments w/ LoRA. I'm still deciding on the best way to do unsupervised
+finetuning.
+
 
 ## Question
 
