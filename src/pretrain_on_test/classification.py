@@ -13,6 +13,7 @@ from peft import (
 )
 import torch
 from transformers import PreTrainedTokenizerBase, Trainer, TrainingArguments
+from unsloth import FastLanguageModel
 
 from pretrain_on_test import Config
 
@@ -58,7 +59,6 @@ def train(
     If `pretrained_model_name_or_path is None`, then the model at
     `config.model_path_pretrained` is finetuned.
     """
-    train_dataset = _Dataset(config.tokenizer, texts, labels)
     classifier_args = TrainingArguments(
         output_dir=config.model_path_classification,
         per_device_train_batch_size=config.per_device_train_batch_size_classification,
@@ -87,31 +87,52 @@ def train(
         )
     else:
         state_dict = None
-    model = config.model_class_classification.from_pretrained(
-        pretrained_model_name_or_path,
-        state_dict=state_dict,
-        num_labels=num_labels,
-        output_attentions=False,
-        output_hidden_states=False,
-        ignore_mismatched_sizes=False,
-    ).to(config.device)
+    is_unsloth = issubclass(config.model_class_pretrain, FastLanguageModel)
+    if is_unsloth:
+        model, tokenizer = config.model_class_classification.from_pretrained(
+            pretrained_model_name_or_path,
+            state_dict=state_dict,
+            num_labels=num_labels,
+            output_attentions=False,
+            output_hidden_states=False,
+            ignore_mismatched_sizes=False,
+            load_in_4bit=True,
+        )
+        object.__setattr__(config, "tokenizer", tokenizer)
+    else:
+        model = config.model_class_classification.from_pretrained(
+            pretrained_model_name_or_path,
+            state_dict=state_dict,
+            num_labels=num_labels,
+            output_attentions=False,
+            output_hidden_states=False,
+            ignore_mismatched_sizes=False,
+        )
+    if not is_unsloth:
+        model.to(config.device)
     if model.config.pad_token_id is None:
         model.config.pad_token_id = model.config.eos_token_id
 
     # Maybe set up LoRA
     if config.lora_classification:
-        lora_config = LoraConfig(  # TODO: check Raschka recommendations
-            task_type=TaskType.SEQ_CLS,
-            r=4,
-            lora_alpha=32,
-            lora_dropout=0.1,
-            bias="none",
-            target_modules=["q_proj", "v_proj"],
-        )
-        model = get_peft_model(model, lora_config)
+        if is_unsloth:
+            model = FastLanguageModel.get_peft_model(model)
+        else:
+            # TODO: Raschka recommends enabling for more layers:
+            # https://magazine.sebastianraschka.com/i/138081202/enable-lora-for-more-layers
+            lora_config = LoraConfig(
+                task_type=TaskType.SEQ_CLS,
+                r=4,
+                lora_alpha=32,
+                lora_dropout=0.1,
+                bias="none",
+                target_modules=["q_proj", "v_proj"],
+            )
+            model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
 
     # Train and save to config.model_path_classification
+    train_dataset = _Dataset(config.tokenizer, texts, labels)
     classifier_trainer = Trainer(
         model=model,
         args=classifier_args,

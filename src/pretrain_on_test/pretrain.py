@@ -11,6 +11,7 @@ from transformers import (
     Trainer,
     TrainingArguments,
 )
+from unsloth import FastLanguageModel
 
 from pretrain_on_test import Config
 
@@ -52,7 +53,6 @@ def train(texts: list[str], config: Config):
         )
     """
     # Set up data
-    train_dataset = _Dataset(config.tokenizer, texts, config.max_length)
     data_collator = DataCollatorForLanguageModeling(
         config.tokenizer,
         mlm=config.mlm,
@@ -74,30 +74,46 @@ def train(texts: list[str], config: Config):
 
     # Trainer will modify the model, so need to re-load a fresh one every time this
     # function is called
-    model = config.model_class_pretrain.from_pretrained(
-        config.model_id,
-        output_attentions=False,
-        output_hidden_states=False,
-    ).to(config.device)
+    is_unsloth = issubclass(config.model_class_pretrain, FastLanguageModel)
+    if is_unsloth:
+        model, tokenizer = config.model_class_pretrain.from_pretrained(
+            config.model_id,
+            output_attentions=False,
+            output_hidden_states=False,
+            load_in_4bit=True,
+        )
+        object.__setattr__(config, "tokenizer", tokenizer)
+    else:
+        model = config.model_class_pretrain.from_pretrained(
+            config.model_id,
+            output_attentions=False,
+            output_hidden_states=False,
+        )
+    if not is_unsloth:
+        model.to(config.device)
     if model.config.pad_token_id is None:
         model.config.pad_token_id = model.config.eos_token_id
 
     # Maybe set up LoRA
     if config.lora_pretrain:
-        # TODO: Raschka recommends enabling for more layers:
-        # https://magazine.sebastianraschka.com/i/138081202/enable-lora-for-more-layers
-        lora_config = LoraConfig(
-            task_type=TaskType.CAUSAL_LM,
-            r=4,
-            lora_alpha=32,
-            lora_dropout=0.1,
-            bias="none",
-            target_modules=["q_proj", "v_proj"],
-        )
-        model = get_peft_model(model, lora_config)
+        if is_unsloth:
+            model = FastLanguageModel.get_peft_model(model)
+        else:
+            # TODO: Raschka recommends enabling for more layers:
+            # https://magazine.sebastianraschka.com/i/138081202/enable-lora-for-more-layers
+            lora_config = LoraConfig(
+                task_type=TaskType.CAUSAL_LM,
+                r=4,
+                lora_alpha=32,
+                lora_dropout=0.1,
+                bias="none",
+                target_modules=["q_proj", "v_proj"],
+            )
+            model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
 
     # Train and save to config.model_path_pretrained
+    train_dataset = _Dataset(config.tokenizer, texts, config.max_length)
     trainer = Trainer(
         model=model,
         args=training_args,

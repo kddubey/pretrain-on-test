@@ -19,6 +19,7 @@ from transformers import (
     MistralForCausalLM,
     MistralForSequenceClassification,
 )
+from unsloth import FastLanguageModel
 
 import pretrain_on_test
 import cloud
@@ -46,6 +47,7 @@ class Experiment(BaseModel):
         "bert",
         "gpt2",
         "mistral-lora-2x",
+        "mistral-lora-2x-unsloth",
         "bert-tiny",
         "gpt2-tiny",
         "mistral-lora-2x-tiny",
@@ -124,6 +126,14 @@ lm_type_to_config_creator = {
         model_id="mistralai/Mistral-7B-v0.1",
         model_class_pretrain=MistralForCausalLM,
         model_class_classification=MistralForSequenceClassification,
+        lora_pretrain=True,
+        lora_classification=True,
+        **model_independent_kwargs,
+    ),
+    "mistral-lora-2x-unsloth": lambda **model_independent_kwargs: pretrain_on_test.Config(
+        model_id="unsloth/mistral-7b-v0.3",
+        model_class_pretrain=FastLanguageModel,
+        model_class_classification=FastLanguageModel,
         lora_pretrain=True,
         lora_classification=True,
         **model_independent_kwargs,
