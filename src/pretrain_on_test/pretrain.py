@@ -84,11 +84,15 @@ def train(texts: list[str], config: Config):
 
     # Maybe set up LoRA
     if config.lora_pretrain:
-        lora_config = LoraConfig(  # TODO: check Raschka recommendations
+        # TODO: Raschka recommends enabling for more layers:
+        # https://magazine.sebastianraschka.com/i/138081202/enable-lora-for-more-layers
+        lora_config = LoraConfig(
             task_type=TaskType.CAUSAL_LM,
             r=4,
             lora_alpha=32,
             lora_dropout=0.1,
+            bias="none",
+            target_modules=["q_proj", "v_proj"],
         )
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()

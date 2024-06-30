@@ -100,11 +100,10 @@ def train(
 
     # Maybe set up LoRA
     if config.lora_classification:
-        # https://github.com/huggingface/blog/blob/main/Lora-for-sequence-classification-with-Roberta-Llama-Mistral.md#lora-setup-for-mistral-7b-classifier
         lora_config = LoraConfig(  # TODO: check Raschka recommendations
             task_type=TaskType.SEQ_CLS,
-            r=2,
-            lora_alpha=16,
+            r=4,
+            lora_alpha=32,
             lora_dropout=0.1,
             bias="none",
             target_modules=["q_proj", "v_proj"],
