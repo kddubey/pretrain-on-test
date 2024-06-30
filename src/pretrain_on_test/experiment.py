@@ -110,6 +110,7 @@ def _experiment(
     model_type_to_test_probs["base"] = classification.predict_proba(
         df_test["text"].tolist(), trained_classifier, config
     )
+    del trained_classifier
 
     # Run the fair pretraining methodology
     logger.info("Extra - pretraining")
@@ -132,6 +133,7 @@ def _experiment(
     model_type_to_test_probs["extra"] = classification.predict_proba(
         df_test["text"].tolist(), trained_classifier, config
     )
+    del trained_classifier
 
     # Run the (presumably) unfair pretraining methodology
     logger.info("Test - pretraining")
@@ -154,6 +156,7 @@ def _experiment(
     model_type_to_test_probs["test"] = classification.predict_proba(
         df_test["text"].tolist(), trained_classifier, config
     )
+    del trained_classifier
 
     # Compute accuracies on test
     accuracy = lambda test_probs: np.mean(
