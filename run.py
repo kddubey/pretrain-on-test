@@ -16,6 +16,8 @@ from transformers import (
     BertForSequenceClassification,
     GPT2LMHeadModel,
     GPT2ForSequenceClassification,
+    MistralForCausalLM,
+    MistralForSequenceClassification,
 )
 
 import pretrain_on_test
@@ -40,10 +42,17 @@ class Experiment(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     # Pydantic stuff: extra attributes are not allowed, and the object is immutable
 
-    lm_type: Literal["bert", "gpt2", "bert-tiny", "gpt2-tiny"] = Field(
+    lm_type: Literal[
+        "bert",
+        "gpt2",
+        "mistral-lora-2x",
+        "bert-tiny",
+        "gpt2-tiny",
+        "mistral-lora-2x-tiny",
+    ] = Field(
         description=(
-            "Type of language model. -tiny models have random weights and are intended "
-            "for testing."
+            "Type of language model. *-tiny models have random weights and should only "
+            "be used for testing."
         )
     )
     run_name: str = Field(
@@ -111,6 +120,14 @@ lm_type_to_config_creator = {
         model_class_classification=GPT2ForSequenceClassification,
         **model_independent_kwargs,
     ),
+    "mistral-lora-2x": lambda **model_independent_kwargs: pretrain_on_test.Config(
+        model_id="mistralai/Mistral-7B-v0.1",
+        model_class_pretrain=MistralForCausalLM,
+        model_class_classification=MistralForSequenceClassification,
+        lora_pretrain=True,
+        lora_classification=True,
+        **model_independent_kwargs,
+    ),
     # For quick CPU tests
     "bert-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="hf-internal-testing/tiny-random-BertModel",
@@ -124,6 +141,14 @@ lm_type_to_config_creator = {
         model_id="hf-internal-testing/tiny-random-gpt2",
         model_class_pretrain=GPT2LMHeadModel,
         model_class_classification=GPT2ForSequenceClassification,
+        **model_independent_kwargs,
+    ),
+    "mistral-lora-2x-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
+        model_id="hf-internal-testing/tiny-random-MistralForCausalLM",
+        model_class_pretrain=MistralForCausalLM,
+        model_class_classification=MistralForSequenceClassification,
+        lora_pretrain=True,
+        lora_classification=True,
         **model_independent_kwargs,
     ),
 }

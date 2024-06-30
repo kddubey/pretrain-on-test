@@ -104,6 +104,7 @@ def _experiment(
         num_labels=num_labels,
         config=config,
         pretrained_model_name_or_path=config.model_id,
+        is_pretrained_fresh=True,
     )
     logger.info("Base - testing")
     model_type_to_test_probs["base"] = classification.predict_proba(

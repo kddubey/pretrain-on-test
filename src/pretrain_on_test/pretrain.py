@@ -3,6 +3,7 @@ Train a freshly loaded pretrained LM using its original loss function: MLM for B
 for GPT-2
 """
 
+from peft import get_peft_model, LoraConfig, TaskType
 import torch
 from transformers import (
     DataCollatorForLanguageModeling,
@@ -57,6 +58,7 @@ def train(texts: list[str], config: Config):
         mlm=config.mlm,
         mlm_probability=config.mlm_probability,
     )
+
     # Set up Trainer
     training_args = TrainingArguments(
         output_dir=config.model_path_pretrained,
@@ -69,6 +71,7 @@ def train(texts: list[str], config: Config):
         prediction_loss_only=True,
         disable_tqdm=False,
     )
+
     # Trainer will modify the model, so need to re-load a fresh one every time this
     # function is called
     model = config.model_class_pretrain.from_pretrained(
@@ -78,6 +81,19 @@ def train(texts: list[str], config: Config):
     ).to(config.device)
     if model.config.pad_token_id is None:
         model.config.pad_token_id = model.config.eos_token_id
+
+    # Maybe set up LoRA
+    if config.lora_pretrain:
+        lora_config = LoraConfig(  # TODO: check Raschka recommendations
+            task_type=TaskType.CAUSAL_LM,
+            r=4,
+            lora_alpha=32,
+            lora_dropout=0.1,
+        )
+        model = get_peft_model(model, lora_config)
+        model.print_trainable_parameters()
+
+    # Train and save to config.model_path_pretrained
     trainer = Trainer(
         model=model,
         args=training_args,
@@ -85,4 +101,9 @@ def train(texts: list[str], config: Config):
         train_dataset=train_dataset,
     )
     trainer.train()
-    trainer.save_model()
+    if config.lora_pretrain:
+        # Just save the adapter weights. We'll merge them into the base model before
+        # classification training
+        model.save_pretrained(config.model_path_pretrained)
+    else:
+        trainer.save_model()

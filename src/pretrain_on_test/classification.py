@@ -2,7 +2,15 @@
 Train a pretrained LM using categorical cross entropy loss
 """
 
+from typing import cast
 import numpy as np
+from peft import (
+    get_peft_model,
+    AutoPeftModelForCausalLM,
+    LoraConfig,
+    PeftMixedModel,
+    TaskType,
+)
 import torch
 from transformers import PreTrainedTokenizerBase, Trainer, TrainingArguments
 
@@ -41,6 +49,7 @@ def train(
     num_labels: int,
     config: Config,
     pretrained_model_name_or_path: str | None = None,
+    is_pretrained_fresh: bool = False,
 ) -> Trainer:
     """
     Returns a model `Trainer` which was finetuned on classification data `texts,
@@ -62,8 +71,25 @@ def train(
     pretrained_model_name_or_path = (
         pretrained_model_name_or_path or config.model_path_pretrained
     )
+
+    # Load in the pretrained model and add a linear layer to it for performing
+    # classification
+    if config.lora_pretrain and not is_pretrained_fresh:
+        state_dict = (
+            cast(
+                PeftMixedModel,
+                AutoPeftModelForCausalLM.from_pretrained(pretrained_model_name_or_path),
+            )
+            # Load in the pretrained LM (w/ the original/fresh pretrained weights) and
+            # (separately) the adapter weights stored at pretrained_model_name_or_path
+            .merge_and_unload()  # merge in the adapter weights
+            .state_dict()
+        )
+    else:
+        state_dict = None
     model = config.model_class_classification.from_pretrained(
         pretrained_model_name_or_path,
+        state_dict=state_dict,
         num_labels=num_labels,
         output_attentions=False,
         output_hidden_states=False,
@@ -71,6 +97,22 @@ def train(
     ).to(config.device)
     if model.config.pad_token_id is None:
         model.config.pad_token_id = model.config.eos_token_id
+
+    # Maybe set up LoRA
+    if config.lora_classification:
+        # https://github.com/huggingface/blog/blob/main/Lora-for-sequence-classification-with-Roberta-Llama-Mistral.md#lora-setup-for-mistral-7b-classifier
+        lora_config = LoraConfig(  # TODO: check Raschka recommendations
+            task_type=TaskType.SEQ_CLS,
+            r=2,
+            lora_alpha=16,
+            lora_dropout=0.1,
+            bias="none",
+            target_modules=["q_proj", "v_proj"],
+        )
+        model = get_peft_model(model, lora_config)
+        model.print_trainable_parameters()
+
+    # Train and save to config.model_path_classification
     classifier_trainer = Trainer(
         model=model,
         args=classifier_args,

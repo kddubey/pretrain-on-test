@@ -21,6 +21,8 @@ class Config:
     model_class_classification: type[PreTrainedModel]
     mlm: bool | None = None
     mlm_probability: float | None = None
+    lora_pretrain: bool = False
+    lora_classification: bool = False
     tokenizer: PreTrainedTokenizerBase | None = None
     device: str | torch.device | None = None
     per_device_train_batch_size_pretrain: int = 16
