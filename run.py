@@ -176,7 +176,7 @@ def run(
     experiment: Experiment,
     create_logger: cloud.CreateLogger = cloud.create_logger_local,
     upload_directory: cloud.UploadDirectory = do_nothing,
-):
+) -> str:
     """
     Run the experiment.
 
@@ -192,6 +192,11 @@ def run(
         Callable which takes as input `directory` and `logger` arguments and uploads all
         local content in `directory` somewhere else, e.g., S3. By default, nothing is
         uploaded.
+
+    Returns
+    -------
+    str
+        run ID
     """
     # Meta info
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -275,6 +280,8 @@ def run(
             msg = ""
         logger.error(f"{msg}{exception}", exc_info=True)
         raise
+
+    return run_id
 
 
 if __name__ == "__main__":
