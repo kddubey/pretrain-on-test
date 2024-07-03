@@ -55,6 +55,8 @@ def _prompt_completion_formatter(
     texts: list[str],
     class_names: list[str],
 ) -> list[str]:
+    texts = [texts] if isinstance(texts, str) else texts
+    class_names = [class_names] if isinstance(class_names, str) else class_names
     instruction = _instruction_formatter(class_names_unique, task_description)
     return [instruction + body for body in _body_formatter(texts, class_names)]
 
@@ -66,7 +68,6 @@ def _sft_trainer_formatting_func(
 ):
     # The SFTTrainer requires this type of function. See:
     # https://huggingface.co/docs/trl/en/sft_trainer#train-on-completions-only
-    print(batch)
     return _prompt_completion_formatter(
         class_names_unique, task_description, batch["text"], batch["class_name"]
     )
