@@ -191,8 +191,7 @@ def train(
         # b/c of a whitespace tokenization issue. For now, I hardcoded data_collator to
         # work for Llama-like tokenizers which add a BOS token. TODO: check that it
         # works for BPE/GPT-2-like tokenizers
-        # trainer.train()  # train modifies the model object itself.
-        pass
+        trainer.train()  # train modifies the model object itself.
     return trainer
 
 
