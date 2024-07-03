@@ -16,7 +16,7 @@ from peft import (
     PeftMixedModel,
     TaskType,
 )
-from transformers import Trainer, TrainingArguments
+from transformers import AutoTokenizer, Trainer, TrainingArguments
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 
 try:
@@ -208,14 +208,21 @@ def predict_proba(
     instruction = _instruction_formatter(class_names_unique, task_description)
     prompts = _body_formatter(texts, class_names=[""] * len(texts))
 
-    print("Converting model to inference")
-    trained_classifier.model = cast(
-        PeftMixedModel, trained_classifier.model
-    ).merge_and_unload()
-    FastLanguageModel.for_inference(trained_classifier.model)
+    del trained_classifier.model
+    path = "_classifier"
+    model: PeftMixedModel = AutoPeftModelForCausalLM.from_pretrained(path)
+    tokenizer = AutoTokenizer.from_pretrained(path)
+    model = model.merge_and_unload()
+    model_and_tokenizer = (model, tokenizer)
+
+    # trained_classifier.model = cast(
+    #     PeftMixedModel, trained_classifier.model
+    # ).merge_and_unload()
+    # FastLanguageModel.for_inference(trained_classifier.model)
+    # model_and_tokenizer = (trained_classifier.model, trained_classifier.tokenizer)
 
     with cappr.huggingface.classify.cache(
-        model_and_tokenizer=(trained_classifier.model, trained_classifier.tokenizer),
+        model_and_tokenizer,
         prefixes=instruction,
         logits_all=False,
     ) as cached:
