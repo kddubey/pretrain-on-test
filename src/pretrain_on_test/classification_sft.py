@@ -124,7 +124,9 @@ def train(
     is_unsloth = issubclass(config.model_class_classification, FastLanguageModel)
     if is_unsloth:
         model, tokenizer = config.model_class_classification.from_pretrained(
-            pretrained_model_name_or_path, state_dict=state_dict, load_in_4bit=True
+            pretrained_model_name_or_path,
+            state_dict=state_dict,
+            load_in_4bit=False,  # TODO: check if True works
         )
         object.__setattr__(config, "tokenizer", tokenizer)
     else:
@@ -156,8 +158,8 @@ def train(
         num_train_epochs=config.num_train_epochs_classification,
         save_strategy="no",
         optim="adamw_torch" if not is_unsloth else "adamw_8bit",
-        fp16=(config.device == "cuda") and (not is_bfloat16_supported()),
-        bf16=is_bfloat16_supported(),
+        fp16=False,  # (config.device == "cuda") and (not is_bfloat16_supported()),
+        bf16=False,  # is_bfloat16_supported(),
         prediction_loss_only=True,
         disable_tqdm=False,
     )
