@@ -137,7 +137,7 @@ lm_type_to_config_creator = {
         max_length=512,
         **model_independent_kwargs,
     ),
-    "mistral-lora-sft-unsloth": lambda **model_independent_kwargs: pretrain_on_test.Config(
+    "mistral-lora-sft-unsloth": lambda **model_independent_kwargs: pretrain_on_test.Config(  # doesn't quite work yet
         model_id="unsloth/mistral-7b-v0.3",
         model_class_pretrain=FastLanguageModel,
         model_class_classification=FastLanguageModel,
