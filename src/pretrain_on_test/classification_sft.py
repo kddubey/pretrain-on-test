@@ -14,7 +14,6 @@ from peft import (
     AutoPeftModelForCausalLM,
     LoraConfig,
     PeftMixedModel,
-    PeftModel,
     TaskType,
 )
 from transformers import Trainer, TrainingArguments
@@ -22,7 +21,9 @@ from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 
 try:
     from unsloth import FastLanguageModel, is_bfloat16_supported
-except Exception:
+except AssertionError as exception:
+    if not str(exception).startswith("Torch not compiled with CUDA enabled"):
+        raise exception
     print("Not importing unsloth")
     FastLanguageModel = type("Dummy", (object,), {})
     is_bfloat16_supported = lambda: False
@@ -197,7 +198,6 @@ def train(
         trainer.train()
         # For non-LoRA, train modifies the model object itself. What about for LoRA?
         # TODO: check if I need to merge and unload
-    trainer.model.save_pretrained(config.model_path_classification)
     return trainer
 
 
@@ -210,18 +210,14 @@ def predict_proba(
     instruction = _instruction_formatter(class_names_unique, task_description)
     prompts = _body_formatter(texts, class_names=[""] * len(texts))
 
-    path = "_classifier"
-    model: PeftMixedModel = PeftModel.from_pretrained(
-        trained_classifier.model.base_model, path
-    )
-    model = model.merge_and_unload()
-    model_and_tokenizer = (model, trained_classifier.tokenizer)
-
-    # trained_classifier.model = cast(
-    #     PeftMixedModel, trained_classifier.model
-    # ).merge_and_unload()
-    # FastLanguageModel.for_inference(trained_classifier.model)
-    # model_and_tokenizer = (trained_classifier.model, trained_classifier.tokenizer)
+    trained_classifier.model = cast(
+        PeftMixedModel, trained_classifier.model
+    ).merge_and_unload()
+    try:
+        FastLanguageModel.for_inference(trained_classifier.model)
+    except Exception:
+        pass
+    model_and_tokenizer = (trained_classifier.model, trained_classifier.tokenizer)
 
     with cappr.huggingface.classify.cache(
         model_and_tokenizer,

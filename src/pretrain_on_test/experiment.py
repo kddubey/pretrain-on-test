@@ -126,7 +126,8 @@ def _experiment(
         df_test["text"].tolist(), trained_classifier, **predict_proba_kwargs
     )
     del trained_classifier
-    shutil.rmtree(config.model_path_classification)
+    if os.path.exists(config.model_path_classification):
+        shutil.rmtree(config.model_path_classification)
 
     # # Run the fair pretraining methodology
     # logger.info("Extra - pretraining")

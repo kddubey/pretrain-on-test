@@ -21,7 +21,9 @@ from transformers import (
 
 try:
     from unsloth import FastLanguageModel
-except Exception:
+except AssertionError as exception:
+    if not str(exception).startswith("Torch not compiled with CUDA enabled"):
+        raise exception
     FastLanguageModel = type("Dummy", (object,), {})
 
 import pretrain_on_test
