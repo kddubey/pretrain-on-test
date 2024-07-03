@@ -218,6 +218,7 @@ def predict_proba(
     with cappr.huggingface.classify.cache(
         model_and_tokenizer=(trained_classifier.model, trained_classifier.tokenizer),
         prefixes=instruction,
+        logits_all=False,
     ) as cached:
         return cappr.huggingface.classify.predict_proba(
             prompts, completions=class_names_unique, model_and_tokenizer=cached
