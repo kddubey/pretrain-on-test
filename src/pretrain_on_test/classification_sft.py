@@ -158,8 +158,8 @@ def train(
         num_train_epochs=config.num_train_epochs_classification,
         save_strategy="no",
         optim="adamw_torch" if not is_unsloth else "adamw_8bit",
-        fp16=False,  # (config.device == "cuda") and (not is_bfloat16_supported()),
-        bf16=False,  # is_bfloat16_supported(),
+        fp16=(config.device == "cuda") and (not is_bfloat16_supported()),
+        bf16=(config.device == "cuda") and is_bfloat16_supported(),
         prediction_loss_only=True,
         disable_tqdm=False,
     )
@@ -207,10 +207,19 @@ def predict_proba(
 ) -> np.ndarray:
     instruction = _instruction_formatter(class_names_unique, task_description)
     prompts = _body_formatter(texts, class_names=[""] * len(texts))
-    # I don't think merging is necessary, but just in case:
-    trained_classifier.model = cast(
-        PeftMixedModel, trained_classifier.model
-    ).merge_and_unload()
+
+    # model_path_classification = "_classifier",
+    # model: PeftMixedModel = AutoPeftModelForCausalLM.from_pretrained(
+    #     model_path_classification
+    # )
+    # tokenizer = AutoTokenizer.from_pretrained(model_path_classification)
+    # model = model.merge_and_unload()
+    # model_and_tokenizer = (model, tokenizer)
+    # model.float()
+
+    trained_classifier.model = (
+        cast(PeftMixedModel, trained_classifier.model).merge_and_unload().float()
+    )
     model_and_tokenizer = (trained_classifier.model, trained_classifier.tokenizer)
     with cappr.huggingface.classify.cache(
         model_and_tokenizer, instruction, logits_all=False
