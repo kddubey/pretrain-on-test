@@ -14,9 +14,10 @@ from peft import (
     AutoPeftModelForCausalLM,
     LoraConfig,
     PeftMixedModel,
+    PeftModel,
     TaskType,
 )
-from transformers import AutoTokenizer, Trainer, TrainingArguments
+from transformers import Trainer, TrainingArguments
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 
 try:
@@ -196,6 +197,7 @@ def train(
         trainer.train()
         # For non-LoRA, train modifies the model object itself. What about for LoRA?
         # TODO: check if I need to merge and unload
+    trainer.model.save_pretrained(config.model_path_classification)
     return trainer
 
 
@@ -208,12 +210,12 @@ def predict_proba(
     instruction = _instruction_formatter(class_names_unique, task_description)
     prompts = _body_formatter(texts, class_names=[""] * len(texts))
 
-    del trained_classifier.model
     path = "_classifier"
-    model: PeftMixedModel = AutoPeftModelForCausalLM.from_pretrained(path)
-    tokenizer = AutoTokenizer.from_pretrained(path)
+    model: PeftMixedModel = PeftModel.from_pretrained(
+        trained_classifier.model.base_model, path
+    )
     model = model.merge_and_unload()
-    model_and_tokenizer = (model, tokenizer)
+    model_and_tokenizer = (model, trained_classifier.tokenizer)
 
     # trained_classifier.model = cast(
     #     PeftMixedModel, trained_classifier.model
