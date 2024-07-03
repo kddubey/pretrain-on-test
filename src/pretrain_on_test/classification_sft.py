@@ -18,6 +18,7 @@ from peft import (
 )
 from transformers import Trainer, TrainingArguments
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
+from unsloth import FastLanguageModel
 
 from pretrain_on_test import Config
 
@@ -111,9 +112,17 @@ def train(
         )
     else:
         state_dict = None
-    model = config.model_class_classification.from_pretrained(
-        pretrained_model_name_or_path, state_dict=state_dict
-    ).to(config.device)
+
+    is_unsloth = issubclass(config.model_class_classification, FastLanguageModel)
+    if is_unsloth:
+        model, tokenizer = config.model_class_classification.from_pretrained(
+            pretrained_model_name_or_path, state_dict=state_dict, load_in_4bit=True
+        )
+        object.__setattr__(config, "tokenizer", tokenizer)
+    else:
+        model = config.model_class_classification.from_pretrained(
+            pretrained_model_name_or_path, state_dict=state_dict
+        ).to(config.device)
 
     # Maybe set up LoRA
     if config.lora_classification:
@@ -127,6 +136,8 @@ def train(
             target_modules=["q_proj", "v_proj"],
         )
         model = get_peft_model(model, lora_config)
+        if is_unsloth:
+            model = FastLanguageModel.get_peft_model(model)
         model.print_trainable_parameters()
 
     training_args = TrainingArguments(
