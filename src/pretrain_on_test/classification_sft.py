@@ -60,12 +60,13 @@ def _prompt_completion_formatter(
 
 
 def _sft_trainer_formatting_func(
-    batch: list[dict[str, list[str]]],
-    class_names_unique: list[str],
+    class_names_unique: tuple[str, ...],
     task_description: str,
+    batch: dict[str, list[str]],
 ):
     # The SFTTrainer requires this type of function. See:
     # https://huggingface.co/docs/trl/en/sft_trainer#train-on-completions-only
+    print(batch)
     return _prompt_completion_formatter(
         class_names_unique, task_description, batch["text"], batch["class_name"]
     )
@@ -165,9 +166,7 @@ def train(
         train_dataset=dataset,
         max_seq_length=config.max_length,
         formatting_func=partial(
-            _sft_trainer_formatting_func,
-            class_names_unique=class_names_unique,
-            task_description=task_description,
+            _sft_trainer_formatting_func, class_names_unique, task_description
         ),
         data_collator=DataCollatorForCompletionOnlyLM(
             config.tokenizer.encode(RESPONSE_TEMPLATE, add_special_tokens=False)[1:],
