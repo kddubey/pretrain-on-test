@@ -21,9 +21,7 @@ from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 
 try:
     from unsloth import FastLanguageModel, is_bfloat16_supported
-except AssertionError as exception:
-    if not str(exception).startswith("Torch not compiled with CUDA enabled"):
-        raise exception
+except Exception:
     print("Not importing unsloth")
     FastLanguageModel = type("Dummy", (object,), {})
     is_bfloat16_supported = lambda: False
@@ -213,7 +211,9 @@ def predict_proba(
     try:
         FastLanguageModel.for_inference(trained_classifier.model)
     except Exception:
-        pass
+        trained_classifier.model = cast(
+            PeftMixedModel, trained_classifier.model
+        ).merge_and_unload()
 
     with cappr.huggingface.classify.cache(
         model_and_tokenizer=(trained_classifier.model, trained_classifier.tokenizer),
