@@ -211,9 +211,10 @@ def predict_proba(
     try:
         FastLanguageModel.for_inference(trained_classifier.model)
     except Exception:
-        trained_classifier.model = cast(
-            PeftMixedModel, trained_classifier.model
-        ).merge_and_unload()
+        # trained_classifier.model = cast(
+        #     PeftMixedModel, trained_classifier.model
+        # ).merge_and_unload()
+        pass
 
     with cappr.huggingface.classify.cache(
         model_and_tokenizer=(trained_classifier.model, trained_classifier.tokenizer),
