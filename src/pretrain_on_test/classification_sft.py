@@ -210,16 +210,14 @@ def predict_proba(
     instruction = _instruction_formatter(class_names_unique, task_description)
     prompts = _body_formatter(texts, class_names=[""] * len(texts))
 
-    # try:
-    #     FastLanguageModel.for_inference(trained_classifier.model)
-    # except Exception:
-    #     pass
-    model_and_tokenizer = (trained_classifier.model, trained_classifier.tokenizer)
+    try:
+        FastLanguageModel.for_inference(trained_classifier.model)
+    except Exception:
+        pass
 
     with cappr.huggingface.classify.cache(
-        model_and_tokenizer,
+        model_and_tokenizer=(trained_classifier.model, trained_classifier.tokenizer),
         prefixes=instruction,
-        logits_all=False,
     ) as cached:
         return cappr.huggingface.classify.predict_proba(
             prompts, completions=class_names_unique, model_and_tokenizer=cached
