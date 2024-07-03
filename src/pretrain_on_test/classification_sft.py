@@ -210,9 +210,9 @@ def predict_proba(
     instruction = _instruction_formatter(class_names_unique, task_description)
     prompts = _body_formatter(texts, class_names=[""] * len(texts))
 
-    trained_classifier.model = cast(
-        PeftMixedModel, trained_classifier.model
-    ).merge_and_unload()
+    # trained_classifier.model = cast(
+    #     PeftMixedModel, trained_classifier.model
+    # ).merge_and_unload()
     try:
         FastLanguageModel.for_inference(trained_classifier.model)
     except Exception:
