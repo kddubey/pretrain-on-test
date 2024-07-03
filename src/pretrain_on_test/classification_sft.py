@@ -171,7 +171,9 @@ def train(
         # b/c of a whitespace tokenization issue. For now, I hardcoded data_collator to
         # work for Llama-like tokenizers which add a BOS token. TODO: check that it
         # works for BPE/GPT-2-like tokenizers
-        trainer.train()  # modifies the model object itself
+        trainer.train()
+        # For non-LoRA, train modifies the model object itself. What about for LoRA?
+        # TODO: check if I need to merge and unload
     return trainer
 
 
@@ -183,13 +185,14 @@ def predict_proba(
 ) -> np.ndarray:
     instruction = _instruction_formatter(class_names_unique, task_description)
     prompts = _body_formatter(texts, class_names=[""] * len(texts))
+    # I don't think merging is necessary, but just in case:
+    trained_classifier.model = cast(
+        PeftMixedModel, trained_classifier.model
+    ).merge_and_unload()
     model_and_tokenizer = (trained_classifier.model, trained_classifier.tokenizer)
     with cappr.huggingface.classify.cache(
         model_and_tokenizer, instruction, logits_all=False
     ) as cached:
         return cappr.huggingface.classify.predict_proba(
-            prompts,
-            completions=class_names_unique,
-            model_and_tokenizer=cached,
-            batch_size=2,  # play it safe for now
+            prompts, completions=class_names_unique, model_and_tokenizer=cached
         )
