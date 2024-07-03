@@ -126,18 +126,19 @@ def train(
 
     # Maybe set up LoRA
     if config.lora_classification:
-        # HPs from https://huggingface.co/docs/trl/en/sft_trainer#training-adapters
-        lora_config = LoraConfig(
-            task_type=TaskType.CAUSAL_LM,
-            r=16,
-            lora_alpha=32,
-            lora_dropout=0.05,
-            bias="none",
-            target_modules=["q_proj", "v_proj"],
-        )
-        model = get_peft_model(model, lora_config)
         if is_unsloth:
             model = FastLanguageModel.get_peft_model(model)
+        else:
+            # HPs from https://huggingface.co/docs/trl/en/sft_trainer#training-adapters
+            lora_config = LoraConfig(
+                task_type=TaskType.CAUSAL_LM,
+                r=16,
+                lora_alpha=32,
+                lora_dropout=0.05,
+                bias="none",
+                target_modules=["q_proj", "v_proj"],
+            )
+            model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
 
     training_args = TrainingArguments(
