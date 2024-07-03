@@ -126,7 +126,7 @@ def train(
         model, tokenizer = config.model_class_classification.from_pretrained(
             pretrained_model_name_or_path,
             state_dict=state_dict,
-            load_in_4bit=False,  # TODO: check if True works
+            load_in_4bit=True,
         )
         object.__setattr__(config, "tokenizer", tokenizer)
     else:
@@ -158,8 +158,8 @@ def train(
         num_train_epochs=config.num_train_epochs_classification,
         save_strategy="no",
         optim="adamw_torch" if not is_unsloth else "adamw_8bit",
-        fp16=(config.device == "cuda") and (not is_bfloat16_supported()),
-        bf16=(config.device == "cuda") and is_bfloat16_supported(),
+        fp16=is_unsloth and (not is_bfloat16_supported()),
+        bf16=is_unsloth and is_bfloat16_supported(),
         prediction_loss_only=True,
         disable_tqdm=False,
     )
@@ -208,21 +208,17 @@ def predict_proba(
     instruction = _instruction_formatter(class_names_unique, task_description)
     prompts = _body_formatter(texts, class_names=[""] * len(texts))
 
-    # model_path_classification = "_classifier",
-    # model: PeftMixedModel = AutoPeftModelForCausalLM.from_pretrained(
-    #     model_path_classification
-    # )
-    # tokenizer = AutoTokenizer.from_pretrained(model_path_classification)
-    # model = model.merge_and_unload()
-    # model_and_tokenizer = (model, tokenizer)
-    # model.float()
+    trained_classifier.model = cast(
+        PeftMixedModel, trained_classifier.model
+    ).merge_and_unload()
+    if isinstance(trained_classifier.model, FastLanguageModel):
+        print("Converting model to inference")
+        FastLanguageModel.for_inference(trained_classifier.model)
 
-    trained_classifier.model = (
-        cast(PeftMixedModel, trained_classifier.model).merge_and_unload().float()
-    )
-    model_and_tokenizer = (trained_classifier.model, trained_classifier.tokenizer)
     with cappr.huggingface.classify.cache(
-        model_and_tokenizer, instruction, logits_all=False
+        model_and_tokenizer=(trained_classifier.model, trained_classifier.tokenizer),
+        prefixes=instruction,
+        logits_all=False,
     ) as cached:
         return cappr.huggingface.classify.predict_proba(
             prompts, completions=class_names_unique, model_and_tokenizer=cached
