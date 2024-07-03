@@ -208,12 +208,11 @@ def predict_proba(
     instruction = _instruction_formatter(class_names_unique, task_description)
     prompts = _body_formatter(texts, class_names=[""] * len(texts))
 
+    print("Converting model to inference")
     trained_classifier.model = cast(
         PeftMixedModel, trained_classifier.model
     ).merge_and_unload()
-    if isinstance(trained_classifier.model, FastLanguageModel):
-        print("Converting model to inference")
-        FastLanguageModel.for_inference(trained_classifier.model)
+    FastLanguageModel.for_inference(trained_classifier.model)
 
     with cappr.huggingface.classify.cache(
         model_and_tokenizer=(trained_classifier.model, trained_classifier.tokenizer),
