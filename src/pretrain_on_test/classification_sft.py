@@ -18,7 +18,13 @@ from peft import (
 )
 from transformers import Trainer, TrainingArguments
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
-from unsloth import FastLanguageModel
+
+try:
+    from unsloth import FastLanguageModel, is_bfloat16_supported
+except Exception:
+    print("Not importing unsloth")
+    FastLanguageModel = type("Dummy", (object,), {})
+    is_bfloat16_supported = lambda: False
 
 from pretrain_on_test import Config
 
@@ -149,7 +155,9 @@ def train(
         per_device_eval_batch_size=config.per_device_eval_batch_size_classification,
         num_train_epochs=config.num_train_epochs_classification,
         save_strategy="no",
-        optim="adamw_torch",
+        optim="adamw_torch" if not is_unsloth else "adamw_8bit",
+        fp16=(config.device == "cuda") and (not is_bfloat16_supported()),
+        bf16=is_bfloat16_supported(),
         prediction_loss_only=True,
         disable_tqdm=False,
     )

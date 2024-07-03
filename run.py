@@ -18,7 +18,11 @@ from transformers import (
     GPT2ForSequenceClassification,
     MistralForCausalLM,
 )
-from unsloth import FastLanguageModel
+
+try:
+    from unsloth import FastLanguageModel
+except Exception:
+    FastLanguageModel = type("Dummy", (object,), {})
 
 import pretrain_on_test
 import cloud
