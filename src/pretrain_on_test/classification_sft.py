@@ -17,7 +17,7 @@ from peft import (
     TaskType,
 )
 from transformers import Trainer, TrainingArguments
-from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
+from trl import DataCollatorForCompletionOnlyLM, SFTTrainer
 
 try:
     from unsloth import FastLanguageModel, is_bfloat16_supported
