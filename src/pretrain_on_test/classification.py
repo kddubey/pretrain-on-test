@@ -1,5 +1,7 @@
 """
-Train a pretrained LM using categorical cross entropy loss
+Train a pretrained LM to do classification by adding a linear layer transforming a
+representative token embedding ([CLS] for BERT, or the last token for autoregressive
+LMs) to a distribution over classes.
 """
 
 from typing import cast

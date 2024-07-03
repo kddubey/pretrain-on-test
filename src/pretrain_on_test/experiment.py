@@ -17,7 +17,7 @@ try:
 except ModuleNotFoundError:
     clear_output = lambda *args, **kwargs: None
 
-from pretrain_on_test import classification, Config, pretrain
+from pretrain_on_test import classification, classification_sft, Config, data, pretrain
 
 
 hf_logging.set_verbosity_error()
@@ -81,16 +81,31 @@ def _add_pred_probs(
 
 def _experiment(
     df: pd.DataFrame,
+    classification_dataset_info: data.ClassificationDatasetInfo,
     config: Config,
     logger: logging.Logger,
     num_train: int = 100,
     num_test: int = 200,
     random_state_subsamples: int = None,
 ) -> tuple[pd.DataFrame, dict[str, float]]:
+    if config.sft_classification:
+        classification_module = classification_sft
+        kwargs = dict(
+            class_names_unique=classification_dataset_info.class_names,
+            task_description=classification_dataset_info.task_description,
+        )
+        train_labels_kwargs = kwargs
+        predict_proba_kwargs = kwargs
+    else:
+        classification_module = classification
+        train_labels_kwargs = dict(  # configure output dimension of linear layer
+            num_labels=len(classification_dataset_info.class_names)
+        )
+        predict_proba_kwargs = dict(config=config)
+
     df_train, df_extra, df_test = _split(
         df, num_train=num_train, num_test=num_test, random_state=random_state_subsamples
     )
-    num_labels = len(set(df["label"]))  # configure output dimension of linear layer
 
     model_type_to_test_probs: dict[str, np.ndarray] = {}
 
@@ -98,17 +113,17 @@ def _experiment(
     # to demonstrate that pretraining/domain adaptation helps, so that there's an effect
     # to detect
     logger.info("Base - training")
-    trained_classifier = classification.train(
+    trained_classifier = classification_module.train(
         df_train["text"].tolist(),
         df_train["label"].tolist(),
-        num_labels=num_labels,
+        **train_labels_kwargs,
         config=config,
         pretrained_model_name_or_path=config.model_id,
         is_pretrained_fresh=True,
     )
     logger.info("Base - testing")
-    model_type_to_test_probs["base"] = classification.predict_proba(
-        df_test["text"].tolist(), trained_classifier, config
+    model_type_to_test_probs["base"] = classification_module.predict_proba(
+        df_test["text"].tolist(), trained_classifier, **predict_proba_kwargs
     )
     del trained_classifier
 
@@ -119,10 +134,10 @@ def _experiment(
     )  # saved pretrained model in config.model_path_pretrained
     logger.info("Extra - training")
     try:
-        trained_classifier = classification.train(
+        trained_classifier = classification_module.train(
             df_train["text"].tolist(),
             df_train["label"].tolist(),
-            num_labels=num_labels,
+            **train_labels_kwargs,
             config=config,
             pretrained_model_name_or_path=config.model_path_pretrained,
         )
@@ -130,8 +145,8 @@ def _experiment(
         shutil.rmtree(config.model_path_pretrained)
         shutil.rmtree(config.model_path_classification)
     logger.info("Extra - testing")
-    model_type_to_test_probs["extra"] = classification.predict_proba(
-        df_test["text"].tolist(), trained_classifier, config
+    model_type_to_test_probs["extra"] = classification_module.predict_proba(
+        df_test["text"].tolist(), trained_classifier, **predict_proba_kwargs
     )
     del trained_classifier
 
@@ -142,10 +157,10 @@ def _experiment(
     )  # saved pretrained model in config.model_path_pretrained
     logger.info("Test - training")
     try:
-        trained_classifier = classification.train(
+        trained_classifier = classification_module.train(
             df_train["text"].tolist(),
             df_train["label"].tolist(),
-            num_labels=num_labels,
+            **train_labels_kwargs,
             config=config,
             pretrained_model_name_or_path=config.model_path_pretrained,
         )
@@ -153,8 +168,8 @@ def _experiment(
         shutil.rmtree(config.model_path_pretrained)
         shutil.rmtree(config.model_path_classification)
     logger.info("Test - testing")
-    model_type_to_test_probs["test"] = classification.predict_proba(
-        df_test["text"].tolist(), trained_classifier, config
+    model_type_to_test_probs["test"] = classification_module.predict_proba(
+        df_test["text"].tolist(), trained_classifier, **predict_proba_kwargs
     )
     del trained_classifier
 
@@ -177,6 +192,7 @@ def _experiment(
 
 def replicate(
     df: pd.DataFrame,
+    classification_dataset_info: data.ClassificationDatasetInfo,
     dataset_name: str,
     results_dir: str,
     config: Config,
@@ -208,6 +224,7 @@ def replicate(
         )
         df_test_with_pred_probs, accuracies_subsample = _experiment(
             df,
+            classification_dataset_info,
             config,
             logger,
             num_train=num_train,

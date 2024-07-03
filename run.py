@@ -6,7 +6,7 @@ import json
 import os
 from datetime import datetime
 from functools import partial
-from typing import Collection, get_args, Literal
+from typing import Collection, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 from tap import tapify
@@ -17,7 +17,6 @@ from transformers import (
     GPT2LMHeadModel,
     GPT2ForSequenceClassification,
     MistralForCausalLM,
-    MistralForSequenceClassification,
 )
 
 import pretrain_on_test
@@ -45,10 +44,10 @@ class Experiment(BaseModel):
     lm_type: Literal[
         "bert",
         "gpt2",
-        "mistral-lora-2x",
+        "mistral-lora-sft",
         "bert-tiny",
         "gpt2-tiny",
-        "mistral-lora-2x-tiny",
+        "mistral-lora-sft-tiny",
     ] = Field(
         description=(
             "Type of language model. *-tiny models have random weights and should only "
@@ -80,6 +79,13 @@ class Experiment(BaseModel):
         default=200,
         description="Number of observations for pretraining and for evaluation",
     )
+    max_length: int | None = Field(
+        default=256,
+        description=(
+            "Number of context tokens for pretraining. Set to None to use the model's "
+            "default"
+        ),
+    )
     # Model-independent arguments which are passed to the config
     per_device_train_batch_size_pretrain: int = _field_for_config(
         default=16, description="Batch size for pretraining"
@@ -89,13 +95,6 @@ class Experiment(BaseModel):
     )
     per_device_eval_batch_size_classification: int = _field_for_config(
         default=64, description="Batch size for classification evaluation"
-    )
-    max_length: int | None = _field_for_config(
-        default=256,
-        description=(
-            "Number of context tokens for pretraining. Set to None to use the model's "
-            "default"
-        ),
     )
     num_train_epochs_classification: int = _field_for_config(
         default=3, description="Number of epochs for classification training"
@@ -112,20 +111,24 @@ lm_type_to_config_creator = {
         model_class_classification=BertForSequenceClassification,
         mlm=True,
         mlm_probability=0.15,
+        max_length=256,
         **model_independent_kwargs,
     ),
     "gpt2": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="gpt2",
         model_class_pretrain=GPT2LMHeadModel,
         model_class_classification=GPT2ForSequenceClassification,
+        max_length=256,
         **model_independent_kwargs,
     ),
-    "mistral-lora-2x": lambda **model_independent_kwargs: pretrain_on_test.Config(
+    "mistral-lora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="mistralai/Mistral-7B-v0.1",
         model_class_pretrain=MistralForCausalLM,
-        model_class_classification=MistralForSequenceClassification,
+        model_class_classification=MistralForCausalLM,
         lora_pretrain=True,
         lora_classification=True,
+        sft_classification=True,
+        max_length=512,
         **model_independent_kwargs,
     ),
     # For quick CPU tests
@@ -135,20 +138,24 @@ lm_type_to_config_creator = {
         model_class_classification=BertForSequenceClassification,
         mlm=True,
         mlm_probability=0.15,
+        max_length=256,
         **model_independent_kwargs,
     ),
     "gpt2-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="hf-internal-testing/tiny-random-gpt2",
         model_class_pretrain=GPT2LMHeadModel,
         model_class_classification=GPT2ForSequenceClassification,
+        max_length=256,
         **model_independent_kwargs,
     ),
-    "mistral-lora-2x-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
+    "mistral-lora-sft-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="hf-internal-testing/tiny-random-MistralForCausalLM",
         model_class_pretrain=MistralForCausalLM,
-        model_class_classification=MistralForSequenceClassification,
+        model_class_classification=MistralForCausalLM,
         lora_pretrain=True,
         lora_classification=True,
+        sft_classification=True,
+        max_length=512,
         **model_independent_kwargs,
     ),
 }
@@ -156,7 +163,9 @@ lm_type_to_config_creator = {
 
 def _check_dataset_names(dataset_names: Collection[str] | None) -> list[str]:
     if dataset_names is None:
-        dataset_names = list(get_args(pretrain_on_test.HuggingFaceDatasetNames))
+        dataset_names = list(
+            pretrain_on_test.data.hf_dataset_name_to_classification_dataset_info.keys()
+        )
 
     def remove_owner(dataset_name: str) -> str:
         return dataset_name.split("/")[-1]
@@ -259,10 +268,18 @@ def run(
         _ = torch.manual_seed(123)
         torch.cuda.manual_seed_all(123)
         for dataset_name in dataset_names:
-            df = pretrain_on_test.load_classification_data_from_hf(dataset_name)
+            classification_dataset_info = (
+                pretrain_on_test.data.hf_dataset_name_to_classification_dataset_info[
+                    dataset_name
+                ]
+            )
+            df = pretrain_on_test.data.load_classification_data(
+                classification_dataset_info
+            )
             clear_output(wait=True)
             dataset_dir = pretrain_on_test.experiment.replicate(
                 df,
+                classification_dataset_info,
                 dataset_name,
                 results_dir,
                 config,
