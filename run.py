@@ -146,7 +146,7 @@ lm_type_to_config_creator = {
         **model_independent_kwargs,
     ),
     "mistral-instruct-qlora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
-        model_id="mistralai/Mistral-7B-Instruct-v0.1",  # TODO: add or switch to phi-3
+        model_id="mistralai/Mistral-7B-Instruct-v0.3",  # TODO: add or switch to phi-3
         model_class_pretrain=AutoModelForCausalLM,
         model_class_classification=AutoModelForCausalLM,
         lora_pretrain=True,

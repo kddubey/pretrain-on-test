@@ -25,6 +25,7 @@ from trl import SFTConfig, SFTTrainer, DataCollatorForCompletionOnlyLM
 from pretrain_on_test import Config
 
 
+QUERY_TEMPLATE = "### Text:"
 RESPONSE_TEMPLATE = " ### Answer:"
 # That extra space---^---is necessary in SFT for correct parsing of the
 # completion/response for BPE tokenizers
@@ -42,7 +43,7 @@ def _instruction_formatter(
 
 
 def _query_formatter(text: str, max_length_chars: int = 1_000) -> str:
-    return f"Text: {text[:max_length_chars]}\n"
+    return f"{QUERY_TEMPLATE} {text[:max_length_chars]}\n"
 
 
 def _answer_formatter(class_name: str) -> str:
@@ -233,7 +234,8 @@ def train(
         # likely b/c of a whitespace tokenization issue. For now, I hardcoded
         # data_collator to work for Llama-like tokenizers which add a BOS token. TODO:
         # check that it works for BPE/GPT-2-like tokenizers
-        trainer.train()  # train modifies the model object itself.
+        # trainer.train()  # train modifies the model object itself.
+        pass
     return trainer
 
 
@@ -254,11 +256,17 @@ def predict_proba(
     )
     prompts = _formatter(trained_classifier.tokenizer, chats_without_answers)
     instruction = commonprefix(prompts)
-    prompts = [prompt.removeprefix(instruction) for prompt in prompts]
+    instruction = instruction[: instruction.index(QUERY_TEMPLATE)]
+    prompts = [
+        prompt.removeprefix(instruction).removesuffix(
+            trained_classifier.tokenizer.eos_token
+        )
+        for prompt in prompts
+    ]
 
     with cappr.huggingface.classify.cache(
         model_and_tokenizer=(trained_classifier.model, trained_classifier.tokenizer),
-        prefixes=instruction.rstrip(),
+        prefixes=instruction,
         logits_all=False,
     ) as cached:
         return cappr.huggingface.classify.predict_proba(
