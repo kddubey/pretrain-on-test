@@ -9,6 +9,7 @@ readme = "README.md"
 license = { text = "MIT License" }
 dependencies = [
     "accelerate>=0.30.1,<1.0",
+    "bitsandbytes>=0.42.0",
     "cappr[hf]>=0.9.1",
     "datasets>=2.10.0",
     "pandas>=1.5.3",

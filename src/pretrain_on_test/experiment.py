@@ -101,7 +101,7 @@ def _experiment(
         train_labels_kwargs = dict(  # configure output dimension of linear layer
             num_labels=len(classification_dataset_info.class_names)
         )
-        predict_proba_kwargs = dict(config=config)
+        predict_proba_kwargs = dict()
 
     df_train, df_extra, df_test = _split(
         df, num_train=num_train, num_test=num_test, random_state=random_state_subsamples

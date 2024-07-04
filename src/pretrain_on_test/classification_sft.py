@@ -11,6 +11,7 @@ from datasets import Dataset
 import numpy as np
 from peft import (
     get_peft_model,
+    prepare_model_for_kbit_training,
     AutoPeftModelForCausalLM,
     LoraConfig,
     PeftMixedModel,
@@ -119,18 +120,24 @@ def train(
     else:
         state_dict = None
 
+    loading_kwargs = dict(
+        pretrained_model_name_or_path=pretrained_model_name_or_path,
+        state_dict=state_dict,
+        load_in_4bit=config.sft_load_in_4bit,
+    )
     is_unsloth = issubclass(config.model_class_classification, FastLanguageModel)
     if is_unsloth:
         model, tokenizer = config.model_class_classification.from_pretrained(
-            pretrained_model_name_or_path,
-            state_dict=state_dict,
-            load_in_4bit=True,
+            **loading_kwargs
         )
         object.__setattr__(config, "tokenizer", tokenizer)
     else:
-        model = config.model_class_classification.from_pretrained(
-            pretrained_model_name_or_path, state_dict=state_dict
-        ).to(config.device)
+        model = config.model_class_classification.from_pretrained(**loading_kwargs).to(
+            config.device
+        )
+        if config.sft_load_in_4bit:
+            # model.gradient_checkpointing_enable()
+            model = prepare_model_for_kbit_training(model)
 
     # Maybe set up LoRA
     if config.lora_classification:
@@ -149,14 +156,24 @@ def train(
             model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
 
+    fp16 = (not is_unsloth and config.sft_load_in_4bit) or (
+        is_unsloth and (not is_bfloat16_supported())
+    )
+    if is_unsloth:
+        optim = "adamw_8bit"
+    elif config.sft_load_in_4bit:
+        optim = "paged_adamw_8bit"
+    else:
+        optim = "adamw_torch"
     training_args = TrainingArguments(
         output_dir=config.model_path_classification,
         per_device_train_batch_size=config.per_device_train_batch_size_classification,
         per_device_eval_batch_size=config.per_device_eval_batch_size_classification,
         num_train_epochs=config.num_train_epochs_classification,
         save_strategy="no",
-        optim="adamw_torch" if not is_unsloth else "adamw_8bit",
-        fp16=is_unsloth and (not is_bfloat16_supported()),
+        optim=optim,
+        learning_rate=2e-4 if config.sft_load_in_4bit else 5e-5,
+        fp16=fp16,
         bf16=is_unsloth and is_bfloat16_supported(),
         prediction_loss_only=True,
         disable_tqdm=False,
@@ -168,6 +185,7 @@ def train(
     # never generating and terminating.
     config.tokenizer.padding_side = "right"
 
+    # model.config.use_cache = False
     trainer = SFTTrainer(
         model=model,
         tokenizer=config.tokenizer,

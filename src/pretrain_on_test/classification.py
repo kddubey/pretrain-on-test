@@ -123,13 +123,11 @@ def train(
     return classifier_trainer
 
 
-def predict_proba(
-    texts: list[str], trained_classifier: Trainer, config: Config
-) -> np.ndarray:
-    eval_dataset = _Dataset(config.tokenizer, texts)
+def predict_proba(texts: list[str], trained_classifier: Trainer) -> np.ndarray:
+    eval_dataset = _Dataset(trained_classifier.tokenizer, texts)
     logits: np.ndarray = trained_classifier.predict(eval_dataset).predictions
     # predictions are logits, not log-probs. (I checked that some are positive)
     probs: torch.Tensor = torch.softmax(
-        torch.tensor(logits, device=config.device), axis=-1
+        torch.tensor(logits, device=trained_classifier.model.device), axis=-1
     )
     return probs.numpy(force=True)
