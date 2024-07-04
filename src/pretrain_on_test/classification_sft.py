@@ -17,15 +17,8 @@ from peft import (
     PeftMixedModel,
     TaskType,
 )
-from transformers import Trainer, TrainingArguments
-from trl import DataCollatorForCompletionOnlyLM, SFTTrainer
-
-try:
-    from unsloth import FastLanguageModel, is_bfloat16_supported
-except Exception:
-    print("Not importing unsloth")
-    FastLanguageModel = type("Dummy", (object,), {})
-    is_bfloat16_supported = lambda: False
+from transformers import Trainer
+from trl import SFTConfig, SFTTrainer, DataCollatorForCompletionOnlyLM
 
 from pretrain_on_test import Config
 
@@ -120,77 +113,53 @@ def train(
     else:
         state_dict = None
 
-    loading_kwargs = dict(
+    model = config.model_class_classification.from_pretrained(
         pretrained_model_name_or_path=pretrained_model_name_or_path,
         state_dict=state_dict,
         load_in_4bit=config.sft_load_in_4bit,
         device_map="auto" if config.sft_load_in_4bit else config.device,
     )
-    is_unsloth = issubclass(config.model_class_classification, FastLanguageModel)
-    if is_unsloth:
-        model, tokenizer = config.model_class_classification.from_pretrained(
-            **loading_kwargs
-        )
-        object.__setattr__(config, "tokenizer", tokenizer)
-    else:
-        model = config.model_class_classification.from_pretrained(**loading_kwargs)
-        if config.sft_load_in_4bit:
-            # model.gradient_checkpointing_enable()
-            model = prepare_model_for_kbit_training(model)
+    if config.sft_load_in_4bit:
+        # model.gradient_checkpointing_enable()
+        model = prepare_model_for_kbit_training(model)
 
     # Maybe set up LoRA
     if config.lora_classification:
-        if is_unsloth:
-            model = FastLanguageModel.get_peft_model(model)
-        else:
-            # HPs from https://huggingface.co/docs/trl/en/sft_trainer#training-adapters
-            lora_config = LoraConfig(
-                task_type=TaskType.CAUSAL_LM,
-                r=16,
-                lora_alpha=32,
-                lora_dropout=0.05,
-                bias="none",
-                target_modules=["q_proj", "v_proj"],
-            )
-            model = get_peft_model(model, lora_config)
+        # HPs from https://huggingface.co/docs/trl/en/sft_trainer#training-adapters
+        lora_config = LoraConfig(
+            task_type=TaskType.CAUSAL_LM,
+            r=16,
+            lora_alpha=32,
+            lora_dropout=0.05,
+            bias="none",
+            target_modules=["q_proj", "v_proj"],
+        )
+        model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
 
-    fp16 = (not is_unsloth and config.sft_load_in_4bit) or (
-        is_unsloth and (not is_bfloat16_supported())
-    )
-    if is_unsloth:
-        optim = "adamw_8bit"
-    elif config.sft_load_in_4bit:
-        optim = "paged_adamw_8bit"
-    else:
-        optim = "adamw_torch"
-    training_args = TrainingArguments(
-        output_dir=config.model_path_classification,
-        per_device_train_batch_size=config.per_device_train_batch_size_classification,
-        per_device_eval_batch_size=config.per_device_eval_batch_size_classification,
-        num_train_epochs=config.num_train_epochs_classification,
-        save_strategy="no",
-        optim=optim,
-        learning_rate=2e-4 if config.sft_load_in_4bit else 5e-5,
-        fp16=fp16,
-        bf16=is_unsloth and is_bfloat16_supported(),
-        prediction_loss_only=True,
-        disable_tqdm=False,
-    )
-
     if config.tokenizer.pad_token_id is None:
+        # To enable batching. It's ok to do this b/c we never use the EOS token / we're
+        # never generating and terminating.
         config.tokenizer.pad_token_id = config.tokenizer.eos_token_id
-    # To enable batching. It's ok to do this b/c we never use the EOS token / we're
-    # never generating and terminating.
     config.tokenizer.padding_side = "right"
 
     # model.config.use_cache = False
     trainer = SFTTrainer(
         model=model,
         tokenizer=config.tokenizer,
-        args=training_args,
+        args=SFTConfig(
+            output_dir=config.model_path_classification,
+            per_device_train_batch_size=config.per_device_train_batch_size_classification,
+            per_device_eval_batch_size=config.per_device_eval_batch_size_classification,
+            num_train_epochs=config.num_train_epochs_classification,
+            max_seq_length=config.max_length,
+            save_strategy="no",
+            optim="paged_adamw_8bit" if config.sft_load_in_4bit else "adamw_torch",
+            learning_rate=2e-4 if config.sft_load_in_4bit else 5e-5,
+            fp16=config.sft_load_in_4bit,
+            disable_tqdm=False,
+        ),
         train_dataset=dataset,
-        max_seq_length=config.max_length,
         formatting_func=partial(
             _sft_trainer_formatting_func, class_names_unique, task_description
         ),
@@ -204,10 +173,11 @@ def train(
         warnings.filterwarnings(
             action="error", category=UserWarning, message="Could not find response key"
         )
-        # This warning indicates that RESPONSE_TEMPLATE was not found, which is likely
-        # b/c of a whitespace tokenization issue. For now, I hardcoded data_collator to
-        # work for Llama-like tokenizers which add a BOS token. TODO: check that it
-        # works for BPE/GPT-2-like tokenizers
+        # This warning indicates something went quite wrong. Opting to raise it as an
+        # error instead. It indicates that RESPONSE_TEMPLATE was not found, which is
+        # likely b/c of a whitespace tokenization issue. For now, I hardcoded
+        # data_collator to work for Llama-like tokenizers which add a BOS token. TODO:
+        # check that it works for BPE/GPT-2-like tokenizers
         trainer.train()  # train modifies the model object itself.
     return trainer
 
@@ -220,12 +190,6 @@ def predict_proba(
 ) -> np.ndarray:
     instruction = _instruction_formatter(class_names_unique, task_description)
     prompts = _body_formatter(texts, class_names=[""] * len(texts))
-
-    try:
-        FastLanguageModel.for_inference(trained_classifier.model)
-    except Exception:
-        pass
-
     with cappr.huggingface.classify.cache(
         model_and_tokenizer=(trained_classifier.model, trained_classifier.tokenizer),
         prefixes=instruction,

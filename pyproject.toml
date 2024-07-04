@@ -19,7 +19,7 @@ dependencies = [
     "sentencepiece>=0.2.0",
     "tqdm>=4.27.0",
     "transformers[torch]>=4.41.1",
-    "trl>=0.8.6",
+    "trl>=0.9.4",
     "typed-argument-parser>=1.10.0",
 ]
 requires-python = ">=3.10"

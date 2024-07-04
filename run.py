@@ -19,11 +19,6 @@ from transformers import (
     MistralForCausalLM,
 )
 
-try:
-    from unsloth import FastLanguageModel
-except Exception:
-    FastLanguageModel = type("Dummy", (object,), {})
-
 import pretrain_on_test
 import cloud
 from cloud import do_nothing
@@ -50,7 +45,7 @@ class Experiment(BaseModel):
         "bert",
         "gpt2",
         "mistral-lora-sft",
-        "mistral-lora-sft-unsloth",
+        "mistral-qlora-sft",
         "bert-tiny",
         "gpt2-tiny",
         "mistral-lora-sft-tiny",
@@ -134,17 +129,17 @@ lm_type_to_config_creator = {
         lora_pretrain=True,
         lora_classification=True,
         sft_classification=True,
-        sft_load_in_4bit=True,
         max_length=512,
         **model_independent_kwargs,
     ),
-    "mistral-lora-sft-unsloth": lambda **model_independent_kwargs: pretrain_on_test.Config(  # doesn't quite work yet
-        model_id="unsloth/mistral-7b-v0.3",
-        model_class_pretrain=FastLanguageModel,
-        model_class_classification=FastLanguageModel,
+    "mistral-qlora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
+        model_id="mistralai/Mistral-7B-v0.1",  # TODO: try "unsloth/mistral-7b-v0.3"
+        model_class_pretrain=MistralForCausalLM,
+        model_class_classification=MistralForCausalLM,
         lora_pretrain=True,
         lora_classification=True,
         sft_classification=True,
+        sft_load_in_4bit=True,
         max_length=512,
         **model_independent_kwargs,
     ),
