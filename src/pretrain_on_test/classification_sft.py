@@ -40,10 +40,12 @@ def _instruction_formatter(
     )
 
 
-def _body_formatter(texts: list[str], class_names: list[str]) -> list[str]:
+def _body_formatter(
+    texts: list[str], class_names: list[str], max_length_chars: int = 1_000
+) -> list[str]:
     return [
         (
-            f"Text: {text}\n"
+            f"Text: {text[:max_length_chars]}\n"
             f"{RESPONSE_TEMPLATE} {class_name}".rstrip()  # empty class_name = inference
         )
         for text, class_name in zip(texts, class_names, strict=True)
@@ -80,7 +82,6 @@ def train(
     config: Config,
     pretrained_model_name_or_path: str | None = None,
     is_pretrained_fresh: bool = False,
-    max_length_chars: int = 1_000,
 ) -> Trainer:
     """
     Returns a model `Trainer` which was finetuned on classification data `texts,
@@ -91,7 +92,7 @@ def train(
     """
     dataset = Dataset.from_dict(
         {
-            "text": [text[:max_length_chars] for text in texts],
+            "text": texts,
             "class_name": [class_names_unique[label] for label in labels],
         }
     )
