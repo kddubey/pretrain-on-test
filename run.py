@@ -12,11 +12,11 @@ from pydantic import BaseModel, ConfigDict, Field
 from tap import tapify
 import torch
 from transformers import (
+    AutoModelForCausalLM,
     BertForMaskedLM,
     BertForSequenceClassification,
     GPT2LMHeadModel,
     GPT2ForSequenceClassification,
-    MistralForCausalLM,
 )
 
 import pretrain_on_test
@@ -46,6 +46,7 @@ class Experiment(BaseModel):
         "gpt2",
         "mistral-lora-sft",
         "mistral-qlora-sft",
+        "mistral-instruct-qlora-sft",
         "bert-tiny",
         "gpt2-tiny",
         "mistral-lora-sft-tiny",
@@ -125,8 +126,8 @@ lm_type_to_config_creator = {
     ),
     "mistral-lora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="mistralai/Mistral-7B-v0.1",
-        model_class_pretrain=MistralForCausalLM,
-        model_class_classification=MistralForCausalLM,
+        model_class_pretrain=AutoModelForCausalLM,
+        model_class_classification=AutoModelForCausalLM,
         lora_pretrain=True,
         lora_classification=True,
         sft_classification=True,
@@ -135,8 +136,19 @@ lm_type_to_config_creator = {
     ),
     "mistral-qlora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="mistralai/Mistral-7B-v0.3",
-        model_class_pretrain=MistralForCausalLM,
-        model_class_classification=MistralForCausalLM,
+        model_class_pretrain=AutoModelForCausalLM,
+        model_class_classification=AutoModelForCausalLM,
+        lora_pretrain=True,
+        lora_classification=True,
+        sft_classification=True,
+        sft_qlora=True,
+        max_length=512,
+        **model_independent_kwargs,
+    ),
+    "mistral-instruct-qlora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
+        model_id="mistralai/Mistral-7B-Instruct-v0.3",  # TODO: add or switch to phi-3
+        model_class_pretrain=AutoModelForCausalLM,
+        model_class_classification=AutoModelForCausalLM,
         lora_pretrain=True,
         lora_classification=True,
         sft_classification=True,
@@ -162,9 +174,9 @@ lm_type_to_config_creator = {
         **model_independent_kwargs,
     ),
     "mistral-lora-sft-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
-        model_id="hf-internal-testing/tiny-random-MistralForCausalLM",
-        model_class_pretrain=MistralForCausalLM,
-        model_class_classification=MistralForCausalLM,
+        model_id="hf-internal-testing/tiny-random-AutoModelForCausalLM",
+        model_class_pretrain=AutoModelForCausalLM,
+        model_class_classification=AutoModelForCausalLM,
         lora_pretrain=True,
         lora_classification=True,
         sft_classification=True,
@@ -173,8 +185,8 @@ lm_type_to_config_creator = {
     ),
     "mistral-instruct-lora-sft-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="ml6team/tiny-random-mistral-instruct",
-        model_class_pretrain=MistralForCausalLM,
-        model_class_classification=MistralForCausalLM,
+        model_class_pretrain=AutoModelForCausalLM,
+        model_class_classification=AutoModelForCausalLM,
         lora_pretrain=True,
         lora_classification=True,
         sft_classification=True,
