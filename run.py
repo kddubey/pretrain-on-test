@@ -139,7 +139,7 @@ lm_type_to_config_creator = {
         lora_pretrain=True,
         lora_classification=True,
         sft_classification=True,
-        sft_load_in_4bit=True,
+        sft_qlora=True,
         max_length=512,
         **model_independent_kwargs,
     ),

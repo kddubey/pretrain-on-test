@@ -17,7 +17,8 @@ from peft import (
     PeftMixedModel,
     TaskType,
 )
-from transformers import Trainer
+import torch
+from transformers import BitsAndBytesConfig, Trainer
 from trl import SFTConfig, SFTTrainer, DataCollatorForCompletionOnlyLM
 
 from pretrain_on_test import Config
@@ -116,11 +117,22 @@ def train(
     model = config.model_class_classification.from_pretrained(
         pretrained_model_name_or_path=pretrained_model_name_or_path,
         state_dict=state_dict,
-        load_in_4bit=config.sft_load_in_4bit,
-        device_map="auto" if config.sft_load_in_4bit else config.device,
+        device_map="auto" if config.sft_qlora else config.device,
+        # TODO: always use auto. Annoying b/c auto results in mps on my macbook, which
+        # doesn't work b/c of missing attn kernels. Should instead use CPU.
+        quantization_config=(
+            BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=torch.bfloat16,
+            )
+            if config.sft_qlora
+            else None
+        ),
     )
-    if config.sft_load_in_4bit:
-        # model.gradient_checkpointing_enable()
+    if config.sft_qlora:
+        model.gradient_checkpointing_enable()
         model = prepare_model_for_kbit_training(model)
 
     # Maybe set up LoRA
@@ -154,9 +166,9 @@ def train(
             num_train_epochs=config.num_train_epochs_classification,
             max_seq_length=config.max_length,
             save_strategy="no",
-            optim="paged_adamw_8bit" if config.sft_load_in_4bit else "adamw_torch",
-            learning_rate=2e-4 if config.sft_load_in_4bit else 5e-5,
-            fp16=config.sft_load_in_4bit,
+            optim="paged_adamw_8bit" if config.sft_qlora else "adamw_torch",
+            learning_rate=2e-4 if config.sft_qlora else 5e-5,
+            fp16=config.sft_qlora,
             disable_tqdm=False,
         ),
         train_dataset=dataset,
@@ -187,6 +199,8 @@ def predict_proba(
     trained_classifier: SFTTrainer,
     class_names_unique: tuple[str, ...],
     task_description: str,
+    batch_size: int = 2,
+    batch_size_completions: int | None = None,
 ) -> np.ndarray:
     instruction = _instruction_formatter(class_names_unique, task_description)
     prompts = _body_formatter(texts, class_names=[""] * len(texts))
@@ -196,5 +210,9 @@ def predict_proba(
         logits_all=False,
     ) as cached:
         return cappr.huggingface.classify.predict_proba(
-            prompts, completions=class_names_unique, model_and_tokenizer=cached
+            prompts,
+            completions=class_names_unique,
+            model_and_tokenizer=cached,
+            batch_size=batch_size,
+            batch_size_completions=batch_size_completions,
         )

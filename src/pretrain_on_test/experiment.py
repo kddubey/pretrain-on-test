@@ -95,7 +95,9 @@ def _experiment(
             task_description=classification_dataset_info.task_description,
         )
         train_labels_kwargs = kwargs
-        predict_proba_kwargs = kwargs
+        predict_proba_kwargs = dict(
+            **kwargs, batch_size=config.per_device_eval_batch_size_classification
+        )
     else:
         classification_module = classification
         train_labels_kwargs = dict(  # configure output dimension of linear layer

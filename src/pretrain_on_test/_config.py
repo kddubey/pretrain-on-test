@@ -24,7 +24,7 @@ class Config:
     lora_pretrain: bool = False
     lora_classification: bool = False
     sft_classification: bool = False
-    sft_load_in_4bit: bool = False
+    sft_qlora: bool = False
     tokenizer: PreTrainedTokenizerBase | None = None
     device: str | torch.device | None = None
     per_device_train_batch_size_pretrain: int = 16
