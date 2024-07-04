@@ -133,7 +133,7 @@ lm_type_to_config_creator = {
         **model_independent_kwargs,
     ),
     "mistral-qlora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
-        model_id="mistralai/Mistral-7B-v0.1",
+        model_id="mistralai/Mistral-7B-v0.3",
         model_class_pretrain=MistralForCausalLM,
         model_class_classification=MistralForCausalLM,
         lora_pretrain=True,
