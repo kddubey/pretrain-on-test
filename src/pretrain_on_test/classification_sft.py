@@ -124,6 +124,7 @@ def train(
         pretrained_model_name_or_path=pretrained_model_name_or_path,
         state_dict=state_dict,
         load_in_4bit=config.sft_load_in_4bit,
+        device_map=config.device,
     )
     is_unsloth = issubclass(config.model_class_classification, FastLanguageModel)
     if is_unsloth:
@@ -132,9 +133,7 @@ def train(
         )
         object.__setattr__(config, "tokenizer", tokenizer)
     else:
-        model = config.model_class_classification.from_pretrained(**loading_kwargs).to(
-            config.device
-        )
+        model = config.model_class_classification.from_pretrained(**loading_kwargs)
         if config.sft_load_in_4bit:
             # model.gradient_checkpointing_enable()
             model = prepare_model_for_kbit_training(model)
