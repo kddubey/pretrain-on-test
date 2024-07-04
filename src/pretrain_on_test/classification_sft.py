@@ -124,7 +124,7 @@ def train(
         pretrained_model_name_or_path=pretrained_model_name_or_path,
         state_dict=state_dict,
         load_in_4bit=config.sft_load_in_4bit,
-        device_map=config.device,
+        device_map="auto" if config.sft_load_in_4bit else config.device,
     )
     is_unsloth = issubclass(config.model_class_classification, FastLanguageModel)
     if is_unsloth:
