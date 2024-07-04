@@ -131,51 +131,51 @@ def _experiment(
     if os.path.exists(config.model_path_classification):
         shutil.rmtree(config.model_path_classification)
 
-    # Run the fair pretraining methodology
-    logger.info("Extra - pretraining")
-    pretrain.train(
-        df_extra["text"].tolist(), config
-    )  # saved pretrained model in config.model_path_pretrained
-    logger.info("Extra - training")
-    try:
-        trained_classifier = classification_module.train(
-            df_train["text"].tolist(),
-            df_train["label"].tolist(),
-            **train_labels_kwargs,
-            config=config,
-            pretrained_model_name_or_path=config.model_path_pretrained,
-        )
-    finally:
-        shutil.rmtree(config.model_path_pretrained)
-        shutil.rmtree(config.model_path_classification)
-    logger.info("Extra - testing")
-    model_type_to_test_probs["extra"] = classification_module.predict_proba(
-        df_test["text"].tolist(), trained_classifier, **predict_proba_kwargs
-    )
-    del trained_classifier
+    # # Run the fair pretraining methodology
+    # logger.info("Extra - pretraining")
+    # pretrain.train(
+    #     df_extra["text"].tolist(), config
+    # )  # saved pretrained model in config.model_path_pretrained
+    # logger.info("Extra - training")
+    # try:
+    #     trained_classifier = classification_module.train(
+    #         df_train["text"].tolist(),
+    #         df_train["label"].tolist(),
+    #         **train_labels_kwargs,
+    #         config=config,
+    #         pretrained_model_name_or_path=config.model_path_pretrained,
+    #     )
+    # finally:
+    #     shutil.rmtree(config.model_path_pretrained)
+    #     shutil.rmtree(config.model_path_classification)
+    # logger.info("Extra - testing")
+    # model_type_to_test_probs["extra"] = classification_module.predict_proba(
+    #     df_test["text"].tolist(), trained_classifier, **predict_proba_kwargs
+    # )
+    # del trained_classifier
 
-    # Run the (presumably) unfair pretraining methodology
-    logger.info("Test - pretraining")
-    pretrain.train(
-        df_test["text"].tolist(), config
-    )  # saved pretrained model in config.model_path_pretrained
-    logger.info("Test - training")
-    try:
-        trained_classifier = classification_module.train(
-            df_train["text"].tolist(),
-            df_train["label"].tolist(),
-            **train_labels_kwargs,
-            config=config,
-            pretrained_model_name_or_path=config.model_path_pretrained,
-        )
-    finally:
-        shutil.rmtree(config.model_path_pretrained)
-        shutil.rmtree(config.model_path_classification)
-    logger.info("Test - testing")
-    model_type_to_test_probs["test"] = classification_module.predict_proba(
-        df_test["text"].tolist(), trained_classifier, **predict_proba_kwargs
-    )
-    del trained_classifier
+    # # Run the (presumably) unfair pretraining methodology
+    # logger.info("Test - pretraining")
+    # pretrain.train(
+    #     df_test["text"].tolist(), config
+    # )  # saved pretrained model in config.model_path_pretrained
+    # logger.info("Test - training")
+    # try:
+    #     trained_classifier = classification_module.train(
+    #         df_train["text"].tolist(),
+    #         df_train["label"].tolist(),
+    #         **train_labels_kwargs,
+    #         config=config,
+    #         pretrained_model_name_or_path=config.model_path_pretrained,
+    #     )
+    # finally:
+    #     shutil.rmtree(config.model_path_pretrained)
+    #     shutil.rmtree(config.model_path_classification)
+    # logger.info("Test - testing")
+    # model_type_to_test_probs["test"] = classification_module.predict_proba(
+    #     df_test["text"].tolist(), trained_classifier, **predict_proba_kwargs
+    # )
+    # del trained_classifier
 
     # Compute accuracies on test
     accuracy = lambda test_probs: np.mean(

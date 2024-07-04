@@ -26,8 +26,8 @@ python run.py \
     --per_device_eval_batch_size_classification 4
 
 python run.py \
-    --lm_type mistral-lora-sft-tiny \
-    --run_name cpu-test-mistral-lora-sft-tiny \
+    --lm_type mistral-instruct-lora-sft-tiny \
+    --run_name cpu-test-mistral-instruct-lora-sft-tiny \
     --dataset_names ag_news SetFit/amazon_counterfactual_en \
     --num_subsamples 2 \
     --num_train 10 \

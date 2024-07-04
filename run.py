@@ -49,6 +49,7 @@ class Experiment(BaseModel):
         "bert-tiny",
         "gpt2-tiny",
         "mistral-lora-sft-tiny",
+        "mistral-instruct-lora-sft-tiny",
     ] = Field(
         description=(
             "Type of language model. *-tiny models have random weights and should only "
@@ -162,6 +163,16 @@ lm_type_to_config_creator = {
     ),
     "mistral-lora-sft-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="hf-internal-testing/tiny-random-MistralForCausalLM",
+        model_class_pretrain=MistralForCausalLM,
+        model_class_classification=MistralForCausalLM,
+        lora_pretrain=True,
+        lora_classification=True,
+        sft_classification=True,
+        max_length=512,
+        **model_independent_kwargs,
+    ),
+    "mistral-instruct-lora-sft-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
+        model_id="ml6team/tiny-random-mistral-instruct",
         model_class_pretrain=MistralForCausalLM,
         model_class_classification=MistralForCausalLM,
         lora_pretrain=True,

@@ -3,7 +3,8 @@ Train a pretrained autoregressive LM to do classification using SFT.
 """
 
 from functools import partial
-from typing import cast
+from os.path import commonprefix
+from typing import Callable, TypedDict, cast
 import warnings
 
 import cappr
@@ -18,7 +19,7 @@ from peft import (
     TaskType,
 )
 import torch
-from transformers import BitsAndBytesConfig, Trainer
+from transformers import BitsAndBytesConfig, PreTrainedTokenizerBase, Trainer
 from trl import SFTConfig, SFTTrainer, DataCollatorForCompletionOnlyLM
 
 from pretrain_on_test import Config
@@ -40,38 +41,76 @@ def _instruction_formatter(
     )
 
 
-def _body_formatter(
-    texts: list[str], class_names: list[str], max_length_chars: int = 1_000
-) -> list[str]:
+def _query_formatter(text: str, max_length_chars: int = 1_000) -> str:
+    return f"Text: {text[:max_length_chars]}\n"
+
+
+def _answer_formatter(class_name: str) -> str:
+    return f"{RESPONSE_TEMPLATE} {class_name}".rstrip()
+
+
+class _Message(TypedDict):
+    role: str
+    content: str
+
+
+def _get_apply_chat_template(
+    tokenizer: PreTrainedTokenizerBase,
+) -> Callable[[list[_Message]], str]:
+    # This is slightly incorrect for transfomers < 4.43. Maybe some tokenizers for
+    # instruction-trained models use the default_chat_template, and leave chat_template
+    # as None. This is the warning you get if tokenizer.chat_template is None:
+    #
+    # No chat template is set for this tokenizer, falling back to a default class-level
+    # template. This is very error-prone, because models are often trained with
+    # templates different from the class default! Default chat templates are a legacy
+    # feature and will be removed in Transformers v4.43, at which point any code
+    # depending on them will stop working.
+    if tokenizer.chat_template is not None:
+        return partial(tokenizer.apply_chat_template, tokenize=False)
+    else:
+
+        def join_content(messages: list[_Message]) -> str:
+            return "".join(message["content"] for message in messages)
+
+        return join_content
+
+
+def _create_chats(
+    texts: list[str],
+    class_names: list[str],
+    class_names_unique: tuple[str, ...],
+    task_description: str,
+    system_role: str | None = "system",
+) -> list[list[_Message]]:
+    instruction = _instruction_formatter(class_names_unique, task_description)
+
+    def instruction_and_query(text: str) -> list[_Message]:
+        if system_role is None:
+            return [{"role": "user", "content": instruction + _query_formatter(text)}]
+        else:
+            return [
+                {"role": system_role, "content": instruction},
+                {"role": "user", "content": _query_formatter(text)},
+            ]
+
     return [
-        (
-            f"Text: {text[:max_length_chars]}\n"
-            f"{RESPONSE_TEMPLATE} {class_name}".rstrip()  # empty class_name = inference
-        )
+        instruction_and_query(text)
+        + [{"role": "assistant", "content": _answer_formatter(class_name)}]
         for text, class_name in zip(texts, class_names, strict=True)
     ]
 
 
-def _prompt_completion_formatter(
-    class_names_unique: tuple[str, ...],
-    task_description: str,
-    texts: list[str],
-    class_names: list[str],
+def _formatter(
+    tokenizer: PreTrainedTokenizerBase, chats: list[list[_Message]]
 ) -> list[str]:
-    instruction = _instruction_formatter(class_names_unique, task_description)
-    return [instruction + body for body in _body_formatter(texts, class_names)]
+    apply_chat_template = _get_apply_chat_template(tokenizer)
+    res = [apply_chat_template(chat) for chat in chats]
+    return res
 
 
-def _sft_trainer_formatting_func(
-    class_names_unique: tuple[str, ...],
-    task_description: str,
-    batch: dict[str, list[str]],
-):
-    # The SFTTrainer requires this type of function. See:
-    # https://huggingface.co/docs/trl/en/sft_trainer#train-on-completions-only
-    return _prompt_completion_formatter(
-        class_names_unique, task_description, batch["text"], batch["class_name"]
-    )
+def _system_role(tokenizer: PreTrainedTokenizerBase) -> str | None:
+    return "system" if "'system'" in (tokenizer.chat_template or "") else None
 
 
 def train(
@@ -92,8 +131,13 @@ def train(
     """
     dataset = Dataset.from_dict(
         {
-            "text": texts,
-            "class_name": [class_names_unique[label] for label in labels],
+            "chat": _create_chats(
+                texts,
+                [class_names_unique[label] for label in labels],
+                class_names_unique,
+                task_description,
+                system_role=_system_role(config.tokenizer),
+            )
         }
     )
 
@@ -173,9 +217,7 @@ def train(
             disable_tqdm=False,
         ),
         train_dataset=dataset,
-        formatting_func=partial(
-            _sft_trainer_formatting_func, class_names_unique, task_description
-        ),
+        formatting_func=lambda batch: _formatter(config.tokenizer, batch["chat"]),
         data_collator=DataCollatorForCompletionOnlyLM(
             config.tokenizer.encode(RESPONSE_TEMPLATE, add_special_tokens=False)[1:],
             tokenizer=config.tokenizer,
@@ -203,11 +245,20 @@ def predict_proba(
     batch_size: int = 2,
     batch_size_completions: int | None = None,
 ) -> np.ndarray:
-    instruction = _instruction_formatter(class_names_unique, task_description)
-    prompts = _body_formatter(texts, class_names=[""] * len(texts))
+    chats_without_answers = _create_chats(
+        texts,
+        class_names=[""] * len(texts),
+        class_names_unique=class_names_unique,
+        task_description=task_description,
+        system_role=_system_role(trained_classifier.tokenizer),
+    )
+    prompts = _formatter(trained_classifier.tokenizer, chats_without_answers)
+    instruction = commonprefix(prompts)
+    prompts = [prompt.removeprefix(instruction) for prompt in prompts]
+
     with cappr.huggingface.classify.cache(
         model_and_tokenizer=(trained_classifier.model, trained_classifier.tokenizer),
-        prefixes=instruction,
+        prefixes=instruction.rstrip(),
         logits_all=False,
     ) as cached:
         return cappr.huggingface.classify.predict_proba(
