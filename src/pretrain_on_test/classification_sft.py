@@ -2,6 +2,10 @@
 Train a (finetuned) autoregressive LM to do classification using SFT.
 """
 
+from os.path import commonprefix
+
+import cappr
+from transformers import PreTrainedModel, PreTrainedTokenizerBase
 from trl import DataCollatorForCompletionOnlyLM
 
 from pretrain_on_test import Config
@@ -54,4 +58,37 @@ def train(
     )
 
 
-predict_proba = _dum.predict_proba
+def predict_proba(
+    texts: list[str],
+    model_and_tokenizer: tuple[PreTrainedModel, PreTrainedTokenizerBase],
+    class_names_unique: tuple[str, ...],
+    task_description: str,
+    batch_size: int = 2,
+    batch_size_completions: int | None = None,
+):
+    _, tokenizer = model_and_tokenizer
+    chats_without_answers = _dum._create_chats(
+        texts,
+        class_names=[""] * len(texts),
+        class_names_unique=class_names_unique,
+        task_description=task_description,
+        system_role=_dum._system_role(tokenizer),
+    )
+    prompts = _dum._formatter(chats_without_answers, tokenizer)
+    instruction = commonprefix(prompts)
+    instruction = instruction[: instruction.index(_dum.QUERY_TEMPLATE)]
+    prompts = [
+        prompt.removeprefix(instruction).removesuffix(tokenizer.eos_token)
+        for prompt in prompts
+    ]
+
+    with cappr.huggingface.classify.cache(
+        model_and_tokenizer, prefixes=instruction, logits_all=False
+    ) as cached:
+        return cappr.huggingface.classify.predict_proba(
+            prompts,
+            completions=class_names_unique,
+            model_and_tokenizer=cached,
+            batch_size=batch_size,
+            batch_size_completions=batch_size_completions,
+        )

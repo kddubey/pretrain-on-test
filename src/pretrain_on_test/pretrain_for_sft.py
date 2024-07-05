@@ -51,7 +51,7 @@ def train(
         config.max_length,
         config.lora_pretrain,
         config.qlora,
-        is_pretrained_fresh=not from_pretrained_lora,
+        is_pretrained_fresh=True,
         device_map=config.device,
         chat_text_post_processor=chat_text_post_processor,
     )

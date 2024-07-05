@@ -3,13 +3,10 @@ Train a pretrained autoregressive LM, optionally with (Q)LoRA.
 """
 
 from functools import partial
-from os.path import commonprefix
 from typing import Callable, TypedDict, cast
 import warnings
 
-import cappr
 from datasets import Dataset
-import numpy as np
 from peft import (
     get_peft_model,
     prepare_model_for_kbit_training,
@@ -61,15 +58,6 @@ class _Message(TypedDict):
 def _get_apply_chat_template(
     tokenizer: PreTrainedTokenizerBase,
 ) -> Callable[[list[_Message]], str]:
-    # This is slightly incorrect for transfomers < 4.43. Maybe some tokenizers for
-    # instruction-trained models use the default_chat_template, and leave chat_template
-    # as None. This is the warning you get if tokenizer.chat_template is None:
-    #
-    # No chat template is set for this tokenizer, falling back to a default class-level
-    # template. This is very error-prone, because models are often trained with
-    # templates different from the class default! Default chat templates are a legacy
-    # feature and will be removed in Transformers v4.43, at which point any code
-    # depending on them will stop working.
     if tokenizer.chat_template is not None:
         return partial(tokenizer.apply_chat_template, tokenize=False)
     else:
@@ -251,39 +239,3 @@ def train(
         # check that it works for BPE/GPT-2-like tokenizers
         trainer.train()  # train modifies the model object itself.
     return (trainer.model, trainer.tokenizer)
-
-
-def predict_proba(
-    texts: list[str],
-    model_and_tokenizer: tuple[PreTrainedModel, PreTrainedTokenizerBase],
-    class_names_unique: tuple[str, ...],
-    task_description: str,
-    batch_size: int = 2,
-    batch_size_completions: int | None = None,
-) -> np.ndarray:
-    _, tokenizer = model_and_tokenizer
-    chats_without_answers = _create_chats(
-        texts,
-        class_names=[""] * len(texts),
-        class_names_unique=class_names_unique,
-        task_description=task_description,
-        system_role=_system_role(tokenizer),
-    )
-    prompts = _formatter(chats_without_answers, tokenizer)
-    instruction = commonprefix(prompts)
-    instruction = instruction[: instruction.index(QUERY_TEMPLATE)]
-    prompts = [
-        prompt.removeprefix(instruction).removesuffix(tokenizer.eos_token)
-        for prompt in prompts
-    ]
-
-    with cappr.huggingface.classify.cache(
-        model_and_tokenizer, prefixes=instruction, logits_all=False
-    ) as cached:
-        return cappr.huggingface.classify.predict_proba(
-            prompts,
-            completions=class_names_unique,
-            model_and_tokenizer=cached,
-            batch_size=batch_size,
-            batch_size_completions=batch_size_completions,
-        )
