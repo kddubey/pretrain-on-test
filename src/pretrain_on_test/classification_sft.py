@@ -38,7 +38,6 @@ def train(
         class_names_unique,
         task_description,
         data_collator,
-        config.model_class_classification,
         config.tokenizer,
         config.lora_pretrain,
         pretrained_model_name_or_path=(

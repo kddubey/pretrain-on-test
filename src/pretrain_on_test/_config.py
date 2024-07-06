@@ -19,7 +19,6 @@ class Config:
 
     model_id: str
     model_class_pretrain: type[PreTrainedModel]
-    model_class_classification: type[PreTrainedModel]
     mlm: bool | None = None
     mlm_probability: float | None = None
     lora_pretrain: bool = False

@@ -45,7 +45,6 @@ def train(
         class_names_unique,
         task_description,
         data_collator,
-        config.model_class_pretrain,
         config.tokenizer,
         from_pretrained_lora,
         pretrained_model_name_or_path=config.model_id,

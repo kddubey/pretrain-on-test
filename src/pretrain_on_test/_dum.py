@@ -19,6 +19,7 @@ from peft import (
 )
 import torch
 from transformers import (
+    AutoModelForCausalLM,
     BitsAndBytesConfig,
     DataCollatorForLanguageModeling,
     PreTrainedModel,
@@ -115,16 +116,12 @@ def _system_role(tokenizer: PreTrainedTokenizerBase) -> str | None:
 
 
 def load_model(
-    model_class: type[PreTrainedModel],
     from_pretrained_lora: bool,
     pretrained_model_name_or_path: str,
     qlora: bool,
     is_pretrained_fresh: bool = False,
     device_map: str = "auto",
 ) -> PreTrainedModel:
-    if not model_class.__name__.endswith("ForCausalLM"):
-        raise TypeError(f"model_class must be a CausalLM. Got {model_class}")
-
     if qlora:
         quantization_config = BitsAndBytesConfig(
             load_in_4bit=True,
@@ -143,7 +140,7 @@ def load_model(
         model = AutoPeftModelForCausalLM.from_pretrained(**loading_kwargs)
         return cast(PeftMixedModel, model).merge_and_unload()
     else:
-        return model_class.from_pretrained(**loading_kwargs)
+        return AutoModelForCausalLM.from_pretrained(**loading_kwargs)
 
 
 def train(
@@ -153,7 +150,6 @@ def train(
     task_description: str,
     # bleh
     data_collator: DataCollatorForLanguageModeling,
-    model_class: type[PreTrainedModel],
     tokenizer: PreTrainedTokenizerBase,
     from_pretrained_lora: bool,
     pretrained_model_name_or_path: str,
@@ -184,7 +180,6 @@ def train(
 
     # Set up model
     model = load_model(
-        model_class,
         from_pretrained_lora,
         pretrained_model_name_or_path,
         qlora,

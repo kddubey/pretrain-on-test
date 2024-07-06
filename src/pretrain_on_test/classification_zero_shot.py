@@ -22,7 +22,6 @@ def train(
     `config.model_path_pretrained` is returned.
     """
     model = _dum.load_model(
-        config.model_class_classification,
         config.lora_pretrain,
         pretrained_model_name_or_path or config.model_path_pretrained,
         config.qlora,

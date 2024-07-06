@@ -11,13 +11,7 @@ from typing import Any, Callable, Collection, Literal
 from pydantic import BaseModel, ConfigDict, Field
 from tap import tapify
 import torch
-from transformers import (
-    AutoModelForCausalLM,
-    BertForMaskedLM,
-    BertForSequenceClassification,
-    GPT2LMHeadModel,
-    GPT2ForSequenceClassification,
-)
+from transformers import AutoModelForCausalLM, BertForMaskedLM, GPT2LMHeadModel
 
 import pretrain_on_test
 import cloud
@@ -117,7 +111,6 @@ lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] =
     "bert": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="bert-base-uncased",
         model_class_pretrain=BertForMaskedLM,
-        model_class_classification=BertForSequenceClassification,
         mlm=True,
         mlm_probability=0.15,
         pretrain_method="raw-text",
@@ -130,7 +123,6 @@ lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] =
     "gpt2": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="gpt2",
         model_class_pretrain=GPT2LMHeadModel,
-        model_class_classification=GPT2ForSequenceClassification,
         pretrain_method="raw-text",
         lora_pretrain=False,
         classification_method="linear-layer",
@@ -141,7 +133,6 @@ lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] =
     "mistral-qlora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="mistralai/Mistral-7B-v0.3",
         model_class_pretrain=AutoModelForCausalLM,
-        model_class_classification=AutoModelForCausalLM,
         pretrain_method="instructions-with-text",
         lora_pretrain=True,
         classification_method="sft",
@@ -153,7 +144,6 @@ lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] =
     "mistral-instruct-qlora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="mistralai/Mistral-7B-Instruct-v0.3",
         model_class_pretrain=AutoModelForCausalLM,
-        model_class_classification=AutoModelForCausalLM,
         pretrain_method="instructions-with-text",
         lora_pretrain=True,
         classification_method="sft",
@@ -165,7 +155,6 @@ lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] =
     "mistral-instruct-lora-zero-shot": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="mistralai/Mistral-7B-Instruct-v0.3",
         model_class_pretrain=AutoModelForCausalLM,
-        model_class_classification=AutoModelForCausalLM,  # unused
         pretrain_method="instructions-with-text",
         lora_pretrain=True,
         qlora=True,
@@ -177,7 +166,6 @@ lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] =
     "bert-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="hf-internal-testing/tiny-random-BertModel",
         model_class_pretrain=BertForMaskedLM,
-        model_class_classification=BertForSequenceClassification,
         mlm=True,
         mlm_probability=0.15,
         pretrain_method="raw-text",
@@ -190,7 +178,6 @@ lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] =
     "gpt2-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="hf-internal-testing/tiny-random-gpt2",
         model_class_pretrain=GPT2LMHeadModel,
-        model_class_classification=GPT2ForSequenceClassification,
         pretrain_method="raw-text",
         lora_pretrain=False,
         classification_method="linear-layer",
@@ -201,7 +188,6 @@ lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] =
     "mistral-lora-sft-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="hf-internal-testing/tiny-random-AutoModelForCausalLM",
         model_class_pretrain=AutoModelForCausalLM,
-        model_class_classification=AutoModelForCausalLM,
         pretrain_method="instructions-with-text",
         lora_pretrain=True,
         classification_method="sft",
@@ -212,7 +198,6 @@ lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] =
     "mistral-instruct-lora-sft-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="ml6team/tiny-random-mistral-instruct",
         model_class_pretrain=AutoModelForCausalLM,
-        model_class_classification=AutoModelForCausalLM,
         pretrain_method="instructions-with-text",
         lora_pretrain=True,
         classification_method="sft",
@@ -223,7 +208,6 @@ lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] =
     "mistral-instruct-lora-zero-shot-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="ml6team/tiny-random-mistral-instruct",
         model_class_pretrain=AutoModelForCausalLM,
-        model_class_classification=AutoModelForCausalLM,
         pretrain_method="instructions-with-text",
         lora_pretrain=True,
         classification_method="zero-shot",
