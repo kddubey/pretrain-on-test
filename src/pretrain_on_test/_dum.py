@@ -109,6 +109,8 @@ def _formatter(
 
 
 def _system_role(tokenizer: PreTrainedTokenizerBase) -> str | None:
+    # TODO: what's a good way to do this? Current way prolly inaccurate. rn I'm just
+    # checking the tokenizer manually before running it
     return "system" if "'system'" in (tokenizer.chat_template or "") else None
 
 
@@ -250,15 +252,15 @@ def train(
     return trainer.model, trainer.tokenizer
 
 
-def predict_proba(
+def _instruction_and_prompts(
     texts: list[str],
-    model_and_tokenizer: tuple[PreTrainedModel, PreTrainedTokenizerBase],
+    tokenizer: PreTrainedTokenizerBase,
     class_names_unique: tuple[str, ...],
     task_description: str,
-    batch_size: int = 2,
-    batch_size_completions: int | None = None,
-):
-    _, tokenizer = model_and_tokenizer
+) -> tuple[str, list[str]]:
+    """
+    Factors out the common instruction from `texts`. This is useful b/c CAPPr caches it.
+    """
     chats_without_answers = _create_chats(
         texts,
         class_names=[""] * len(texts),
@@ -273,7 +275,20 @@ def predict_proba(
         prompt.removeprefix(instruction).removesuffix(tokenizer.eos_token)
         for prompt in prompts
     ]
+    return instruction, prompts
 
+
+def predict_proba(
+    texts: list[str],
+    model_and_tokenizer: tuple[PreTrainedModel, PreTrainedTokenizerBase],
+    class_names_unique: tuple[str, ...],
+    task_description: str,
+    batch_size: int = 2,
+    batch_size_completions: int | None = None,
+):
+    instruction, prompts = _instruction_and_prompts(
+        texts, model_and_tokenizer[1], class_names_unique, task_description
+    )
     with cappr.huggingface.classify.cache(
         model_and_tokenizer, prefixes=instruction, logits_all=False
     ) as cached:
