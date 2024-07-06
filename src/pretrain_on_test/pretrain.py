@@ -1,6 +1,6 @@
 """
 Train a freshly loaded pretrained LM using its original loss function: MLM for BERT, CLM
-for GPT-2
+for everything else.
 """
 
 from peft import get_peft_model, LoraConfig, TaskType

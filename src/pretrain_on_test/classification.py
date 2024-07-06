@@ -6,15 +6,15 @@ LMs) to a distribution over classes.
 
 from typing import cast
 import numpy as np
-from peft import (
-    get_peft_model,
-    AutoPeftModelForCausalLM,
-    LoraConfig,
-    PeftMixedModel,
-    TaskType,
-)
+from peft import get_peft_model, LoraConfig, TaskType
 import torch
-from transformers import PreTrainedTokenizerBase, Trainer, TrainingArguments
+from transformers import (
+    AutoModelForSequenceClassification,
+    PreTrainedModel,
+    PreTrainedTokenizerBase,
+    Trainer,
+    TrainingArguments,
+)
 
 from pretrain_on_test import Config
 
@@ -51,7 +51,7 @@ def train(
     num_labels: int,
     config: Config,
     pretrained_model_name_or_path: str | None = None,
-    is_pretrained_fresh: bool = False,
+    is_pretrained_fresh: bool = False,  # TODO: will need for pretrained LoRA
 ) -> Trainer:
     """
     Returns a model `Trainer` which was finetuned on classification data `texts,
@@ -61,42 +61,23 @@ def train(
     `config.model_path_pretrained` is finetuned.
     """
     train_dataset = _Dataset(config.tokenizer, texts, labels)
-    classifier_args = TrainingArguments(
-        output_dir=config.model_path_classification,
-        per_device_train_batch_size=config.per_device_train_batch_size_classification,
-        per_device_eval_batch_size=config.per_device_eval_batch_size_classification,
-        num_train_epochs=config.num_train_epochs_classification,
-        weight_decay=0.01,
-        optim="adamw_torch",
-        disable_tqdm=False,
-    )
     pretrained_model_name_or_path = (
         pretrained_model_name_or_path or config.model_path_pretrained
     )
 
     # Load in the pretrained model and add a linear layer to it for performing
     # classification
-    if config.lora_pretrain and not is_pretrained_fresh:
-        state_dict = (
-            cast(
-                PeftMixedModel,
-                AutoPeftModelForCausalLM.from_pretrained(pretrained_model_name_or_path),
-            )
-            # Load in the pretrained LM (w/ the original/fresh pretrained weights) and
-            # (separately) the adapter weights stored at pretrained_model_name_or_path
-            .merge_and_unload()  # merge in the adapter weights
-            .state_dict()
-        )
-    else:
-        state_dict = None
-    model = config.model_class_classification.from_pretrained(
+    device_map = config.device if "bert" in config.model_id.lower() else "auto"
+    # BertForSequenceClassification does not support `device_map='auto'`
+    model = AutoModelForSequenceClassification.from_pretrained(
         pretrained_model_name_or_path,
-        state_dict=state_dict,
         num_labels=num_labels,
         output_attentions=False,
         output_hidden_states=False,
         ignore_mismatched_sizes=False,
-    ).to(config.device)
+        device_map=device_map,
+    )
+    model = cast(PreTrainedModel, model)
     if model.config.pad_token_id is None:
         model.config.pad_token_id = model.config.eos_token_id
 
@@ -116,8 +97,17 @@ def train(
     # Train and save to config.model_path_classification
     classifier_trainer = Trainer(
         model=model,
-        args=classifier_args,
+        args=TrainingArguments(
+            output_dir=config.model_path_classification,
+            per_device_train_batch_size=config.per_device_train_batch_size_classification,
+            per_device_eval_batch_size=config.per_device_eval_batch_size_classification,
+            num_train_epochs=config.num_train_epochs_classification,
+            weight_decay=0.01,
+            optim="adamw_torch",
+            disable_tqdm=False,
+        ),
         train_dataset=train_dataset,
+        tokenizer=config.tokenizer,
     )
     classifier_trainer.train()
     return classifier_trainer

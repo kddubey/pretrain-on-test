@@ -3,9 +3,11 @@ Train a pretrained autoregressive LM, optionally with (Q)LoRA.
 """
 
 from functools import partial
+from os.path import commonprefix
 from typing import Callable, TypedDict, cast
 import warnings
 
+import cappr
 from datasets import Dataset
 from peft import (
     get_peft_model,
@@ -110,6 +112,38 @@ def _system_role(tokenizer: PreTrainedTokenizerBase) -> str | None:
     return "system" if "'system'" in (tokenizer.chat_template or "") else None
 
 
+def load_model(
+    model_class: type[PreTrainedModel],
+    from_pretrained_lora: bool,
+    pretrained_model_name_or_path: str,
+    qlora: bool,
+    is_pretrained_fresh: bool = False,
+    device_map: str = "auto",
+) -> PreTrainedModel:
+    if not model_class.__name__.endswith("ForCausalLM"):
+        raise TypeError(f"model_class must be a CausalLM. Got {model_class}")
+
+    if qlora:
+        quantization_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.bfloat16,
+        )
+    else:
+        quantization_config = None
+    loading_kwargs = dict(
+        pretrained_model_name_or_path=pretrained_model_name_or_path,
+        device_map=device_map,
+        quantization_config=quantization_config,
+    )
+    if from_pretrained_lora and not is_pretrained_fresh:
+        model = AutoPeftModelForCausalLM.from_pretrained(**loading_kwargs)
+        return cast(PeftMixedModel, model).merge_and_unload()
+    else:
+        return model_class.from_pretrained(**loading_kwargs)
+
+
 def train(
     texts: list[str],
     class_names: list[str],
@@ -122,8 +156,8 @@ def train(
     from_pretrained_lora: bool,
     pretrained_model_name_or_path: str,
     output_dir: str,
-    per_device_train_batch_size_classification: int,
-    num_train_epochs_classification: int,
+    per_device_train_batch_size: int,
+    num_train_epochs: int,
     max_length: int,
     lora: bool,
     qlora: bool,
@@ -146,44 +180,18 @@ def train(
         }
     )
 
-    # Load in the pretrained model
-    if from_pretrained_lora and not is_pretrained_fresh:
-        state_dict = (
-            cast(
-                PeftMixedModel,
-                AutoPeftModelForCausalLM.from_pretrained(pretrained_model_name_or_path),
-            )
-            # Load in the pretrained LM (w/ the original/fresh pretrained weights) and
-            # (separately) the adapter weights stored at pretrained_model_name_or_path
-            .merge_and_unload()  # merge in the adapter weights
-            .state_dict()
-        )
-    else:
-        state_dict = None
-
-    model = model_class.from_pretrained(
-        pretrained_model_name_or_path=pretrained_model_name_or_path,
-        state_dict=state_dict,
-        device_map="auto" if qlora else device_map,
-        # TODO: always use auto. Annoying b/c auto results in mps on my macbook for
-        # transformers >= 4.42, which doesn't work b/c of missing attn kernels. Should
-        # instead use CPU.
-        quantization_config=(
-            BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_use_double_quant=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_compute_dtype=torch.bfloat16,
-            )
-            if qlora
-            else None
-        ),
+    # Set up model
+    model = load_model(
+        model_class,
+        from_pretrained_lora,
+        pretrained_model_name_or_path,
+        qlora,
+        is_pretrained_fresh=is_pretrained_fresh,
+        device_map=device_map,
     )
     if qlora:
         model.gradient_checkpointing_enable()
         model = prepare_model_for_kbit_training(model)
-
-    # Maybe set up LoRA
     if lora or qlora:
         # HPs from https://huggingface.co/docs/trl/en/sft_trainer#training-adapters
         lora_config = LoraConfig(
@@ -210,8 +218,8 @@ def train(
         tokenizer=tokenizer,
         args=SFTConfig(
             output_dir=output_dir,
-            per_device_train_batch_size=per_device_train_batch_size_classification,
-            num_train_epochs=num_train_epochs_classification,
+            per_device_train_batch_size=per_device_train_batch_size,
+            num_train_epochs=num_train_epochs,
             max_seq_length=max_length,
             save_strategy="no",
             optim="paged_adamw_8bit" if qlora else "adamw_torch",
@@ -238,4 +246,41 @@ def train(
         # data_collator to work for Llama-like tokenizers which add a BOS token. TODO:
         # check that it works for BPE/GPT-2-like tokenizers
         trainer.train()  # train modifies the model object itself.
-    return (trainer.model, trainer.tokenizer)
+    trainer.model.save_pretrained(output_dir)  # just save LoRA's weights
+    return trainer.model, trainer.tokenizer
+
+
+def predict_proba(
+    texts: list[str],
+    model_and_tokenizer: tuple[PreTrainedModel, PreTrainedTokenizerBase],
+    class_names_unique: tuple[str, ...],
+    task_description: str,
+    batch_size: int = 2,
+    batch_size_completions: int | None = None,
+):
+    _, tokenizer = model_and_tokenizer
+    chats_without_answers = _create_chats(
+        texts,
+        class_names=[""] * len(texts),
+        class_names_unique=class_names_unique,
+        task_description=task_description,
+        system_role=_system_role(tokenizer),
+    )
+    prompts = _formatter(chats_without_answers, tokenizer)
+    instruction = commonprefix(prompts)
+    instruction = instruction[: instruction.index(QUERY_TEMPLATE)]
+    prompts = [
+        prompt.removeprefix(instruction).removesuffix(tokenizer.eos_token)
+        for prompt in prompts
+    ]
+
+    with cappr.huggingface.classify.cache(
+        model_and_tokenizer, prefixes=instruction, logits_all=False
+    ) as cached:
+        return cappr.huggingface.classify.predict_proba(
+            prompts,
+            completions=class_names_unique,
+            model_and_tokenizer=cached,
+            batch_size=batch_size,
+            batch_size_completions=batch_size_completions,
+        )

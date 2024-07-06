@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Literal
 
 import torch
 from transformers import (
@@ -22,8 +23,9 @@ class Config:
     mlm: bool | None = None
     mlm_probability: float | None = None
     lora_pretrain: bool = False
+    pretrain_method: Literal["raw-text", "instructions-with-text"] = "raw-text"
+    classification_method: Literal["linear-layer", "sft", "zero-shot"] = "linear-layer"
     lora_classification: bool = False
-    sft_classification: bool = False
     qlora: bool = False
     tokenizer: PreTrainedTokenizerBase | None = None
     device: str | torch.device | None = None

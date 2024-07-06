@@ -2,10 +2,6 @@
 Train a (finetuned) autoregressive LM to do classification using SFT.
 """
 
-from os.path import commonprefix
-
-import cappr
-from transformers import PreTrainedModel, PreTrainedTokenizerBase
 from trl import DataCollatorForCompletionOnlyLM
 
 from pretrain_on_test import Config
@@ -45,50 +41,19 @@ def train(
         config.model_class_classification,
         config.tokenizer,
         config.lora_pretrain,
-        pretrained_model_name_or_path or config.model_path_pretrained,
-        config.model_path_classification,
-        config.per_device_train_batch_size_classification,
-        config.num_train_epochs_classification,
-        config.max_length,
-        config.lora_classification,
-        config.qlora,
+        pretrained_model_name_or_path=(
+            pretrained_model_name_or_path or config.model_path_pretrained
+        ),
+        output_dir=config.model_path_classification,
+        per_device_train_batch_size=config.per_device_train_batch_size_classification,
+        num_train_epochs=config.num_train_epochs_classification,
+        max_length=config.max_length,
+        lora=config.lora_classification,
+        qlora=config.qlora,
         is_pretrained_fresh=is_pretrained_fresh,
         device_map=config.device,
         chat_text_post_processor=None,
     )
 
 
-def predict_proba(
-    texts: list[str],
-    model_and_tokenizer: tuple[PreTrainedModel, PreTrainedTokenizerBase],
-    class_names_unique: tuple[str, ...],
-    task_description: str,
-    batch_size: int = 2,
-    batch_size_completions: int | None = None,
-):
-    _, tokenizer = model_and_tokenizer
-    chats_without_answers = _dum._create_chats(
-        texts,
-        class_names=[""] * len(texts),
-        class_names_unique=class_names_unique,
-        task_description=task_description,
-        system_role=_dum._system_role(tokenizer),
-    )
-    prompts = _dum._formatter(chats_without_answers, tokenizer)
-    instruction = commonprefix(prompts)
-    instruction = instruction[: instruction.index(_dum.QUERY_TEMPLATE)]
-    prompts = [
-        prompt.removeprefix(instruction).removesuffix(tokenizer.eos_token)
-        for prompt in prompts
-    ]
-
-    with cappr.huggingface.classify.cache(
-        model_and_tokenizer, prefixes=instruction, logits_all=False
-    ) as cached:
-        return cappr.huggingface.classify.predict_proba(
-            prompts,
-            completions=class_names_unique,
-            model_and_tokenizer=cached,
-            batch_size=batch_size,
-            batch_size_completions=batch_size_completions,
-        )
+predict_proba = _dum.predict_proba

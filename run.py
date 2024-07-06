@@ -6,7 +6,7 @@ import json
 import os
 from datetime import datetime
 from functools import partial
-from typing import Collection, Literal
+from typing import Any, Callable, Collection, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 from tap import tapify
@@ -33,6 +33,22 @@ except ModuleNotFoundError:
 _field_for_config = partial(Field, json_schema_extra={"is_for_config": True})
 
 
+LmType = Literal[
+    "bert",
+    "gpt2",
+    "mistral-lora-sft",
+    "mistral-qlora-sft",
+    "mistral-instruct-qlora-sft",
+    "mistral-instruct-lora-zero-shot",
+    # For quick CPU tests
+    "bert-tiny",
+    "gpt2-tiny",
+    "mistral-lora-sft-tiny",
+    "mistral-instruct-lora-sft-tiny",
+    "mistral-instruct-lora-zero-shot-tiny",
+]
+
+
 class Experiment(BaseModel):
     """
     Experiment configuration.
@@ -41,17 +57,7 @@ class Experiment(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     # Pydantic stuff: extra attributes are not allowed, and the object is immutable
 
-    lm_type: Literal[
-        "bert",
-        "gpt2",
-        "mistral-lora-sft",
-        "mistral-qlora-sft",
-        "mistral-instruct-qlora-sft",
-        "bert-tiny",
-        "gpt2-tiny",
-        "mistral-lora-sft-tiny",
-        "mistral-instruct-lora-sft-tiny",
-    ] = Field(
+    lm_type: LmType = Field(
         description=(
             "Type of language model. *-tiny models have random weights and should only "
             "be used for testing."
@@ -107,13 +113,17 @@ class Experiment(BaseModel):
     )
 
 
-lm_type_to_config_creator = {
+lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] = {
     "bert": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="bert-base-uncased",
         model_class_pretrain=BertForMaskedLM,
         model_class_classification=BertForSequenceClassification,
         mlm=True,
         mlm_probability=0.15,
+        pretrain_method="raw-text",
+        lora_pretrain=False,
+        classification_method="linear-layer",
+        lora_classification=False,
         max_length=256,
         **model_independent_kwargs,
     ),
@@ -121,48 +131,59 @@ lm_type_to_config_creator = {
         model_id="gpt2",
         model_class_pretrain=GPT2LMHeadModel,
         model_class_classification=GPT2ForSequenceClassification,
+        pretrain_method="raw-text",
+        lora_pretrain=False,
+        classification_method="linear-layer",
+        lora_classification=False,
         max_length=256,
-        **model_independent_kwargs,
-    ),
-    "mistral-lora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
-        model_id="mistralai/Mistral-7B-v0.1",
-        model_class_pretrain=AutoModelForCausalLM,
-        model_class_classification=AutoModelForCausalLM,
-        lora_pretrain=True,
-        lora_classification=True,
-        sft_classification=True,
-        max_length=512,
         **model_independent_kwargs,
     ),
     "mistral-qlora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="mistralai/Mistral-7B-v0.3",
         model_class_pretrain=AutoModelForCausalLM,
         model_class_classification=AutoModelForCausalLM,
+        pretrain_method="instructions-with-text",
         lora_pretrain=True,
+        classification_method="sft",
         lora_classification=True,
-        sft_classification=True,
         qlora=True,
         max_length=512,
         **model_independent_kwargs,
     ),
     "mistral-instruct-qlora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
-        model_id="mistralai/Mistral-7B-Instruct-v0.3",  # TODO: add or switch to phi-3
+        model_id="mistralai/Mistral-7B-Instruct-v0.3",
         model_class_pretrain=AutoModelForCausalLM,
         model_class_classification=AutoModelForCausalLM,
+        pretrain_method="instructions-with-text",
         lora_pretrain=True,
+        classification_method="sft",
         lora_classification=True,
-        sft_classification=True,
         qlora=True,
         max_length=512,
         **model_independent_kwargs,
     ),
-    # For quick CPU tests
+    "mistral-instruct-lora-zero-shot": lambda **model_independent_kwargs: pretrain_on_test.Config(
+        model_id="mistralai/Mistral-7B-Instruct-v0.3",
+        model_class_pretrain=AutoModelForCausalLM,
+        model_class_classification=AutoModelForCausalLM,  # unused
+        pretrain_method="instructions-with-text",
+        lora_pretrain=True,
+        qlora=True,
+        classification_method="zero-shot",
+        max_length=512,
+        **model_independent_kwargs,
+    ),
+    # For quick CPU tests. These are useful for prototyping new LM types
     "bert-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="hf-internal-testing/tiny-random-BertModel",
         model_class_pretrain=BertForMaskedLM,
         model_class_classification=BertForSequenceClassification,
         mlm=True,
         mlm_probability=0.15,
+        pretrain_method="raw-text",
+        lora_pretrain=False,
+        classification_method="linear-layer",
+        lora_classification=False,
         max_length=256,
         **model_independent_kwargs,
     ),
@@ -170,6 +191,10 @@ lm_type_to_config_creator = {
         model_id="hf-internal-testing/tiny-random-gpt2",
         model_class_pretrain=GPT2LMHeadModel,
         model_class_classification=GPT2ForSequenceClassification,
+        pretrain_method="raw-text",
+        lora_pretrain=False,
+        classification_method="linear-layer",
+        lora_classification=False,
         max_length=256,
         **model_independent_kwargs,
     ),
@@ -177,9 +202,10 @@ lm_type_to_config_creator = {
         model_id="hf-internal-testing/tiny-random-AutoModelForCausalLM",
         model_class_pretrain=AutoModelForCausalLM,
         model_class_classification=AutoModelForCausalLM,
+        pretrain_method="instructions-with-text",
         lora_pretrain=True,
+        classification_method="sft",
         lora_classification=True,
-        sft_classification=True,
         max_length=512,
         **model_independent_kwargs,
     ),
@@ -187,9 +213,20 @@ lm_type_to_config_creator = {
         model_id="ml6team/tiny-random-mistral-instruct",
         model_class_pretrain=AutoModelForCausalLM,
         model_class_classification=AutoModelForCausalLM,
+        pretrain_method="instructions-with-text",
         lora_pretrain=True,
+        classification_method="sft",
         lora_classification=True,
-        sft_classification=True,
+        max_length=512,
+        **model_independent_kwargs,
+    ),
+    "mistral-instruct-lora-zero-shot-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
+        model_id="ml6team/tiny-random-mistral-instruct",
+        model_class_pretrain=AutoModelForCausalLM,
+        model_class_classification=AutoModelForCausalLM,
+        pretrain_method="instructions-with-text",
+        lora_pretrain=True,
+        classification_method="zero-shot",
         max_length=512,
         **model_independent_kwargs,
     ),

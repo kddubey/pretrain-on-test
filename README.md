@@ -10,7 +10,8 @@ here](https://www.youtube.com/watch?v=CCvVEszRiDI&t=225s).
 
 [Paper](./prepreprint.pdf).
 
-Coming soon: experiments w/ QLoRA.
+Coming soon: experiments w/ QLoRA pretraining before zero-shot.
+Also curious to see if overtraining on unlabeled test texts can cause bias.
 
 
 ## Question
