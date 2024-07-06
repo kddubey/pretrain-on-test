@@ -38,7 +38,6 @@ def train(
         mlm=config.mlm,
         mlm_probability=config.mlm_probability,
     )
-    from_pretrained_lora = False
     return _dum.train(
         texts,
         class_names,
@@ -46,7 +45,7 @@ def train(
         task_description,
         data_collator,
         config.tokenizer,
-        from_pretrained_lora,
+        from_pretrained_lora=False,
         pretrained_model_name_or_path=config.model_id,
         output_dir=config.model_path_pretrained,
         per_device_train_batch_size=config.per_device_train_batch_size_pretrain,
