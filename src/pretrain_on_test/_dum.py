@@ -188,7 +188,7 @@ def train(
         pretrained_model_name_or_path,
         qlora,
         is_pretrained_fresh=is_pretrained_fresh,
-        device_map=device_map,
+        device_map="auto" if qlora else device_map,
     )
     if qlora:
         model.gradient_checkpointing_enable()
