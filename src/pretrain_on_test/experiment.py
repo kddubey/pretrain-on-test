@@ -49,7 +49,14 @@ def _stratified_sample(
     def label_sampler(df_label: pd.DataFrame) -> pd.DataFrame:
         return df_label.sample(num_obs_per_label, random_state=random_state)
 
-    return df.groupby("label", group_keys=False).apply(label_sampler)
+    df = df.groupby("label", group_keys=False).apply(label_sampler)
+    if len(df) == 0:
+        raise ValueError(
+            "There are more classes than there are observations. Increase sample_size "
+            f"/ num_train from {sample_size} to at least the number of classes: "
+            f"{num_labels}"
+        )
+    return df
 
 
 def _split(
@@ -97,6 +104,12 @@ def _maybe_rmtree(path: str):
         shutil.rmtree(path)
 
 
+def _process_train_output(train_output: TrainOutput | None) -> dict[str, float]:
+    if train_output is None:
+        train_output = TrainOutput(global_step=None, training_loss=None, metrics={})
+    return dict(**train_output.metrics, global_step=train_output.global_step)
+
+
 def _experiment(
     df: pd.DataFrame,
     classification_dataset_info: pretrain_on_test.data.ClassificationDatasetInfo,
@@ -105,7 +118,11 @@ def _experiment(
     num_train: int = 100,
     num_test: int = 200,
     random_state_subsamples: int = None,
-) -> tuple[pd.DataFrame, dict[str, float]]:
+) -> tuple[
+    pd.DataFrame,
+    dict[Literal["base", "extra", "test", "majority"], float],
+    list[dict[str, str | float]],
+]:
     # Get the pretraining and classification modules
     train_type_to_module: dict[
         str,
@@ -170,12 +187,11 @@ def _experiment(
     }
 
     # Output data we'll update
-    train_type_split_train_output: list[dict[str, str, TrainOutput]] = []
+    train_type_split_train_output: list[dict[str, str | float]] = []
     split_to_test_probs: dict[
         Literal["base", "extra", "test", "majority"], np.ndarray
     ] = {}
     split_to_accuracy: dict[Literal["base", "extra", "test", "majority"], float] = {}
-    split_to_accuracy["majority"] = df_test["label"].value_counts(normalize=True).max()
     accuracy = lambda test_probs: np.mean(
         df_test["label"] == np.argmax(test_probs, axis=1)
     )
@@ -194,7 +210,11 @@ def _experiment(
         else:
             trained_model, train_output = module.train(*data, **kwargs)
         train_type_split_train_output.append(
-            dict(train_type=train_type, split=split, train_output=train_output)
+            dict(
+                split=split,
+                train_type=train_type,
+                **_process_train_output(train_output),
+            )
         )
 
         if train_type == "classification":
@@ -202,6 +222,7 @@ def _experiment(
             pred_probs = module.predict_proba(
                 test_data, trained_model, **config_and_classification_dataset_info
             )
+            # TODO: accelerate.utils.release_memory(trained_model) ?
             split_to_test_probs[split] = pred_probs
             split_to_accuracy[split] = accuracy(pred_probs)
 
@@ -231,7 +252,8 @@ def _experiment(
 
     # Updated output data
     df_test_with_pred_probs = _add_pred_probs(df_test, split_to_test_probs)
-    return df_test_with_pred_probs, split_to_accuracy
+    split_to_accuracy["majority"] = df_test["label"].value_counts(normalize=True).max()
+    return df_test_with_pred_probs, split_to_accuracy, train_type_split_train_output
 
 
 def replicate(
@@ -266,25 +288,38 @@ def replicate(
             f"Dataset - {dataset_name}; "
             f"Subsample - {subsample_idx} of {num_subsamples}"
         )
-        df_test_with_pred_probs, split_to_accuracy = _experiment(
-            df,
-            classification_dataset_info,
-            config,
-            logger,
-            num_train=num_train,
-            num_test=num_test,
-            random_state_subsamples=random_state_subsamples + subsample_idx,
+        df_test_with_pred_probs, split_to_accuracy, train_type_split_train_output = (
+            _experiment(
+                df,
+                classification_dataset_info,
+                config,
+                logger,
+                num_train=num_train,
+                num_test=num_test,
+                random_state_subsamples=random_state_subsamples + subsample_idx,
+            )
         )
         accuracy_records.append(split_to_accuracy)
-        # Save df_test_with_pred_probs
+
+        # Save subsample-level data
+        # Observation-level per-class probabilities
         if not os.path.exists(dataset_dir):
             os.makedirs(dataset_dir)
-        file_path_subsample = os.path.join(
-            dataset_dir, f"subsample_test_{str(subsample_idx).zfill(n_digits)}.csv"
+        subsample_idx_as_string = str(subsample_idx).zfill(n_digits)
+        subsample_test_probs_path = os.path.join(
+            dataset_dir, f"subsample_test_{subsample_idx_as_string}.csv"
         )
-        logger.info(f"Writing to {file_path_subsample}")
+        logger.info(f"Writing to {subsample_test_probs_path}")
         df_test_with_pred_probs.to_csv(
-            file_path_subsample, index=True, index_label="index_from_full_split"
+            subsample_test_probs_path, index=True, index_label="index_from_full_split"
+        )
+        # Training loss
+        subsample_train_metrics_path = os.path.join(
+            dataset_dir, f"subsample_train_metrics_{subsample_idx_as_string}.csv"
+        )
+        logger.info(f"Writing to {subsample_train_metrics_path}")
+        pd.DataFrame(train_type_split_train_output).to_csv(
+            subsample_train_metrics_path, index=False
         )
 
     # Save accuracies for each subsample
