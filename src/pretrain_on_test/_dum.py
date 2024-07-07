@@ -29,7 +29,7 @@ from transformers.trainer_utils import TrainOutput
 from trl import SFTConfig, SFTTrainer
 
 from pretrain_on_test import Config
-from pretrain_on_test.data import ClassificationDatasetInfo
+from pretrain_on_test.data import ClassificationDatasetInfo, NUM_CHARACTERS_MAX
 
 
 QUERY_TEMPLATE = "### Text:"
@@ -49,8 +49,8 @@ def _instruction_formatter(
     )
 
 
-def _query_formatter(text: str, max_length_chars: int = 1_000) -> str:
-    return f"{QUERY_TEMPLATE} {text[:max_length_chars]}\n"
+def _query_formatter(text: str) -> str:
+    return f"{QUERY_TEMPLATE} {text[:NUM_CHARACTERS_MAX]}\n"
 
 
 def _answer_formatter(class_name: str) -> str:

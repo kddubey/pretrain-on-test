@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 
-_NUM_CHARACTERS_MAX = 1_000
+NUM_CHARACTERS_MAX = 1_000
 """
 Sometimes need to filter out ginormous texts, so only keep texts w/ < 1_000 characters.
 """
@@ -122,7 +122,7 @@ hf_dataset_name_to_classification_dataset_info: dict[str, ClassificationDatasetI
         loader=partial(_loader_hf, trust_remote_code=True),
         processor=lambda df: df.assign(
             label=df["gender"].map({"female": 0, "male": 1})
-        ).copy()[df["text"].str.len() < _NUM_CHARACTERS_MAX],
+        ).copy()[df["text"].str.len() < NUM_CHARACTERS_MAX],
     ),
     "christinacdl/clickbait_notclickbait_dataset": ClassificationDatasetInfo(
         dataset_location="christinacdl/clickbait_notclickbait_dataset",
@@ -173,7 +173,7 @@ hf_dataset_name_to_classification_dataset_info: dict[str, ClassificationDatasetI
             text=df["message"],
             label=df["genre"].map({"direct": 0, "news": 1, "social": 2}),
         ).copy()[
-            (df["message"].str.len() < _NUM_CHARACTERS_MAX)
+            (df["message"].str.len() < NUM_CHARACTERS_MAX)
             & (df["message"].fillna("").str.len() > 0)
         ],
     ),
@@ -224,7 +224,7 @@ hf_dataset_name_to_classification_dataset_info: dict[str, ClassificationDatasetI
         loader=partial(_loader_hf, trust_remote_code=True),
         processor=lambda df: df.assign(
             label=df["topic"].map({"lgbt": 0, "migrants": 1})
-        ).copy()[df["text"].str.len() < _NUM_CHARACTERS_MAX],
+        ).copy()[df["text"].str.len() < NUM_CHARACTERS_MAX],
     ),
     "hyperpartisan_news_detection": ClassificationDatasetInfo(
         dataset_location="hyperpartisan_news_detection",
@@ -325,7 +325,7 @@ hf_dataset_name_to_classification_dataset_info: dict[str, ClassificationDatasetI
             "domain."
         ),
         loader=partial(_loader_hf, config_name="abstract", trust_remote_code=True),
-        processor=lambda df: df.copy()[df["text"].str.len() < _NUM_CHARACTERS_MAX],
+        processor=lambda df: df.copy()[df["text"].str.len() < NUM_CHARACTERS_MAX],
     ),
     "rotten_tomatoes": ClassificationDatasetInfo(
         dataset_location="rotten_tomatoes",
