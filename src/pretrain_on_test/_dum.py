@@ -137,7 +137,7 @@ def load_model(
         quantization_config = None
     loading_kwargs = dict(
         pretrained_model_name_or_path=pretrained_model_name_or_path,
-        device_map=device_map,
+        device_map="auto" if qlora else device_map,
         quantization_config=quantization_config,
     )
     if from_pretrained_lora and not is_pretrained_fresh:
@@ -188,7 +188,7 @@ def train(
         pretrained_model_name_or_path,
         qlora,
         is_pretrained_fresh=is_pretrained_fresh,
-        device_map="auto" if qlora else device_map,
+        device_map=device_map,
     )
     if qlora:
         model.gradient_checkpointing_enable()
