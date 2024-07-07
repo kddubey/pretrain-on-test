@@ -234,21 +234,21 @@ def _experiment(
     finally:
         _maybe_rmtree(config.model_path_classification)
 
-    # Run the fair pretraining methodology
-    try:
-        train(split="extra", train_type="pretrain")
-        train(split="extra", train_type="classification")
-    finally:
-        _maybe_rmtree(config.model_path_pretrained)
-        _maybe_rmtree(config.model_path_classification)
+    # # Run the fair pretraining methodology
+    # try:
+    #     train(split="extra", train_type="pretrain")
+    #     train(split="extra", train_type="classification")
+    # finally:
+    #     _maybe_rmtree(config.model_path_pretrained)
+    #     _maybe_rmtree(config.model_path_classification)
 
-    # Run the (presumably) unfair pretraining methodology
-    try:
-        train(split="test", train_type="pretrain")
-        train(split="test", train_type="classification")
-    finally:
-        _maybe_rmtree(config.model_path_pretrained)
-        _maybe_rmtree(config.model_path_classification)
+    # # Run the (presumably) unfair pretraining methodology
+    # try:
+    #     train(split="test", train_type="pretrain")
+    #     train(split="test", train_type="classification")
+    # finally:
+    #     _maybe_rmtree(config.model_path_pretrained)
+    #     _maybe_rmtree(config.model_path_classification)
 
     # Updated output data
     df_test_with_pred_probs = _add_pred_probs(df_test, split_to_test_probs)
