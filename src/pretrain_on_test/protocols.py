@@ -2,12 +2,6 @@
 Protocols for pretraining and classification modules. Please carefully read the
 docstrings to correctly implement the protocol. Avoid using `**kwargs` just to make
 code run. That could result in silently wrong behavior.
-
-After adding the module, add its reference/name to
-`pretrain_on_test.Config.pretrain_method` or
-`pretrain_on_test.Config.classification_method`, and then update
-`pretrain_on_test.experiment._set_up_modules_and_kwargs` to set up the arguments that
-should get passed to it.
 """
 
 from typing import Protocol, TypeVar
@@ -28,7 +22,8 @@ class Pretrain(Protocol):
         classification_dataset_info: ClassificationDatasetInfo,
     ) -> TrainOutput:
         """
-        Pretrains the model at `config.model_id` on `texts`.
+        Pretrains the model at `config.model_id` on `texts`, and saves it to
+        `config.model_path_pretrained`.
 
         Parameters
         ----------
