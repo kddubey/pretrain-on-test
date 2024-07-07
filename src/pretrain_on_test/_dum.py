@@ -33,9 +33,20 @@ from pretrain_on_test.data import ClassificationDatasetInfo, NUM_CHARACTERS_MAX
 
 
 QUERY_TEMPLATE = "### Text:"
+
 RESPONSE_TEMPLATE = " ### Answer:"
-# That extra space---^---is necessary in SFT for correct parsing of the
-# completion/response for BPE tokenizers
+"""
+That extra space-----^-is necessary in SFT for correct parsing of the 
+completion/response for BPE tokenizers
+"""
+
+_MODELS_WHICH_DONT_DO_WELL_WITH_SYSTEM_PROMPT = {
+    "phi-3",  # https://huggingface.co/microsoft/Phi-3-mini-4k-instruct/discussions/51#66328cab9292069aed6a425b
+}
+"""
+These models might have 'system' in their chat_template but apparently they shouldn't be
+used
+"""
 
 
 def _instruction_formatter(
@@ -100,6 +111,27 @@ def _create_chats(
     ]
 
 
+def chat_text_post_processor(tokenizer: PreTrainedTokenizerBase, chat_text: str) -> str:
+    # W/o this, training data would look like, e.g.,
+    #
+    # blah blah blah ### Answer:</s>
+    #
+    # That's prolly a problem b/c the model will allocate a ton of probability to the
+    # EOS token after the : token, which might throw it off when we need classification
+    # answers.
+    model_name = _model_name(tokenizer)
+    if "phi-3" in model_name.lower():
+        # phi-3 doesn't record this in tokenizer.special_tokens_map or anywhere besides
+        # tokenizer.chat_template, which I'm not sure how to automatically parse
+        suffix_token = "<|end|>\n"
+    else:
+        suffix_token = tokenizer.eos_token
+    if suffix_token is not None:
+        return chat_text.removesuffix(suffix_token)
+    else:
+        return chat_text
+
+
 def _formatter(
     chats: list[list[_Message]],
     tokenizer: PreTrainedTokenizerBase,
@@ -107,16 +139,32 @@ def _formatter(
 ) -> list[str]:
     apply_chat_template = _get_apply_chat_template(tokenizer)
     chat_texts = [apply_chat_template(chat) for chat in chats]
-    if chat_text_post_processor is None:
-        return chat_texts
-    else:
-        return [chat_text_post_processor(chat_text) for chat_text in chat_texts]
+    if chat_text_post_processor is not None:
+        chat_texts = [chat_text_post_processor(chat_text) for chat_text in chat_texts]
+    return chat_texts
+
+
+def _model_name(tokenizer: PreTrainedTokenizerBase) -> str:
+    model_name = cast(str, tokenizer.name_or_path)
+    if model_name.startswith("_"):
+        raise ValueError(
+            f"Not sure where this tokenizer came from: {model_name}. May not be able "
+            "to correctly determine its name."
+        )
+    return model_name
 
 
 def _system_role(tokenizer: PreTrainedTokenizerBase) -> str | None:
     # TODO: what's a good way to do this? Current way prolly inaccurate. rn I'm just
     # checking the tokenizer manually before running it
-    return "system" if "'system'" in (tokenizer.chat_template or "") else None
+    model_name = _model_name(tokenizer)
+    if any(
+        name in model_name.lower()
+        for name in _MODELS_WHICH_DONT_DO_WELL_WITH_SYSTEM_PROMPT
+    ):
+        return None
+    else:
+        return "system" if "'system'" in (tokenizer.chat_template or "") else None
 
 
 def load_model(
@@ -139,6 +187,7 @@ def load_model(
         pretrained_model_name_or_path=pretrained_model_name_or_path,
         device_map="auto" if qlora else device_map,
         quantization_config=quantization_config,
+        torch_dtype="auto" if quantization_config is None else None,
     )
     if from_pretrained_lora and not is_pretrained_fresh:
         model = AutoPeftModelForCausalLM.from_pretrained(**loading_kwargs)
@@ -201,7 +250,8 @@ def train(
             lora_alpha=32,
             lora_dropout=0.05,
             bias="none",
-            target_modules=["q_proj", "v_proj"],
+            # target_modules=["q_proj", "v_proj"],
+            target_modules=["qkv_proj"],
         )
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
@@ -267,13 +317,14 @@ def _instruction_and_prompts(
         task_description=task_description,
         system_role=_system_role(tokenizer),
     )
-    prompts = _formatter(chats_without_answers, tokenizer)
+    prompts = _formatter(
+        chats_without_answers,
+        tokenizer,
+        chat_text_post_processor=partial(chat_text_post_processor, tokenizer),
+    )
     instruction = commonprefix(prompts)
     instruction = instruction[: instruction.index(QUERY_TEMPLATE)]
-    prompts = [
-        prompt.removeprefix(instruction).removesuffix(tokenizer.eos_token)
-        for prompt in prompts
-    ]
+    prompts = [prompt.removeprefix(instruction) for prompt in prompts]
     return instruction, prompts
 
 

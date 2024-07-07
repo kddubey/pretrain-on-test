@@ -11,18 +11,6 @@ from pretrain_on_test.data import ClassificationDatasetInfo
 from . import _dum
 
 
-def chat_text_post_processor(eos_token: str | None, chat_text: str) -> str:
-    # W/o this, training data would look like:
-    # blah blah blah ### Answer:</s>
-    # Pretty sure that's a problem b/c the model will allocate a ton of probability to
-    # the EOS token after the : token, which might throw it off when we need
-    # classification answers.
-    if eos_token is not None:
-        return chat_text.removesuffix(eos_token)
-    else:
-        return chat_text
-
-
 def train(
     texts: list[str],
     config: Config,
@@ -57,7 +45,7 @@ def train(
         is_pretrained_fresh=True,
         device_map=config.device,
         chat_text_post_processor=partial(
-            chat_text_post_processor, config.tokenizer.eos_token
+            _dum.chat_text_post_processor, config.tokenizer
         ),
     )
     return train_output

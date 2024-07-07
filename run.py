@@ -39,7 +39,12 @@ LmType = Literal[
     "gpt2-tiny",
     "mistral-lora-sft-tiny",
     "mistral-instruct-lora-sft-tiny",
+    # "Phi-3-mini-128k-instruct-lora-sft-tiny",
+    #
+    # TODO: ^ broken b/c 0 train loss when further finetuning a LoRA model for
+    # classification
     "mistral-instruct-lora-zero-shot-tiny",
+    "Phi-3-mini-128k-instruct-lora-zero-shot-tiny",
 ]
 
 
@@ -205,8 +210,27 @@ lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] =
         max_length=512,
         **model_independent_kwargs,
     ),
+    "Phi-3-mini-128k-instruct-lora-sft-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
+        model_id="yujiepan/phi-3-tiny-random",
+        model_class_pretrain=AutoModelForCausalLM,
+        pretrain_method="instructions-with-text",
+        lora_pretrain=True,
+        classification_method="sft",
+        lora_classification=True,
+        max_length=512,
+        **model_independent_kwargs,
+    ),
     "mistral-instruct-lora-zero-shot-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="ml6team/tiny-random-mistral-instruct",
+        model_class_pretrain=AutoModelForCausalLM,
+        pretrain_method="instructions-with-text",
+        lora_pretrain=True,
+        classification_method="zero-shot",
+        max_length=512,
+        **model_independent_kwargs,
+    ),
+    "Phi-3-mini-128k-instruct-lora-zero-shot-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
+        model_id="yujiepan/phi-3-tiny-random",
         model_class_pretrain=AutoModelForCausalLM,
         pretrain_method="instructions-with-text",
         lora_pretrain=True,
