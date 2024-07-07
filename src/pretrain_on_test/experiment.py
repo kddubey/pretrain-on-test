@@ -99,7 +99,7 @@ def _add_pred_probs(
     return df
 
 
-def _maybe_rmtree(path: str):
+def _rmtree_if_exists(path: str):
     if os.path.exists(path):
         shutil.rmtree(path)
 
@@ -208,7 +208,11 @@ def _experiment(
         if train_type == "pretrain":
             train_output = module.train(*data, **kwargs)
         else:
-            trained_model, train_output = module.train(*data, **kwargs)
+            try:
+                trained_model, train_output = module.train(*data, **kwargs)
+            finally:
+                _rmtree_if_exists(config.model_path_pretrained)
+                _rmtree_if_exists(config.model_path_classification)
         train_type_split_train_output.append(
             dict(
                 split=split,
@@ -229,26 +233,15 @@ def _experiment(
     # Run the methodology which does no pretraining. We'll compare to this data
     # to demonstrate that pretraining/domain adaptation helps, so that there's an effect
     # to detect
-    try:
-        train(split="base", train_type="classification")
-    finally:
-        _maybe_rmtree(config.model_path_classification)
+    train(split="base", train_type="classification")
 
-    # # Run the fair pretraining methodology
-    # try:
-    #     train(split="extra", train_type="pretrain")
-    #     train(split="extra", train_type="classification")
-    # finally:
-    #     _maybe_rmtree(config.model_path_pretrained)
-    #     _maybe_rmtree(config.model_path_classification)
+    # Run the fair pretraining methodology
+    train(split="extra", train_type="pretrain")
+    train(split="extra", train_type="classification")
 
-    # # Run the (presumably) unfair pretraining methodology
-    # try:
-    #     train(split="test", train_type="pretrain")
-    #     train(split="test", train_type="classification")
-    # finally:
-    #     _maybe_rmtree(config.model_path_pretrained)
-    #     _maybe_rmtree(config.model_path_classification)
+    # Run the (presumably) unfair pretraining methodology
+    train(split="test", train_type="pretrain")
+    train(split="test", train_type="classification")
 
     # Updated output data
     df_test_with_pred_probs = _add_pred_probs(df_test, split_to_test_probs)
