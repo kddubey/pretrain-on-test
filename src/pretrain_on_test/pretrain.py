@@ -11,8 +11,10 @@ from transformers import (
     Trainer,
     TrainingArguments,
 )
+from transformers.trainer_utils import TrainOutput
 
 from pretrain_on_test import Config
+from pretrain_on_test.data import ClassificationDatasetInfo
 
 
 class _Dataset(torch.utils.data.Dataset):
@@ -39,7 +41,11 @@ class _Dataset(torch.utils.data.Dataset):
         return len(self.texts)
 
 
-def train(texts: list[str], config: Config):
+def train(
+    texts: list[str],
+    config: Config,
+    classification_dataset_info: ClassificationDatasetInfo,
+) -> TrainOutput:
     """
     Saves a fresh model which is pretrained on `texts` to
     `config.model_path_pretrained`.
@@ -104,10 +110,11 @@ def train(texts: list[str], config: Config):
         data_collator=data_collator,
         train_dataset=train_dataset,
     )
-    trainer.train()
+    train_output = trainer.train()
     if config.lora_pretrain:
         # Just save the adapter weights. We'll merge them into the base model before
         # classification training
         model.save_pretrained(config.model_path_pretrained)
     else:
         trainer.save_model()
+    return train_output

@@ -4,8 +4,10 @@ Train a freshly loaded pretrained autoregressive LM on SFT-looking data w/o answ
 
 from functools import partial
 from transformers import DataCollatorForLanguageModeling
+from transformers.trainer_utils import TrainOutput
 
 from pretrain_on_test import Config
+from pretrain_on_test.data import ClassificationDatasetInfo
 from . import _dum
 
 
@@ -23,10 +25,9 @@ def chat_text_post_processor(eos_token: str | None, chat_text: str) -> str:
 
 def train(
     texts: list[str],
-    class_names_unique: tuple[str, ...],
-    task_description: str,
     config: Config,
-):
+    classification_dataset_info: ClassificationDatasetInfo,
+) -> TrainOutput:
     """
     Returns a finetuned model and its tokenizer.
 
@@ -38,11 +39,11 @@ def train(
         mlm=config.mlm,
         mlm_probability=config.mlm_probability,
     )
-    return _dum.train(
+    _, train_output = _dum.train(
         texts,
         class_names,
-        class_names_unique,
-        task_description,
+        classification_dataset_info.class_names,
+        classification_dataset_info.task_description,
         data_collator,
         config.tokenizer,
         from_pretrained_lora=False,
@@ -59,3 +60,4 @@ def train(
             chat_text_post_processor, config.tokenizer.eos_token
         ),
     )
+    return train_output

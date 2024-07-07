@@ -15,8 +15,10 @@ from transformers import (
     Trainer,
     TrainingArguments,
 )
+from transformers.trainer_utils import TrainOutput
 
 from pretrain_on_test import Config
+from pretrain_on_test.data import ClassificationDatasetInfo
 
 
 class _Dataset(torch.utils.data.Dataset):
@@ -48,11 +50,11 @@ class _Dataset(torch.utils.data.Dataset):
 def train(
     texts: list[str],
     labels: list[int],
-    num_labels: int,
     config: Config,
-    pretrained_model_name_or_path: str | None = None,
-    is_pretrained_fresh: bool = False,  # TODO: will need for pretrained LoRA
-) -> Trainer:
+    classification_dataset_info: ClassificationDatasetInfo,
+    pretrained_model_name_or_path: str | None,
+    is_pretrained_fresh: bool,  # TODO: will need for pretrained LoRA
+) -> tuple[Trainer, TrainOutput]:
     """
     Returns a model `Trainer` which was finetuned on classification data `texts,
     labels`. The model is saved in `config.model_path_classification`.
@@ -71,7 +73,7 @@ def train(
     # BertForSequenceClassification does not support `device_map='auto'`
     model = AutoModelForSequenceClassification.from_pretrained(
         pretrained_model_name_or_path,
-        num_labels=num_labels,
+        num_labels=len(classification_dataset_info.class_names),
         output_attentions=False,
         output_hidden_states=False,
         ignore_mismatched_sizes=False,
@@ -109,11 +111,16 @@ def train(
         train_dataset=train_dataset,
         tokenizer=config.tokenizer,
     )
-    classifier_trainer.train()
-    return classifier_trainer
+    train_output = classifier_trainer.train()
+    return classifier_trainer, train_output
 
 
-def predict_proba(texts: list[str], trained_classifier: Trainer) -> np.ndarray:
+def predict_proba(
+    texts: list[str],
+    trained_classifier: Trainer,
+    config: Config,
+    classification_dataset_info: ClassificationDatasetInfo,
+) -> np.ndarray:
     eval_dataset = _Dataset(trained_classifier.tokenizer, texts)
     logits: np.ndarray = trained_classifier.predict(eval_dataset).predictions
     # predictions are logits, not log-probs. (I checked that some are positive)

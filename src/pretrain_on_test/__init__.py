@@ -8,24 +8,27 @@ LoRA, QLoRA supported.
 Repeatedley subsample a dataset to expose training and evaluation variance.
 """
 
+# Topo order
 from ._config import Config
 from . import (
+    data,
+    protocols,
     classification,
     classification_sft,
     classification_zero_shot,
-    data,
-    experiment,
     pretrain,
     pretrain_for_sft,
+    experiment,
 )
 
 __all__ = [
+    "Config",
+    "data",
+    "protocols",
     "classification",
     "classification_sft",
     "classification_zero_shot",
-    "Config",
-    "data",
-    "experiment",
     "pretrain",
     "pretrain_for_sft",
+    "experiment",
 ]

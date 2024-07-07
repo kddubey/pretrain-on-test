@@ -5,17 +5,17 @@ Train a (finetuned) autoregressive LM to do classification using SFT.
 from trl import DataCollatorForCompletionOnlyLM
 
 from pretrain_on_test import Config
+from pretrain_on_test.data import ClassificationDatasetInfo
 from . import _dum
 
 
 def train(
     texts: list[str],
     labels: list[int],
-    class_names_unique: tuple[str, ...],
-    task_description: str,
     config: Config,
-    pretrained_model_name_or_path: str | None = None,
-    is_pretrained_fresh: bool = False,
+    classification_dataset_info: ClassificationDatasetInfo,
+    pretrained_model_name_or_path: str | None,
+    is_pretrained_fresh: bool,
 ):
     """
     Returns a finetuned model and its tokenizer.
@@ -25,6 +25,7 @@ def train(
     If `pretrained_model_name_or_path is None`, then the model at
     `config.model_path_pretrained` is finetuned.
     """
+    class_names_unique = classification_dataset_info.class_names
     class_names = [class_names_unique[label] for label in labels]
     response_template_ids = config.tokenizer.encode(
         _dum.RESPONSE_TEMPLATE, add_special_tokens=False
@@ -36,7 +37,7 @@ def train(
         texts,
         class_names,
         class_names_unique,
-        task_description,
+        classification_dataset_info.task_description,
         data_collator,
         config.tokenizer,
         config.lora_pretrain,

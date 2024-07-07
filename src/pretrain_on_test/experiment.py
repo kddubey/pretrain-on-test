@@ -12,8 +12,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from tqdm.auto import tqdm
 from transformers import logging as hf_logging
-
-import pretrain_on_test.pretrain_for_sft
+from transformers.trainer_utils import TrainOutput
 
 try:
     from IPython.display import clear_output
@@ -24,7 +23,18 @@ import pretrain_on_test
 
 
 hf_logging.set_verbosity_error()
-# Ignore the HF warning about untrained weights. We always train them
+# Ignore the HF warning about untrained weights for sequence classifier / linear layer. We always train them
+
+
+_pretrain_method_to_module = {
+    "raw-text": pretrain_on_test.pretrain,
+    "instructions-with-text": pretrain_on_test.pretrain_for_sft,
+}
+_classification_method_to_module = {
+    "linear-layer": pretrain_on_test.classification,
+    "sft": pretrain_on_test.classification_sft,
+    "zero-shot": pretrain_on_test.classification_zero_shot,
+}
 
 
 def _stratified_sample(
@@ -64,21 +74,21 @@ def _split(
 
 
 def _add_pred_probs(
-    df: pd.DataFrame, model_type_to_pred_probs: dict[str, np.ndarray]
+    df: pd.DataFrame, split_to_pred_probs: dict[str, np.ndarray]
 ) -> pd.DataFrame:
     """
     Returns a new dataframe with a column of predicted probabilities for each class and
     each model type.
     """
     df = df.copy()
-    for model_type, pred_probs in model_type_to_pred_probs.items():
+    for split, pred_probs in split_to_pred_probs.items():
         if pred_probs.ndim != 2:
             raise ValueError(
                 f"Expected 2-D predicted probabilities. Got a {pred_probs.ndim}-D "
-                f"array for {model_type}"
+                f"array for {split}"
             )
         for class_idx, class_pred_probs in enumerate(pred_probs.T):
-            df[f"pred_prob_{class_idx}_{model_type}"] = class_pred_probs
+            df[f"pred_prob_{class_idx}_{split}"] = class_pred_probs
     return df
 
 
@@ -96,134 +106,132 @@ def _experiment(
     num_test: int = 200,
     random_state_subsamples: int = None,
 ) -> tuple[pd.DataFrame, dict[str, float]]:
-    task_kwargs = dict(
-        class_names_unique=classification_dataset_info.class_names,
-        task_description=classification_dataset_info.task_description,
+    # Get the pretraining and classification modules
+    train_type_to_module: dict[
+        str,
+        pretrain_on_test.protocols.Pretrain | pretrain_on_test.protocols.Classification,
+    ] = {
+        "pretrain": _pretrain_method_to_module[config.pretrain_method],
+        "classification": _classification_method_to_module[
+            config.classification_method
+        ],
+    }
+
+    # Arguments passed to each train_type x split pair
+    config_and_classification_dataset_info = dict(
+        config=config, classification_dataset_info=classification_dataset_info
     )
+    train_type_to_split_to_kwargs = {
+        "pretrain": {
+            "extra": config_and_classification_dataset_info,
+            "test": config_and_classification_dataset_info,
+        },
+        "classification": {
+            "base": dict(
+                **config_and_classification_dataset_info,
+                # Load a freshly pretrained model
+                pretrained_model_name_or_path=config.model_id,
+                is_pretrained_fresh=True,
+            ),
+            "extra": dict(
+                **config_and_classification_dataset_info,
+                # Load the model that was just pretrained
+                pretrained_model_name_or_path=config.model_path_pretrained,
+                is_pretrained_fresh=False,
+            ),
+            "test": dict(
+                **config_and_classification_dataset_info,
+                # Load the model that was just pretrained
+                pretrained_model_name_or_path=config.model_path_pretrained,
+                is_pretrained_fresh=False,
+            ),
+        },
+    }
 
-    # Set up pretraining
-    if config.pretrain_method == "instructions-with-text":
-        pretrain_module = pretrain_on_test.pretrain_for_sft
-        pretrain_kwargs = task_kwargs
-    elif config.pretrain_method == "raw-text":
-        pretrain_module = pretrain_on_test.pretrain
-        pretrain_kwargs = dict()
-    else:
-        raise ValueError(f"{config.pretrain_method} is not supported")
-
-    # Set up classification training and inference
-    if config.classification_method == "zero-shot":
-        classification_module = pretrain_on_test.classification_zero_shot
-        train_labels_kwargs = dict()
-        predict_proba_kwargs = dict(
-            **task_kwargs, batch_size=config.per_device_eval_batch_size_classification
-        )
-    elif config.classification_method == "sft":
-        classification_module = pretrain_on_test.classification_sft
-        train_labels_kwargs = task_kwargs
-        predict_proba_kwargs = dict(
-            **task_kwargs, batch_size=config.per_device_eval_batch_size_classification
-        )
-    elif config.classification_method == "linear-layer":
-        classification_module = pretrain_on_test.classification
-        train_labels_kwargs = dict(  # configure output dimension of linear layer
-            num_labels=len(classification_dataset_info.class_names)
-        )
-        predict_proba_kwargs = dict()
-    else:
-        raise ValueError(f"{config.classification_method} is not supported")
-
-    # Start experiment
+    # Define data passed to each train_type x split combo
     df_train, df_extra, df_test = _split(
         df, num_train=num_train, num_test=num_test, random_state=random_state_subsamples
     )
+    _classification_data: tuple[list[str], list[int]] = (
+        df_train["text"].tolist(),
+        df_train["label"].tolist(),
+    )
+    test_data: list[str] = df_test["text"].tolist()
+    train_type_to_split_to_data: dict[str, dict[str, tuple[list, ...]]] = {
+        "pretrain": {
+            "extra": (df_extra["text"].tolist(),),
+            "test": (df_test["text"].tolist(),),
+        },
+        "classification": {
+            "base": _classification_data,
+            "extra": _classification_data,
+            "test": _classification_data,
+        },
+    }
 
-    model_type_to_test_probs: dict[
+    # Output data we'll update
+    train_type_split_train_output: list[dict[str, str, TrainOutput]] = []
+    split_to_test_probs: dict[
         Literal["base", "extra", "test", "majority"], np.ndarray
     ] = {}
+    split_to_accuracy: dict[Literal["base", "extra", "test", "majority"], float] = {}
+    split_to_accuracy["majority"] = df_test["label"].value_counts(normalize=True).max()
+    accuracy = lambda test_probs: np.mean(
+        df_test["label"] == np.argmax(test_probs, axis=1)
+    )
+
+    def train(
+        split: Literal["base", "extra", "test"],
+        train_type: Literal["pretrain", "classification"],
+    ):
+        module = train_type_to_module[train_type]
+        kwargs = train_type_to_split_to_kwargs[train_type][split]
+        data = train_type_to_split_to_data[train_type][split]
+
+        logger.info(f"{split.upper()} - {train_type}")
+        if train_type == "pretrain":
+            train_output = module.train(*data, **kwargs)
+        else:
+            trained_model, train_output = module.train(*data, **kwargs)
+        train_type_split_train_output.append(
+            dict(train_type=train_type, split=split, train_output=train_output)
+        )
+
+        if train_type == "classification":
+            logger.info(f"{split.upper()} - evaluating on test")
+            pred_probs = module.predict_proba(
+                test_data, trained_model, **config_and_classification_dataset_info
+            )
+            split_to_test_probs[split] = pred_probs
+            split_to_accuracy[split] = accuracy(pred_probs)
 
     # Run the methodology which does no pretraining. We'll compare to this data
     # to demonstrate that pretraining/domain adaptation helps, so that there's an effect
     # to detect
-    logger.info("Base - training")
-    trained_classifier = classification_module.train(
-        df_train["text"].tolist(),
-        df_train["label"].tolist(),
-        **train_labels_kwargs,
-        config=config,
-        pretrained_model_name_or_path=config.model_id,
-        is_pretrained_fresh=True,
-    )
-    logger.info("Base - testing")
-    model_type_to_test_probs["base"] = classification_module.predict_proba(
-        df_test["text"].tolist(), trained_classifier, **predict_proba_kwargs
-    )
-    del trained_classifier
-    _maybe_rmtree(config.model_path_classification)
+    try:
+        train(split="base", train_type="classification")
+    finally:
+        _maybe_rmtree(config.model_path_classification)
 
     # Run the fair pretraining methodology
-    logger.info("Extra - pretraining")
-    pretrain_module.train(
-        df_extra["text"].tolist(), **pretrain_kwargs, config=config
-    )  # saved pretrained model in config.model_path_pretrained
-    logger.info("Extra - training")
     try:
-        trained_classifier = classification_module.train(
-            df_train["text"].tolist(),
-            df_train["label"].tolist(),
-            **train_labels_kwargs,
-            config=config,
-            pretrained_model_name_or_path=config.model_path_pretrained,
-            is_pretrained_fresh=False,
-        )
+        train(split="extra", train_type="pretrain")
+        train(split="extra", train_type="classification")
     finally:
         _maybe_rmtree(config.model_path_pretrained)
         _maybe_rmtree(config.model_path_classification)
-    logger.info("Extra - testing")
-    model_type_to_test_probs["extra"] = classification_module.predict_proba(
-        df_test["text"].tolist(), trained_classifier, **predict_proba_kwargs
-    )
-    del trained_classifier
 
     # Run the (presumably) unfair pretraining methodology
-    logger.info("Test - pretraining")
-    pretrain_module.train(
-        df_test["text"].tolist(), **pretrain_kwargs, config=config
-    )  # saved pretrained model in config.model_path_pretrained
-    logger.info("Test - training")
     try:
-        trained_classifier = classification_module.train(
-            df_train["text"].tolist(),
-            df_train["label"].tolist(),
-            **train_labels_kwargs,
-            config=config,
-            pretrained_model_name_or_path=config.model_path_pretrained,
-            is_pretrained_fresh=False,
-        )
+        train(split="test", train_type="pretrain")
+        train(split="test", train_type="classification")
     finally:
         _maybe_rmtree(config.model_path_pretrained)
         _maybe_rmtree(config.model_path_classification)
-    logger.info("Test - testing")
-    model_type_to_test_probs["test"] = classification_module.predict_proba(
-        df_test["text"].tolist(), trained_classifier, **predict_proba_kwargs
-    )
-    del trained_classifier
 
-    # Compute accuracies on test
-    accuracy = lambda test_probs: np.mean(
-        df_test["label"] == np.argmax(test_probs, axis=1)
-    )
-    model_type_to_accuracy: dict[str, float] = {
-        model_type: accuracy(test_probs)
-        for model_type, test_probs in model_type_to_test_probs.items()
-    }
-    model_type_to_accuracy["majority"] = (
-        df_test["label"].value_counts(normalize=True).max()
-    )
-    return (
-        _add_pred_probs(df_test, model_type_to_test_probs),
-        model_type_to_accuracy,
-    )
+    # Updated output data
+    df_test_with_pred_probs = _add_pred_probs(df_test, split_to_test_probs)
+    return df_test_with_pred_probs, split_to_accuracy
 
 
 def replicate(
@@ -258,7 +266,7 @@ def replicate(
             f"Dataset - {dataset_name}; "
             f"Subsample - {subsample_idx} of {num_subsamples}"
         )
-        df_test_with_pred_probs, accuracies_subsample = _experiment(
+        df_test_with_pred_probs, split_to_accuracy = _experiment(
             df,
             classification_dataset_info,
             config,
@@ -267,7 +275,7 @@ def replicate(
             num_test=num_test,
             random_state_subsamples=random_state_subsamples + subsample_idx,
         )
-        accuracy_records.append(accuracies_subsample)
+        accuracy_records.append(split_to_accuracy)
         # Save df_test_with_pred_probs
         if not os.path.exists(dataset_dir):
             os.makedirs(dataset_dir)

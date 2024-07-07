@@ -25,7 +25,11 @@ from transformers import (
     PreTrainedModel,
     PreTrainedTokenizerBase,
 )
+from transformers.trainer_utils import TrainOutput
 from trl import SFTConfig, SFTTrainer
+
+from pretrain_on_test import Config
+from pretrain_on_test.data import ClassificationDatasetInfo
 
 
 QUERY_TEMPLATE = "### Text:"
@@ -162,7 +166,7 @@ def train(
     is_pretrained_fresh: bool = False,
     device_map: str = "auto",
     chat_text_post_processor: Callable[[str], str] | None = None,
-) -> tuple[PreTrainedModel, PreTrainedTokenizerBase]:
+) -> tuple[tuple[PreTrainedModel, PreTrainedTokenizerBase], TrainOutput]:
     """
     Returns a finetuned model and its tokenizer.
     """
@@ -242,9 +246,9 @@ def train(
         # likely b/c of a whitespace tokenization issue. For now, I hardcoded
         # data_collator to work for Llama-like tokenizers which add a BOS token. TODO:
         # check that it works for BPE/GPT-2-like tokenizers
-        trainer.train()  # train modifies the model object itself.
+        train_output = trainer.train()  # train modifies the model object itself.
     trainer.model.save_pretrained(output_dir)  # just save LoRA's weights
-    return trainer.model, trainer.tokenizer
+    return (trainer.model, trainer.tokenizer), train_output
 
 
 def _instruction_and_prompts(
@@ -276,13 +280,15 @@ def _instruction_and_prompts(
 def predict_proba(
     texts: list[str],
     model_and_tokenizer: tuple[PreTrainedModel, PreTrainedTokenizerBase],
-    class_names_unique: tuple[str, ...],
-    task_description: str,
-    batch_size: int = 2,
-    batch_size_completions: int | None = None,
+    config: Config,
+    classification_dataset_info: ClassificationDatasetInfo,
 ):
+    class_names_unique = classification_dataset_info.class_names
     instruction, prompts = _instruction_and_prompts(
-        texts, model_and_tokenizer[1], class_names_unique, task_description
+        texts,
+        model_and_tokenizer[1],
+        class_names_unique,
+        classification_dataset_info.task_description,
     )
     with cappr.huggingface.classify.cache(
         model_and_tokenizer, prefixes=instruction, logits_all=False
@@ -291,6 +297,6 @@ def predict_proba(
             prompts,
             completions=class_names_unique,
             model_and_tokenizer=cached,
-            batch_size=batch_size,
-            batch_size_completions=batch_size_completions,
+            batch_size=config.per_device_eval_batch_size_classification,
+            batch_size_completions=None,  # run all completions at once
         )
