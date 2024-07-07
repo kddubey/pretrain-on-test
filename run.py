@@ -33,7 +33,7 @@ LmType = Literal[
     "mistral-lora-sft",
     "mistral-qlora-sft",
     "mistral-instruct-qlora-sft",
-    "mistral-instruct-lora-zero-shot",
+    "mistral-instruct-qlora-zero-shot",
     # For quick CPU tests
     "bert-tiny",
     "gpt2-tiny",
@@ -152,7 +152,7 @@ lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] =
         max_length=512,
         **model_independent_kwargs,
     ),
-    "mistral-instruct-lora-zero-shot": lambda **model_independent_kwargs: pretrain_on_test.Config(
+    "mistral-instruct-qlora-zero-shot": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="mistralai/Mistral-7B-Instruct-v0.3",
         model_class_pretrain=AutoModelForCausalLM,
         pretrain_method="instructions-with-text",
