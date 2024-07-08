@@ -235,13 +235,13 @@ def _experiment(
     # to detect
     train(split="base", train_type="classification")
 
-    # Run the fair pretraining methodology
-    train(split="extra", train_type="pretrain")
-    train(split="extra", train_type="classification")
+    # # Run the fair pretraining methodology
+    # train(split="extra", train_type="pretrain")
+    # train(split="extra", train_type="classification")
 
-    # Run the (presumably) unfair pretraining methodology
-    train(split="test", train_type="pretrain")
-    train(split="test", train_type="classification")
+    # # Run the (presumably) unfair pretraining methodology
+    # train(split="test", train_type="pretrain")
+    # train(split="test", train_type="classification")
 
     # Updated output data
     df_test_with_pred_probs = _add_pred_probs(df_test, split_to_test_probs)
