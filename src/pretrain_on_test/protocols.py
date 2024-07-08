@@ -31,6 +31,10 @@ class Pretrain(Protocol):
             The raw (unlabeled) texsts to pretrain on.
         config : Config
             Contains basic pretraining hyperparameters.
+        classification_dataset_info: ClassificationDatasetInfo
+            Basic info such as a `task_description` which can be used as instructions,
+            and `class_names`, where `class_names[label_idx]` is the task-specific name
+            corresponding to the integer-label `label_idx`.
 
         Returns
         -------
@@ -70,11 +74,15 @@ class Classification(Protocol):
             The corresponding 0-indexed integer-label for each text in `texts`.
         config : Config
             Contains basic classification training hyperparameters.
+        classification_dataset_info: ClassificationDatasetInfo
+            Basic info such as a `task_description` which can be used as instructions,
+            and `class_names`, where `class_names[label_idx]` is the task-specific name
+            corresponding to the integer-label `label_idx`.
         pretrained_model_name_or_path : str | None
             The location of the model (in HF or local) which will be finetuned to do
             classifcation.
         is_pretrained_fresh : bool
-            TODO: I need to get rid of this.
+            TODO: I should get rid of this.
 
         Returns
         -------
@@ -99,6 +107,12 @@ class Classification(Protocol):
             The raw texts to classify.
         trained_classifier : TrainedClassifier
             The classifier.
+        config : Config
+            Contains basic classification training hyperparameters.
+        classification_dataset_info: ClassificationDatasetInfo
+            Basic info such as a `task_description` which can be used as instructions,
+            and `class_names`, where `class_names[label_idx]` is the task-specific name
+            corresponding to the integer-label `label_idx`.
 
         Returns
         -------
