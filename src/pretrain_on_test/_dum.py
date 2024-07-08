@@ -243,6 +243,10 @@ def train(
         model.gradient_checkpointing_enable()
         model = prepare_model_for_kbit_training(model)
     if lora or qlora:
+        parameters_names = "\n".join(model.state_dict().keys())
+        target_modules = (
+            ["qkv_proj"] if "qkv_proj" in parameters_names else ["q_proj", "v_proj"]
+        )
         # HPs from https://huggingface.co/docs/trl/en/sft_trainer#training-adapters
         lora_config = LoraConfig(
             task_type=TaskType.CAUSAL_LM,
@@ -250,8 +254,7 @@ def train(
             lora_alpha=32,
             lora_dropout=0.05,
             bias="none",
-            # target_modules=["q_proj", "v_proj"],
-            target_modules=["qkv_proj"],
+            target_modules=target_modules,
         )
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
