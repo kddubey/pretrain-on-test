@@ -179,7 +179,7 @@ def load_model(
     if qlora:
         quantization_config = BitsAndBytesConfig(
             load_in_4bit=True,
-            bnb_4bit_use_double_quant=True,
+            bnb_4bit_use_double_quant=False,
             bnb_4bit_quant_type="nf4",
             bnb_4bit_compute_dtype=torch.bfloat16,
         )
@@ -242,7 +242,7 @@ def train(
         device_map=device_map,
     )
     if qlora:
-        model.gradient_checkpointing_enable()
+        # model.gradient_checkpointing_enable()
         model = prepare_model_for_kbit_training(model)
     if lora or qlora:
         parameters_names = "\n".join(model.state_dict().keys())
