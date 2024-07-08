@@ -48,6 +48,8 @@ These models might have 'system' in their chat_template but apparently they shou
 used
 """
 
+_IS_BF16_SUPPORTED = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
+
 
 def _instruction_formatter(
     class_names_unique: tuple[str, ...], task_description: str
@@ -278,7 +280,8 @@ def train(
             save_strategy="no",
             optim="paged_adamw_8bit" if qlora else "adamw_torch",
             learning_rate=2e-4 if qlora else 5e-5,
-            fp16=qlora,
+            fp16=qlora and not _IS_BF16_SUPPORTED,
+            bf16=qlora and _IS_BF16_SUPPORTED,
             disable_tqdm=False,
         ),
         train_dataset=dataset,

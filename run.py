@@ -42,7 +42,7 @@ LmType = Literal[
     # "Phi-3-mini-128k-instruct-lora-sft-tiny",
     #
     # TODO: ^ broken b/c 0 train loss when further finetuning a LoRA model for
-    # classification
+    # classification b/c of NaN LoRA weights
     "mistral-instruct-lora-zero-shot-tiny",
     "Phi-3-mini-128k-instruct-lora-zero-shot-tiny",
 ]
