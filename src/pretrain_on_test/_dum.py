@@ -189,7 +189,7 @@ def load_model(
         pretrained_model_name_or_path=pretrained_model_name_or_path,
         device_map="auto" if qlora else device_map,
         quantization_config=quantization_config,
-        torch_dtype="auto" if quantization_config is None else None,
+        torch_dtype="auto" if device_map != "cpu" else None,
     )
     if from_pretrained_lora and not is_pretrained_fresh:
         model = AutoPeftModelForCausalLM.from_pretrained(**loading_kwargs)
