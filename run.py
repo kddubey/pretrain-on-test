@@ -134,6 +134,7 @@ lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] =
     ),
     "mistral-qlora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="mistralai/Mistral-7B-v0.3",
+        requires_hf_login=True,
         model_class_pretrain=AutoModelForCausalLM,
         pretrain_method="instructions-with-text",
         lora_pretrain=True,
@@ -145,6 +146,7 @@ lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] =
     ),
     "mistral-instruct-qlora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="mistralai/Mistral-7B-Instruct-v0.3",
+        requires_hf_login=True,
         model_class_pretrain=AutoModelForCausalLM,
         pretrain_method="instructions-with-text",
         lora_pretrain=True,
@@ -156,6 +158,7 @@ lm_type_to_config_creator: dict[str, Callable[[Any], pretrain_on_test.Config]] =
     ),
     "mistral-instruct-qlora-zero-shot": lambda **model_independent_kwargs: pretrain_on_test.Config(
         model_id="mistralai/Mistral-7B-Instruct-v0.3",
+        requires_hf_login=True,
         model_class_pretrain=AutoModelForCausalLM,
         pretrain_method="instructions-with-text",
         lora_pretrain=True,

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import os
 from typing import Literal
 
 import torch
@@ -36,6 +37,7 @@ class Config:
     num_train_epochs_pretrain: int = 2
     model_path_pretrained: str = "_pretrained"
     model_path_classification: str = "_classifier"
+    requires_hf_login: bool = False
 
     def __post_init__(self):
         if self.tokenizer is None:
@@ -53,3 +55,7 @@ class Config:
         if self.max_length is None:  # be explicit about the default
             default_max_length = self.tokenizer.model_max_length
             object.__setattr__(self, "max_length", default_max_length)
+        if self.requires_hf_login:
+            from huggingface_hub import login
+
+            login(token=os.environ["HF_TOKEN"])

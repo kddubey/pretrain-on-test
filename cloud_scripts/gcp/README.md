@@ -18,6 +18,11 @@ Also consider:
    parallel) and `SSD_TOTAL_GB` to `250 * q`. The default region is `us-west4`. Or make
    quota requests according to error messages. FYI I couldn't get my quota past 4 GPUs.
 
+3. [Adding a
+   secret](https://cloud.google.com/secret-manager/docs/creating-and-accessing-secrets#secretmanager-create-secret-console),
+   `HF_TOKEN`, which has your Hugging Face login token if you need to use Mistral or
+   other models which require this authorization before downloading weights.
+
 
 <details>
 <summary>Consider locally testing that cloud logging and storage works</summary>

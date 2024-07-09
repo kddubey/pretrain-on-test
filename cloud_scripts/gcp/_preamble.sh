@@ -16,6 +16,7 @@ EOF
 
 
 export PRETRAIN_ON_TEST_CLOUD_PROVIDER="gcp"
+export HF_TOKEN=$(gcloud secrets versions access 1 --secret="HF_TOKEN")
 
 
 set +x
