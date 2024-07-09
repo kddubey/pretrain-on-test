@@ -27,7 +27,7 @@ except ModuleNotFoundError:
 _field_for_config = partial(Field, json_schema_extra={"is_for_config": True})
 
 
-LmType = Literal[
+LMType = Literal[
     "bert",
     "gpt2",
     "mistral-lora-sft",
@@ -53,7 +53,7 @@ class Experiment(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     # Pydantic stuff: extra attributes are not allowed, and the object is immutable
 
-    lm_type: LmType = Field(
+    lm_type: LMType = Field(
         description=(
             "Type of language model. *-tiny models have random weights and should only "
             "be used for testing."
