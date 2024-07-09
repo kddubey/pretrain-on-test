@@ -109,19 +109,29 @@ def create_instance_command_gpu(
     zone: str,
     gcp_service_account_email: str,
     startup_script_filename: str,
+    gpu_type: Literal["T4", "L4"] = "T4",
+    boot_disk_size: int = 80,
 ):
+    gpu_type_to_machine_type = {
+        "T4": "n1-highmem-2",
+        "L4": "g2-standard-4",
+    }
+    gpu_type_to_accelerator_type = {
+        "T4": "nvidia-tesla-t4",
+        "L4": "nvidia-l4",
+    }
     return (
         f"gcloud compute instances create {instance_name} "
         f"--project={project_name} "
         f"--zone={zone} "
-        f"--machine-type=n1-highmem-2 "
+        f"--machine-type={gpu_type_to_machine_type[gpu_type]} "
         f"--network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default "
         f"--maintenance-policy=TERMINATE "
         f"--provisioning-model=STANDARD "
         f"--service-account={gcp_service_account_email} "
         f"--scopes=https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/trace.append,https://www.googleapis.com/auth/devstorage.read_write "
-        f"--accelerator=count=1,type=nvidia-tesla-t4 "
-        f"--create-disk=auto-delete=yes,boot=yes,device-name={instance_name},image=projects/ml-images/global/images/c2-deeplearning-pytorch-2-2-cu121-v20240514-debian-11,mode=rw,size=80,type=projects/{project_name}/zones/{zone}/diskTypes/pd-balanced "
+        f"--accelerator=count=1,type={gpu_type_to_accelerator_type[gpu_type]} "
+        f"--create-disk=auto-delete=yes,boot=yes,device-name={instance_name},image=projects/ml-images/global/images/c2-deeplearning-pytorch-2-2-cu121-v20240514-debian-11,mode=rw,size={boot_disk_size},type=projects/{project_name}/zones/{zone}/diskTypes/pd-balanced "
         f"--no-shielded-secure-boot "
         f"--shielded-vtpm "
         f"--shielded-integrity-monitoring "
@@ -232,7 +242,7 @@ class InstanceInfo(BaseModel):
     )
 
 
-RunTypes = Literal["cpu-test", "gpu-test", "gpu", "analysis"]
+RunTypes = Literal["cpu-test", "gpu-test", "gpu", "gpu-L4", "analysis"]
 
 
 run_type_to_info: dict[RunTypes, InstanceInfo] = {
@@ -243,13 +253,19 @@ run_type_to_info: dict[RunTypes, InstanceInfo] = {
         write_default_sh_file=write_experiment_mini,
     ),
     "gpu-test": InstanceInfo(
-        create_instance_command=create_instance_command_gpu,
+        create_instance_command=partial(create_instance_command_gpu, gpu_type="T4"),
         default_zone="us-west4-a",
         create_startup_script_filenames=create_startup_script_filenames_gpu,
         write_default_sh_file=write_experiment_mini,
     ),
     "gpu": InstanceInfo(
-        create_instance_command=create_instance_command_gpu,
+        create_instance_command=partial(create_instance_command_gpu, gpu_type="T4"),
+        default_zone="us-west4-a",
+        create_startup_script_filenames=create_startup_script_filenames_gpu,
+        write_default_sh_file=write_experiment_full,
+    ),
+    "gpu-L4": InstanceInfo(
+        create_instance_command=partial(create_instance_command_gpu, gpu_type="L4"),
         default_zone="us-west4-a",
         create_startup_script_filenames=create_startup_script_filenames_gpu,
         write_default_sh_file=write_experiment_full,
