@@ -350,13 +350,29 @@ def create_instance(
         post_create_message(project_name, instance_name, zone, just_create)
 
 
-t4_gpu_zones_cycle = cycle(_zones.t4_gpu_zones)
-ZONE_FROM_CYCLE = next(t4_gpu_zones_cycle)
+_gpu_type_to_zone_cycle = {
+    "T4": cycle(_zones.t4_gpu_zones),
+    "L4": cycle(_zones.l4_gpu_zones),
+}
 
 
-def try_zones(create_instance: Callable):
+def _cycler(zone_cycle):
+    return next(zone_cycle)
+
+
+gpu_type_to_zone_cycler = {
+    zone: partial(_cycler, zone_cycle)
+    for zone, zone_cycle in _gpu_type_to_zone_cycle.items()
+}
+# Why not just do zone: lambda next(zone_cycle)?
+# See: https://www.youtube.com/watch?v=fZE6ZWde-Os
+# I also don't like lambda zone_cycle=zone_cycle: next(zone_cycle) b/c you can pass in a
+# different zone_cycle
+
+
+def try_zones(create_instance: Callable, gpu_type: Literal["T4", "L4"] = "T4"):
     """
-    Decorator which tries to create an instance anywhere in the world with T4 GPU
+    Decorator which tries to create an instance anywhere in the world with `gpu_type`
     availability.
     """
     no_resources_available_codes = (
@@ -377,10 +393,10 @@ def try_zones(create_instance: Callable):
         # runs out, at which point we'll move to the next zone in the cycle. This means
         # we need state across function calls. This state is global so that any call
         # from anywhere will try the most recently available zone.
-        global ZONE_FROM_CYCLE
+        zone = gpu_type_to_zone_cycler[gpu_type]()
         while True:
-            print(f"Trying {ZONE_FROM_CYCLE}...")
-            kwargs["zone"] = ZONE_FROM_CYCLE
+            print(f"Trying {zone}...")
+            kwargs["zone"] = zone
             f = io.StringIO()
             try:
                 with redirect_stderr(f):
@@ -395,7 +411,7 @@ def try_zones(create_instance: Callable):
                     )
                     sleep(5)
                     os.system("cls" if os.name == "nt" else "clear")
-                    ZONE_FROM_CYCLE = next(t4_gpu_zones_cycle)
+                    zone = gpu_type_to_zone_cycler[gpu_type]()
                 else:
                     raise exception
 
@@ -485,7 +501,10 @@ def create_instances(
         print("\n".join(sh_file_names))
         print(("-" * os.get_terminal_size().columns) + "\n")
 
-    create_instance_func = try_zones(create_instance) if any_zone else create_instance
+    gpu_type = "T4"
+    create_instance_func = (
+        try_zones(create_instance, gpu_type) if any_zone else create_instance
+    )
 
     try:
         for sh_file_name in sh_file_names:
