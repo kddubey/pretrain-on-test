@@ -1,3 +1,7 @@
+"""
+Currently T4 and L4
+"""
+
 # ty https://github.com/doitintl/gpu-finder
 t4_gpu_zones = [
     "us-west4-a",
@@ -57,6 +61,7 @@ t4_gpu_zones = [
 l4_gpu_zones = [
     "us-west4-a",
     "us-west4-c",
+    # ^ I have a quota of 4 for each of these
     "us-east1-b",
     "us-east1-c",
     "us-east1-d",
