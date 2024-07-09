@@ -175,6 +175,7 @@ def load_model(
     qlora: bool,
     is_pretrained_fresh: bool = False,
     device_map: str = "auto",
+    lora_merge: bool = True,
 ) -> PreTrainedModel:
     if qlora:
         quantization_config = BitsAndBytesConfig(
@@ -193,7 +194,11 @@ def load_model(
     )
     if from_pretrained_lora and not is_pretrained_fresh:
         model = AutoPeftModelForCausalLM.from_pretrained(**loading_kwargs)
-        return cast(PeftMixedModel, model).merge_and_unload()
+        model = cast(PeftMixedModel, model)
+        if lora_merge:
+            return model.merge_and_unload()
+        else:
+            return model
     else:
         return AutoModelForCausalLM.from_pretrained(**loading_kwargs)
 

@@ -31,6 +31,7 @@ def train(
         config.qlora,
         is_pretrained_fresh=is_pretrained_fresh,
         device_map=config.device,
+        lora_merge=False,
     )
     return (model, config.tokenizer), None
 
