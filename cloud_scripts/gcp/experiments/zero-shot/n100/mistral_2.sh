@@ -13,14 +13,6 @@ TQDM_DISABLE=1 python run.py \
         financial_phrasebank \
         hyperpartisan_news_detection \
         limit \
-        AmazonScience/massive \
-        mteb/mtop_domain \
-        ccdv/patent-classification \
-        rotten_tomatoes \
-        silicone \
-        trec \
-        tweets_hate_speech_detection \
-        app_reviews \
     --num_test 100 \
     --num_subsamples 20 \
     --per_device_train_batch_size_pretrain 16 \

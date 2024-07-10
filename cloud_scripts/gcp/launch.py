@@ -124,8 +124,8 @@ def create_instance_command_gpu(
 ):
     gpu_type_to_machine_type = {
         "T4": "n1-highmem-2",
-        "L4": "g2-standard-4",
-        "V100": "n1-highmem-2",
+        "L4": "g2-standard-8",
+        "V100": "n1-highmem-4",
         "A100": "a2-highgpu-1g",
     }
     gpu_type_to_accelerator_type = {
