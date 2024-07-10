@@ -242,7 +242,7 @@ class InstanceInfo(BaseModel):
     )
 
 
-RunTypes = Literal["cpu-test", "gpu-test", "gpu", "gpu-L4", "analysis"]
+RunTypes = Literal["cpu-test", "gpu-test", "gpu", "gpu-l4", "analysis"]
 
 
 run_type_to_info: dict[RunTypes, InstanceInfo] = {
@@ -264,7 +264,7 @@ run_type_to_info: dict[RunTypes, InstanceInfo] = {
         create_startup_script_filenames=create_startup_script_filenames_gpu,
         write_default_sh_file=write_experiment_full,
     ),
-    "gpu-L4": InstanceInfo(
+    "gpu-l4": InstanceInfo(
         create_instance_command=partial(create_instance_command_gpu, gpu_type="L4"),
         default_zone="us-west4-a",
         create_startup_script_filenames=create_startup_script_filenames_gpu,
