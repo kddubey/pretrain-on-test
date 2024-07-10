@@ -40,6 +40,11 @@ class Config:
     requires_hf_login: bool = False
 
     def __post_init__(self):
+        if self.requires_hf_login:
+            # Do this first so that the tokenizer can be downloaded
+            from huggingface_hub import login
+
+            login(token=os.environ["HF_TOKEN"])
         if self.tokenizer is None:
             default_tokenizer = AutoTokenizer.from_pretrained(self.model_id)
             if default_tokenizer.pad_token is None:
@@ -55,7 +60,3 @@ class Config:
         if self.max_length is None:  # be explicit about the default
             default_max_length = self.tokenizer.model_max_length
             object.__setattr__(self, "max_length", default_max_length)
-        if self.requires_hf_login:
-            from huggingface_hub import login
-
-            login(token=os.environ["HF_TOKEN"])
