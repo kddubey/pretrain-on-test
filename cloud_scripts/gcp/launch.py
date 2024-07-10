@@ -119,16 +119,20 @@ def create_instance_command_gpu(
     zone: str,
     gcp_service_account_email: str,
     startup_script_filename: str,
-    gpu_type: Literal["T4", "L4"] = "T4",
+    gpu_type: Literal["T4", "L4", "A100"] = "T4",
     boot_disk_size: int = 80,
 ):
     gpu_type_to_machine_type = {
         "T4": "n1-highmem-2",
         "L4": "g2-standard-4",
+        "V100": "n1-highmem-2",
+        "A100": "a2-highgpu-1g",
     }
     gpu_type_to_accelerator_type = {
         "T4": "nvidia-tesla-t4",
         "L4": "nvidia-l4",
+        "V100": "nvidia-tesla-v100",
+        "A100": "nvidia-tesla-a100",
     }
     return (
         f"gcloud compute instances create {instance_name} "
@@ -252,7 +256,15 @@ class InstanceInfo(BaseModel):
     )
 
 
-RunTypes = Literal["cpu-test", "gpu-test", "gpu", "gpu-l4", "analysis"]
+RunTypes = Literal[
+    "cpu-test",
+    "gpu-test",
+    "gpu-t4",
+    "gpu-l4",
+    "gpu-v100",
+    "gpu-a100",
+    "analysis",
+]
 
 
 run_type_to_info: dict[RunTypes, InstanceInfo] = {
@@ -268,7 +280,7 @@ run_type_to_info: dict[RunTypes, InstanceInfo] = {
         create_startup_script_filenames=create_startup_script_filenames_gpu,
         write_default_sh_file=write_experiment_mini,
     ),
-    "gpu": InstanceInfo(
+    "gpu-t4": InstanceInfo(
         create_instance_command=partial(create_instance_command_gpu, gpu_type="T4"),
         default_zone="us-west4-a",
         create_startup_script_filenames=create_startup_script_filenames_gpu,
@@ -276,6 +288,18 @@ run_type_to_info: dict[RunTypes, InstanceInfo] = {
     ),
     "gpu-l4": InstanceInfo(
         create_instance_command=partial(create_instance_command_gpu, gpu_type="L4"),
+        default_zone="us-west4-a",
+        create_startup_script_filenames=create_startup_script_filenames_gpu,
+        write_default_sh_file=write_experiment_full,
+    ),
+    "gpu-v100": InstanceInfo(
+        create_instance_command=partial(create_instance_command_gpu, gpu_type="V100"),
+        default_zone="us-west4-a",
+        create_startup_script_filenames=create_startup_script_filenames_gpu,
+        write_default_sh_file=write_experiment_full,
+    ),
+    "gpu-a100": InstanceInfo(
+        create_instance_command=partial(create_instance_command_gpu, gpu_type="A100"),
         default_zone="us-west4-a",
         create_startup_script_filenames=create_startup_script_filenames_gpu,
         write_default_sh_file=write_experiment_full,
@@ -313,7 +337,7 @@ def create_instance(
     *,
     sh_file_name: str | None = None,
     zone: str | None = None,
-    run_type: RunTypes = "gpu",
+    run_type: RunTypes = "gpu-t4",
     project_name: str | None = None,
     gcp_service_account_email: str | None = None,
     just_create: bool = False,
@@ -485,7 +509,7 @@ def move_sh_file_to_in_progress_dir(
 def create_instances(
     sh_dir_or_filename: str | None = None,
     zone: str | None = None,
-    run_type: RunTypes = "gpu",
+    run_type: RunTypes = "gpu-t4",
     project_name: str | None = None,
     gcp_service_account_email: str | None = None,
     just_create: bool = False,
