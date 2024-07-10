@@ -422,15 +422,9 @@ class _Cycler(Generic[_T]):
 
 
 # TODO: put all GPU info in one place
-_gpu_type_to_zone_cycle = {
-    "T4": cycle(_zones.t4_gpu_zones),
-    "L4": cycle(_zones.l4_gpu_zones),
-    "V100": cycle(_zones.v100_gpu_zones),
-}
-
-
 gpu_type_to_zone_cycler = {
-    zone: _Cycler(zone_cycle) for zone, zone_cycle in _gpu_type_to_zone_cycle.items()
+    gpu_type: _Cycler(cycle(zones))
+    for gpu_type, zones in _zones.gpu_type_to_zones.items()
 }
 
 
