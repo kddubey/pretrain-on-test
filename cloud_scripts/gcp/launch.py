@@ -11,7 +11,17 @@ import subprocess
 import sys
 import tempfile
 from time import sleep
-from typing import Callable, Literal, NoReturn, Protocol, Sequence, runtime_checkable
+from typing import (
+    Callable,
+    Generic,
+    Iterator,
+    Literal,
+    NoReturn,
+    Protocol,
+    Sequence,
+    TypeVar,
+    runtime_checkable,
+)
 
 from pydantic import BaseModel, ConfigDict
 import rich
@@ -366,24 +376,36 @@ def create_instance(
         post_create_message(project_name, instance_name, zone, just_create)
 
 
+_T = TypeVar("_T")
+
+
+class _Cycler(Generic[_T]):
+    def __init__(self, cycle: "cycle[_T]") -> None:
+        self._cycle = cycle
+
+    @property
+    def current(self):
+        if not hasattr(self, "_current"):
+            return next(self)
+        return self._current
+
+    def __iter__(self) -> Iterator[_T]:
+        return self
+
+    def __next__(self):
+        self._current = next(self._cycle)
+        return self._current
+
+
 _gpu_type_to_zone_cycle = {
     "T4": cycle(_zones.t4_gpu_zones),
     "L4": cycle(_zones.l4_gpu_zones),
 }
 
 
-def _cycler(zone_cycle):
-    return next(zone_cycle)
-
-
 gpu_type_to_zone_cycler = {
-    zone: partial(_cycler, zone_cycle)
-    for zone, zone_cycle in _gpu_type_to_zone_cycle.items()
+    zone: _Cycler(zone_cycle) for zone, zone_cycle in _gpu_type_to_zone_cycle.items()
 }
-# Why not just do zone: lambda next(zone_cycle)?
-# See: https://www.youtube.com/watch?v=fZE6ZWde-Os
-# I also don't like lambda zone_cycle=zone_cycle: next(zone_cycle) b/c you can pass in a
-# different zone_cycle
 
 
 def try_zones(create_instance: Callable, gpu_type: Literal["T4", "L4"] = "T4"):
@@ -409,7 +431,7 @@ def try_zones(create_instance: Callable, gpu_type: Literal["T4", "L4"] = "T4"):
         # runs out, at which point we'll move to the next zone in the cycle. This means
         # we need state across function calls. This state is global so that any call
         # from anywhere will try the most recently available zone.
-        zone = gpu_type_to_zone_cycler[gpu_type]()
+        zone = gpu_type_to_zone_cycler[gpu_type].current
         while True:
             print(f"Trying {zone}...")
             kwargs["zone"] = zone
@@ -427,7 +449,7 @@ def try_zones(create_instance: Callable, gpu_type: Literal["T4", "L4"] = "T4"):
                     )
                     sleep(5)
                     os.system("cls" if os.name == "nt" else "clear")
-                    zone = gpu_type_to_zone_cycler[gpu_type]()
+                    zone = next(gpu_type_to_zone_cycler[gpu_type])
                 else:
                     raise exception
 
