@@ -529,7 +529,7 @@ def create_instances(
         ./experiment.sh (at the repo root).
     zone : str | None, optional
         Zone with CPU/GPU availability, by default us-central1-a for CPU and us-west4-a
-        for GPU. Consider trying us-west4-b if the default fails.
+        for GPU. Consider the --any_zone flag if the default fails.
     run_type : RunTypes, optional
         Whether or not this is a CPU test, a GPU test (which runs a mini experiment with
         random-weight models), a full GPU run, or an analysis. By default, it's a full
