@@ -421,9 +421,11 @@ class _Cycler(Generic[_T]):
         return self._current
 
 
+# TODO: put all GPU info in one place
 _gpu_type_to_zone_cycle = {
     "T4": cycle(_zones.t4_gpu_zones),
     "L4": cycle(_zones.l4_gpu_zones),
+    "V100": cycle(_zones.v100_gpu_zones),
 }
 
 
@@ -432,7 +434,7 @@ gpu_type_to_zone_cycler = {
 }
 
 
-def try_zones(create_instance: Callable, gpu_type: Literal["T4", "L4"] = "T4"):
+def try_zones(create_instance: Callable, gpu_type: Literal["T4", "L4", "V100"] = "T4"):
     """
     Decorator which tries to create an instance anywhere in the world with `gpu_type`
     availability.
@@ -563,7 +565,10 @@ def create_instances(
         print("\n".join(sh_file_names))
         print(("-" * os.get_terminal_size().columns) + "\n")
 
-    gpu_type = "T4"
+    if run_type.startswith("gpu-"):
+        gpu_type = run_type.removeprefix("gpu-").upper()
+    else:
+        gpu_type = "T4"  # default set of zones
     create_instance_func = (
         try_zones(create_instance, gpu_type) if any_zone else create_instance
     )

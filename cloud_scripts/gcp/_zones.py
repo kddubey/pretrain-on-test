@@ -1,8 +1,9 @@
 """
-Currently T4 and L4
+Currently T4, L4, and V100
+
+ty https://github.com/doitintl/gpu-finder
 """
 
-# ty https://github.com/doitintl/gpu-finder
 t4_gpu_zones = [
     "us-west4-a",
     "us-west4-b",
@@ -99,4 +100,18 @@ l4_gpu_zones = [
     "europe-west6-b",
     "europe-west6-c",
     "northamerica-northeast2-a",
+]
+
+v100_gpu_zones = [
+    "us-east1-c",
+    "us-central1-c",
+    "us-central1-a",
+    "us-central1-f",
+    "us-central1-b",
+    "us-west1-b",
+    "us-west1-a",
+    "europe-west4-a",
+    "europe-west4-b",
+    "europe-west4-c",
+    "asia-east1-c",
 ]
