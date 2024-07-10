@@ -294,7 +294,7 @@ run_type_to_info: dict[RunTypes, InstanceInfo] = {
     ),
     "gpu-v100": InstanceInfo(
         create_instance_command=partial(create_instance_command_gpu, gpu_type="V100"),
-        default_zone="us-west4-a",
+        default_zone="us-east1-c",
         create_startup_script_filenames=create_startup_script_filenames_gpu,
         write_default_sh_file=write_experiment_full,
     ),
