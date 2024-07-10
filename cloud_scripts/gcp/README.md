@@ -21,7 +21,9 @@ Also consider:
 3. [Adding a
    secret](https://cloud.google.com/secret-manager/docs/creating-and-accessing-secrets#secretmanager-create-secret-console),
    `HF_TOKEN`, which has your Hugging Face login token if you need to use Mistral or
-   other models which require this authorization before downloading weights.
+   other models which require this authorization before downloading weights. Then [give
+   your service account permission to access this
+   secret](https://cloud.google.com/secret-manager/docs/access-control).
 
 
 <details>

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import os
 from typing import Literal
 
+from huggingface_hub import login
 import torch
 from transformers import (
     AutoTokenizer,
@@ -42,8 +43,6 @@ class Config:
     def __post_init__(self):
         if self.requires_hf_login:
             # Do this first so that the tokenizer can be downloaded
-            from huggingface_hub import login
-
             login(token=os.environ["HF_TOKEN"])
         if self.tokenizer is None:
             default_tokenizer = AutoTokenizer.from_pretrained(self.model_id)
