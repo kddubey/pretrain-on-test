@@ -125,6 +125,9 @@ def create_instance_command_gpu(
     gpu_type_to_machine_type = {
         "T4": "n1-highmem-2",
         "L4": "g2-standard-8",
+        # not g2-standard-4. Pretty sure the extra CPU RAM is needed to keep the shards
+        # ready to be moved to GPU. Otherwise it seems to be reading from disk, which
+        # takes 2 minutes instead of 6 seconds
         "V100": "n1-highmem-4",
         "A100": "a2-highgpu-1g",
     }
