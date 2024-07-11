@@ -64,9 +64,14 @@ def _sample_posterior_mean(
     Down-sample `num_correct_df` and compute the posterior mean of the `treatment -
     control` effect.
     """
-    equation = "p(num_correct, num_test) ~ method + lm_type + (1|pair)"
-    # We'll drop dataset b/c it's redunant w/ pair
-    id_vars = ["num_test", "pair", "lm_type"]
+    if num_correct_df["lm_type"].unique().len() == 1:
+        equation = "p(num_correct, num_test) ~ method + (1|pair)"
+        id_vars = ("num_test", "pair")
+    else:
+        equation = "p(num_correct, num_test) ~ method + lm_type + (1|pair)"
+        # We'll drop dataset b/c it's redunant w/ pair
+        id_vars = ("num_test", "pair", "lm_type")
+
     summaries: list[dict[str, float]] = []
     for seed in tqdm(seeds, total=len(seeds), desc=f"Samples {seeds[0]} - {seeds[-1]}"):
         # TODO: parallelization is messing up the seeds somehow. For now, not setting it
@@ -135,9 +140,16 @@ class ArgParser(Tap):
 
 if __name__ == "__main__":
     args = ArgParser(__doc__).parse_args()
+
+    if "zero_shot" in args.accuracies_home_dir:
+        lm_type_to_name = utils.lm_type_to_name_zero_shot
+    else:
+        lm_type_to_name = utils.lm_type_to_name
+
     num_correct_df = utils.load_all_num_correct(
         os.path.join(args.accuracies_home_dir, f"m{args.num_train}"),
         args.num_test,
+        lm_type_to_name=lm_type_to_name,
     )
     if args.comparison == "control":
         treatment, control = "extra", "base"
@@ -146,6 +158,10 @@ if __name__ == "__main__":
     summaries = sample_posterior_mean(
         num_correct_df, treatment, control, num_samples=args.num_samples
     )
-    pl.DataFrame(summaries).write_csv(
-        f"meta_m{args.num_train}_n{args.num_test}_{args.comparison}.csv"
-    )
+    if "zero_shot" in args.accuracies_home_dir:
+        path = (
+            f"meta_zero_shot_m{args.num_train}_n{args.num_test}_{args.comparison}.csv"
+        )
+    else:
+        path = f"meta_m{args.num_train}_n{args.num_test}_{args.comparison}.csv"
+    pl.DataFrame(summaries).write_csv(path)

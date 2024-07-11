@@ -26,6 +26,12 @@ lm_type_to_name = {
     "bert": "BERT",
     "gpt2": "GPT-2",
 }
+"Default set of LMs analyzed"
+
+
+lm_type_to_name_zero_shot = {
+    "mistral-qlora-zero-shot": "Mistral-7B (zero-shot)",
+}
 
 
 def load_accuracies(accuracies_dir: str) -> pl.DataFrame:
@@ -86,6 +92,7 @@ def _load_all(
     accuracies_home_dir: str,
     num_test: int,
     *args,
+    lm_type_to_name: dict[str, str] = lm_type_to_name,
     **kwargs,
 ) -> pl.DataFrame:
     dfs: list[pl.DataFrame] = []
@@ -99,7 +106,11 @@ def _load_all(
     return pl.concat(dfs).sort(["lm_type", "dataset"])
 
 
-def load_all_num_correct(accuracies_home_dir: str, num_test: int) -> pl.DataFrame:
+def load_all_num_correct(
+    accuracies_home_dir: str,
+    num_test: int,
+    lm_type_to_name: dict[str, str] = lm_type_to_name,
+) -> pl.DataFrame:
     """
     Load a DataFrame for the number of correct predictions (across LM types) from a
     directory structured like so::
@@ -123,10 +134,20 @@ def load_all_num_correct(accuracies_home_dir: str, num_test: int) -> pl.DataFram
                     └── ...
                 ├── ...
     """
-    return _load_all(load_num_correct, accuracies_home_dir, num_test, num_test)
+    return _load_all(
+        load_num_correct,
+        accuracies_home_dir,
+        num_test,
+        num_test,
+        lm_type_to_name=lm_type_to_name,
+    )
 
 
-def load_all_accuracies(accuracies_home_dir: str, num_test: int) -> pl.DataFrame:
+def load_all_accuracies(
+    accuracies_home_dir: str,
+    num_test: int,
+    lm_type_to_name: dict[str, str] = lm_type_to_name,
+) -> pl.DataFrame:
     """
     Load a DataFrame for the accuracies (across LM types) from a directory structured
     like so::
@@ -150,7 +171,9 @@ def load_all_accuracies(accuracies_home_dir: str, num_test: int) -> pl.DataFrame
                     └── ...
                 ├── ...
     """
-    return _load_all(load_accuracies, accuracies_home_dir, num_test)
+    return _load_all(
+        load_accuracies, accuracies_home_dir, num_test, lm_type_to_name=lm_type_to_name
+    )
 
 
 def diffco_texa(treatment: str, control: str) -> str:
@@ -477,7 +500,7 @@ def num_correct_df_from_predicions(
                 "pair": np.repeat(np.arange(len(num_correct_df)), 2),
                 "lm_type": np.tile(
                     lm_types.to_numpy().repeat(datasets.len() * num_subsamples),
-                    reps=lm_types.len(),
+                    reps=2,
                 ).tolist(),
                 "dataset": np.tile(
                     datasets.to_numpy().repeat(num_subsamples * 2), reps=lm_types.len()

@@ -3,6 +3,7 @@
 *.egg-info/
 __pycache__/
 subsample_test_*
+subsample_train_metrics_*
 *.nc
 analysis/dirty_file_processing/runs/*
 analysis/dirty_file_processing/accuracies/*
