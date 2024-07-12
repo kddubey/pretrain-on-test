@@ -456,7 +456,7 @@ def try_zones(create_instance: Callable, gpu_type: Literal["T4", "L4", "V100"] =
         # from anywhere will try the most recently available zone.
         zone = gpu_type_to_zone_cycler[gpu_type].current
         while True:
-            print(f"Trying {zone}...")
+            print(f"Trying to reserve a {gpu_type} in {zone}...")
             kwargs["zone"] = zone
             f = io.StringIO()
             try:
