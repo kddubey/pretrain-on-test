@@ -37,6 +37,14 @@ class Analysis(BaseModel):
             "100, 200, or 500"
         )
     )
+    equation: str = Field(
+        default="p(num_correct, num_test) ~ method + lm_type + (1|dataset/pair)",
+        description="Model equation",
+    )
+    id_vars: tuple[str, ...] = Field(
+        default=("num_test", "pair", "lm_type", "dataset"),
+        description="Ya know, the id_vars, duh",
+    )
     analysis_name: str = Field(
         default="",
         description=(
@@ -95,17 +103,13 @@ def run(
             analysis.num_test,
         )
 
-        # Set up model
-        equation = "p(num_correct, num_test) ~ method + lm_type + (1|dataset/pair)"
-        id_vars = ["num_test", "pair", "lm_type", "dataset"]
-
         logger.info("Analyzing extra - base")
         _, summary_control, _ = utils.stat_model(
             num_correct_df,
             treatment="extra",
             control="base",
-            equation=equation,
-            id_vars=id_vars,
+            equation=analysis.equation,
+            id_vars=analysis.id_vars,
             cores=analysis.cores,
             plot=False,
         )
@@ -129,8 +133,8 @@ def run(
             num_correct_df,
             treatment="test",
             control="extra",
-            equation=equation,
-            id_vars=id_vars,
+            equation=analysis.equation,
+            id_vars=analysis.id_vars,
             cores=analysis.cores,
             plot=False,
         )
