@@ -92,12 +92,17 @@ def _load_all(
     accuracies_home_dir: str,
     num_test: int,
     *args,
-    lm_type_to_name: dict[str, str] = lm_type_to_name,
     **kwargs,
 ) -> pl.DataFrame:
+    path_num_test = os.path.join(accuracies_home_dir, f"n{num_test}")
     dfs: list[pl.DataFrame] = []
-    for lm_type in lm_type_to_name.keys():
-        accuracies_dir = os.path.join(accuracies_home_dir, f"n{num_test}", lm_type)
+    lm_types = [
+        lm_type
+        for lm_type in os.listdir(path_num_test)
+        if os.path.isdir(os.path.join(path_num_test, lm_type))
+    ]
+    for lm_type in lm_types:
+        accuracies_dir = os.path.join(path_num_test, lm_type)
         df = loader(accuracies_dir, *args, **kwargs).with_columns(
             lm_type=pl.lit(lm_type)
         )
@@ -106,11 +111,7 @@ def _load_all(
     return pl.concat(dfs).sort(["lm_type", "dataset"])
 
 
-def load_all_num_correct(
-    accuracies_home_dir: str,
-    num_test: int,
-    lm_type_to_name: dict[str, str] = lm_type_to_name,
-) -> pl.DataFrame:
+def load_all_num_correct(accuracies_home_dir: str, num_test: int) -> pl.DataFrame:
     """
     Load a DataFrame for the number of correct predictions (across LM types) from a
     directory structured like so::
@@ -134,20 +135,10 @@ def load_all_num_correct(
                     └── ...
                 ├── ...
     """
-    return _load_all(
-        load_num_correct,
-        accuracies_home_dir,
-        num_test,
-        num_test,
-        lm_type_to_name=lm_type_to_name,
-    )
+    return _load_all(load_num_correct, accuracies_home_dir, num_test, num_test)
 
 
-def load_all_accuracies(
-    accuracies_home_dir: str,
-    num_test: int,
-    lm_type_to_name: dict[str, str] = lm_type_to_name,
-) -> pl.DataFrame:
+def load_all_accuracies(accuracies_home_dir: str, num_test: int) -> pl.DataFrame:
     """
     Load a DataFrame for the accuracies (across LM types) from a directory structured
     like so::
@@ -171,9 +162,7 @@ def load_all_accuracies(
                     └── ...
                 ├── ...
     """
-    return _load_all(
-        load_accuracies, accuracies_home_dir, num_test, lm_type_to_name=lm_type_to_name
-    )
+    return _load_all(load_accuracies, accuracies_home_dir, num_test)
 
 
 def diffco_texa(treatment: str, control: str) -> str:
@@ -242,7 +231,12 @@ def violin_plot(
     return ax
 
 
-def violin_plot_multiple_lms(accuracy_df: pl.DataFrame, num_test: int, num_train: int):
+def violin_plot_multiple_lms(
+    accuracy_df: pl.DataFrame,
+    num_test: int,
+    num_train: int,
+    lm_type_to_name: dict[str, str] = lm_type_to_name,
+):
     """
     ```
     [ legend ]  Accuracy difference distributions

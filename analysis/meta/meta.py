@@ -140,16 +140,8 @@ class ArgParser(Tap):
 
 if __name__ == "__main__":
     args = ArgParser(__doc__).parse_args()
-
-    if "zero_shot" in args.accuracies_home_dir:
-        lm_type_to_name = utils.lm_type_to_name_zero_shot
-    else:
-        lm_type_to_name = utils.lm_type_to_name
-
     num_correct_df = utils.load_all_num_correct(
-        os.path.join(args.accuracies_home_dir, f"m{args.num_train}"),
-        args.num_test,
-        lm_type_to_name=lm_type_to_name,
+        os.path.join(args.accuracies_home_dir, f"m{args.num_train}"), args.num_test
     )
     if args.comparison == "control":
         treatment, control = "extra", "base"
