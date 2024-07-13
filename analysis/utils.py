@@ -3,7 +3,7 @@ Load and analyze data
 """
 
 import os
-from typing import Any, Callable, Sequence, cast
+from typing import Any, Callable, Sequence
 
 import arviz as az
 import bambi as bmb
@@ -25,12 +25,8 @@ ACCURACY_COLUMNS = ["base", "extra", "test", "majority", "majority_all"]
 lm_type_to_name = {
     "bert": "BERT",
     "gpt2": "GPT-2",
-}
-"Default set of LMs analyzed"
-
-
-lm_type_to_name_zero_shot = {
-    "mistral-qlora-zero-shot": "Mistral-7B (zero-shot)",
+    "gpt2-epochs-2": "GPT-2 (2 epochs)",
+    "mistral-qlora-zero-shot": "Mistral-7B, zero-shot",
 }
 
 
@@ -231,12 +227,7 @@ def violin_plot(
     return ax
 
 
-def violin_plot_multiple_lms(
-    accuracy_df: pl.DataFrame,
-    num_test: int,
-    num_train: int,
-    lm_type_to_name: dict[str, str] = lm_type_to_name,
-):
+def violin_plot_multiple_lms(accuracy_df: pl.DataFrame, num_test: int, num_train: int):
     """
     ```
     [ legend ]  Accuracy difference distributions
@@ -260,7 +251,7 @@ def violin_plot_multiple_lms(
         figsize=(4 * num_lm_types, 16),
     )
     xlim = (-0.5, 0.5)
-    axes = cast(list[plt.Axes], axes)
+    axes: list[plt.Axes] = [axes] if not isinstance(axes, list) else axes
     for subplot_idx, (lm_type, accuracy_df_lm) in enumerate(
         accuracy_df.group_by("lm_type", maintain_order=True)
     ):
@@ -447,11 +438,10 @@ def stat_model(
         tune=tune,
     )
     if sample_posterior_predictive:
-        num_subsamples = _num_subsamples(num_correct_df)
-        sample_time_estimate_hours = num_subsamples / 50
         print(
-            "Sampling posterior predictive. This will take at least 30 min. Maybe "
-            f"{int(np.ceil(sample_time_estimate_hours))} hrs for this size data"
+            "Sampling posterior predictive. This will take at least 30 min. "
+            "This issue tracks a progress bar feature: "
+            "https://github.com/bambinos/bambi/issues/818"
         )
         model.predict(fit_summary, kind="pps")
 
