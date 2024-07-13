@@ -393,7 +393,7 @@ hf_dataset_name_to_classification_dataset_info: dict[str, ClassificationDatasetI
         dataset_location="yelp_review_full",
         class_names=("1", "2", "3", "4", "5"),
         task_description=(
-            "The text is an Yelp review. Answer with a rating from 1-5, where 1 "
+            "The text is a Yelp review. Answer with a rating from 1-5, where 1 "
             "indicates that the review says the business is bad, and 5 stars indicates "
             "that the review says the business is great."
         ),
