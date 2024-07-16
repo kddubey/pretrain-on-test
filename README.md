@@ -74,7 +74,12 @@ score is valid. Who is right, Alice or Bob?
    ```
 
 
-## Usage
+## Experiments
+
+<details>
+<summary>BERT and GPT-2</summary>
+
+Section 7 in the paper.
 
 Reproduce the experiment results by running [`./experiment.sh`](./experiment.sh) on a T4
 GPU. Batch sizes were set to safely avoid OOMs across the many pretraining and
@@ -83,6 +88,51 @@ from 50-80%. The experiment will take ~5 days to finish. I ran experiments in pa
 through [Google
 Cloud](https://github.com/kddubey/pretrain-on-test/tree/main/cloud_scripts/gcp).
 
+The full set of accuracy data used in the paper, including observation-level per-class
+probability scores, can be downloaded at [this Google Drive
+link](https://drive.google.com/file/d/1n7N4uTKgcUJZ7hjAbZYGTpGEPoYxQVGx/view?usp=sharing)
+(3.29 GB unzipped, just a bunch of CSVs).
+
+</details>
+
+
+<details>
+<summary>Overtraining</summary>
+
+Section 8 in the paper.
+
+Experiment files are in
+[`./cloud_scripts/gcp/experiments/gpt2-epochs-2/`](./cloud_scripts/gcp/experiments/gpt2-epochs-2/).
+Run on a T4 GPU. Takes around 6 hours.
+
+The set of accuracy data used in the paper, including observation-level per-class
+probability scores, can be downloaded at [this Google Drive
+link](https://drive.google.com/file/d/1Lk1SA10eS1T-dtptQff2qD9EfHLr2cDK/view?usp=sharing)
+(0.941 GB unzipped, just a bunch of CSVs).
+
+</details>
+
+
+<details>
+<summary>QLoRA + zero-shot Mistral 7B</summary>
+
+Section 9 in the paper.
+
+Experiment files are in
+[`./cloud_scripts/gcp/experiments/zero-shot/`](./cloud_scripts/gcp/experiments/zero-shot/).
+Run on an L4 GPU. Takes around 10 hours. Batch sizes can be reduced to run experiments
+on a T4 GPU, but it'll take much longer.
+
+The full set of accuracy data used in the paper, including observation-level per-class
+probability scores, can be downloaded at [this Google Drive
+link](https://drive.google.com/file/d/1tccOFyQHJgqmFeRoulQiaJgItEXzN1Xx/view?usp=sharing)
+(53.4 MB unzipped, just a bunch of CSVs).
+
+</details>
+
+
+## Analysis
+
 After finishing the experiment, move all the `run-*` directories to
 [`./analysis/dirty_file_processing/`](./analysis/dirty_file_processing/) and follow the
 [instructions
@@ -90,11 +140,8 @@ here](https://github.com/kddubey/pretrain-on-test/tree/main/cloud_scripts/gcp#me
 
 To analyze the accuracy data, see [`analysis/`](./analysis/).
 
-The full set of accuracy data used in the paper, including observation-level per-class
-probability scores, can be downloaded at [this Google Drive
-link](https://drive.google.com/file/d/1n7N4uTKgcUJZ7hjAbZYGTpGEPoYxQVGx/view?usp=sharing)
-(3.29 GB unzipped, just a bunch of CSVs).
 
+## Usage
 
 <details>
 <summary>Terminal (local)</summary>
