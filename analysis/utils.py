@@ -482,13 +482,12 @@ def num_correct_df_from_predicions(
         pl.DataFrame(
             {
                 "pair": np.repeat(np.arange(len(num_correct_df)), 2),
-                "lm_type": np.tile(
-                    lm_types.to_numpy().repeat(datasets.len() * num_subsamples),
-                    reps=2,
-                ).tolist(),
+                "lm_type": (
+                    lm_types.to_numpy().repeat(datasets.len() * num_subsamples * 2)
+                ),
                 "dataset": np.tile(
                     datasets.to_numpy().repeat(num_subsamples * 2), reps=lm_types.len()
-                ).tolist(),
+                ),
                 "method": np.tile(["control", "treatment"], reps=len(num_correct_df)),
                 "num_correct": predictions,
                 "num_test": num_test,
