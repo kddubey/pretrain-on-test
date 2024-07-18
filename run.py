@@ -25,14 +25,15 @@ except ModuleNotFoundError:
 
 
 LMType = Literal[
-    "bert",
-    "gpt2",
-    "mistral-qlora-zero-shot",
-    "mistral-instruct-qlora-sft",
+    "bert",  # section 7 of the paper
+    "gpt2",  # section 7 and 8
+    "mistral-qlora-zero-shot",  # section 9
+    "mistral-qlora-sft",
     # For quick CPU tests
     "bert-tiny",
     "gpt2-tiny",
     "mistral-lora-zero-shot-tiny",
+    "mistral-lora-sft-tiny",
     "mistral-instruct-lora-sft-tiny",
 ]
 
@@ -71,8 +72,8 @@ lm_type_to_config_creator: dict[LMType, Callable[[Any], pretrain_on_test.Config]
         max_length=512,
         **model_independent_kwargs,
     ),
-    "mistral-instruct-qlora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
-        model_id="mistralai/Mistral-7B-Instruct-v0.3",
+    "mistral-qlora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
+        model_id="mistralai/Mistral-7B-v0.3",
         requires_hf_login=True,
         model_class_pretrain=AutoModelForCausalLM,
         pretrain_method="instructions-with-text",
@@ -112,6 +113,16 @@ lm_type_to_config_creator: dict[LMType, Callable[[Any], pretrain_on_test.Config]
         pretrain_method="instructions-with-text",
         lora_pretrain=True,
         classification_method="zero-shot",
+        lora_classification=True,
+        max_length=512,
+        **model_independent_kwargs,
+    ),
+    "mistral-lora-sft-tiny": lambda **model_independent_kwargs: pretrain_on_test.Config(
+        model_id="hf-internal-testing/tiny-random-MistralForCausalLM",
+        model_class_pretrain=AutoModelForCausalLM,
+        pretrain_method="instructions-with-text",
+        lora_pretrain=True,
+        classification_method="sft",
         lora_classification=True,
         max_length=512,
         **model_independent_kwargs,
