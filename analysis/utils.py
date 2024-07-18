@@ -251,7 +251,7 @@ def violin_plot_multiple_lms(accuracy_df: pl.DataFrame, num_test: int, num_train
         figsize=(4 * num_lm_types, 16),
     )
     xlim = (-0.5, 0.5)
-    axes: list[plt.Axes] = [axes] if not isinstance(axes, list) else axes
+    axes: list[plt.Axes] = [axes] if isinstance(axes, plt.Axes) else axes
     for subplot_idx, (lm_type, accuracy_df_lm) in enumerate(
         accuracy_df.group_by("lm_type", maintain_order=True)
     ):
@@ -462,7 +462,6 @@ def num_correct_df_from_predicions(
     num_correct_df: pl.DataFrame,
     predictions: Sequence[float],
     id_vars: Sequence[str] = ("num_test", "pair", "lm_type", "dataset"),
-    group_for_subsample: Sequence[str] = ("lm_type", "dataset"),
 ) -> pl.DataFrame:
     """
     Returns a dataframe which looks like `num_correct_df` where observations are filled
