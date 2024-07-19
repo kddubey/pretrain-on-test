@@ -103,30 +103,30 @@ def run(
             analysis.num_test,
         )
 
-        logger.info("Analyzing extra - base")
-        _, summary_control, _ = utils.stat_model(
-            num_correct_df,
-            treatment="extra",
-            control="base",
-            equation=analysis.equation,
-            id_vars=analysis.id_vars,
-            cores=analysis.cores,
-            plot=False,
-        )
-        logger.info("Writing control inference data")
-        os.mkdir(analysis_id)
-        summary_control.to_netcdf(
-            filename=os.path.join(
-                analysis_id,
-                f"main_m{analysis.num_train}_n{analysis.num_test}_control.nc",
-            )
-        )
-        upload_directory(analysis_id, logger)
-        # Free up some memory? idk
-        del _
-        del summary_control
+        # logger.info("Analyzing extra - base")
+        # _, summary_control, _ = utils.stat_model(
+        #     num_correct_df,
+        #     treatment="extra",
+        #     control="base",
+        #     equation=analysis.equation,
+        #     id_vars=analysis.id_vars,
+        #     cores=analysis.cores,
+        #     plot=False,
+        # )
+        # logger.info("Writing control inference data")
+        # os.mkdir(analysis_id)
+        # summary_control.to_netcdf(
+        #     filename=os.path.join(
+        #         analysis_id,
+        #         f"main_m{analysis.num_train}_n{analysis.num_test}_control.nc",
+        #     )
+        # )
+        # upload_directory(analysis_id, logger)
+        # # Free up some memory? idk
+        # del _
+        # del summary_control
 
-        print("\n" + ("#" * 50) + "\n")
+        # print("\n" + ("#" * 50) + "\n")
 
         logger.info("Analyzing test - extra")
         _, summary_bias, _ = utils.stat_model(
@@ -139,6 +139,7 @@ def run(
             plot=False,
         )
         logger.info("Writing treatment inference data")
+        os.mkdir(analysis_id)
         summary_bias.to_netcdf(
             filename=os.path.join(
                 analysis_id,
