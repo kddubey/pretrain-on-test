@@ -161,10 +161,12 @@ def load_all_accuracies(accuracies_home_dir: str, num_test: int) -> pl.DataFrame
     return _load_all(load_accuracies, accuracies_home_dir, num_test)
 
 
+def texalo(acc_type: str):
+    return f"$\\text{{acc}}_\\text{{{acc_type}}}$"
+
+
 def diffco_texa(treatment: str, control: str) -> str:
-    return (
-        f"$\\text{{acc}}_\\text{{{treatment}}}$ - $\\text{{acc}}_\\text{{{control}}}$"
-    )
+    return f"{texalo(treatment)} - {texalo(control)}"
 
 
 def violin_plot(
@@ -263,8 +265,8 @@ def violin_plot_multiple_lms(accuracy_df: pl.DataFrame, num_test: int, num_train
             ax.set_ylabel(" ")
     fig.suptitle(
         (
-            f"Accuracy difference distributions\n($m = {num_train}$ train, "
-            f"$n = {num_test}$ test observations)"
+            f"Accuracy difference distributions\n"
+            f"$m = {num_train}$ train, $n = {num_test}$ test observations"
         ),
         y=1,
         x=0.65,
