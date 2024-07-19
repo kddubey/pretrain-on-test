@@ -38,7 +38,7 @@ class Analysis(BaseModel):
         )
     )
     equation: str = Field(
-        default="p(num_correct, num_test) ~ method + lm_type + (1|dataset/pair)",
+        default="p(num_correct, num_test) ~ method + lm_type + (1|dataset/method) + (1|dataset/pair)",
         description="Model equation",
     )
     id_vars: tuple[str, ...] = Field(
