@@ -95,7 +95,7 @@ Curves produced by [`./posterior_pred.ipynb`](./posterior_pred.ipynb)
 <details>
 <summary>m = 50</summary>
 
-![posterior_pred_m50](./posterior_pred_m50.png)
+![posterior_pred_m50](./figures/posterior_pred_m50.png)
 
 </details>
 
@@ -103,7 +103,7 @@ Curves produced by [`./posterior_pred.ipynb`](./posterior_pred.ipynb)
 <details>
 <summary>m = 100</summary>
 
-![posterior_pred_m100](./posterior_pred_m100.png)
+![posterior_pred_m100](./figures/posterior_pred_m100.png)
 
 </details>
 
