@@ -133,9 +133,7 @@ link](https://drive.google.com/file/d/1tccOFyQHJgqmFeRoulQiaJgItEXzN1Xx/view?usp
 
 ## Analysis
 
-After finishing the experiment, move all the `run-*` directories to
-[`./analysis/dirty_file_processing/`](./analysis/dirty_file_processing/) and follow the
-[instructions
+After finishing the experiment, follow the [instructions
 here](https://github.com/kddubey/pretrain-on-test/tree/main/cloud_scripts/gcp#merge-data).
 
 To analyze the accuracy data, see [`analysis/`](./analysis/).
