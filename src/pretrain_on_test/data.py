@@ -97,9 +97,9 @@ hf_dataset_name_to_classification_dataset_info: dict[str, ClassificationDatasetI
         dataset_location="SetFit/amazon_counterfactual_en",
         class_names=("not counterfactual", "counterfactual"),
         task_description=(
-            "The text is an Amazon product review about an event that did not or "
-            "cannot take place. Answer with whether or not the text contains a "
-            "counterfactual statement."
+            "The text is an Amazon product review. Answer with whether or not the text "
+            "contains a counterfactual statement, which describes an event that did "
+            "not or cannot take place."
         ),
     ),
     "app_reviews": ClassificationDatasetInfo(
