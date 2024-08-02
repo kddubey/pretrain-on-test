@@ -347,7 +347,7 @@ def melt_num_correct(
     num_correct_df: pl.DataFrame,
     treatment: str,
     control: str,
-    id_vars: Sequence[str] = ("num_test", "pair", "dataset"),
+    id_vars: Sequence[str] = ("num_test", "pair", "lm_type", "dataset"),
 ) -> pl.DataFrame:
     """
     Melt `num_correct_df` into a format which is compatible with Wilkinson notation.
