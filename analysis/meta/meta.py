@@ -64,13 +64,12 @@ def _sample_posterior_mean(
     Down-sample `num_correct_df` and compute the posterior mean of the `treatment -
     control` effect.
     """
+    id_vars = ("num_test", "pair", "lm_type")
     if num_correct_df["lm_type"].unique().len() == 1:
         equation = "p(num_correct, num_test) ~ method + (1|pair)"
-        id_vars = ("num_test", "pair")
     else:
         equation = "p(num_correct, num_test) ~ method + lm_type + (1|pair)"
         # We'll drop dataset b/c it's redunant w/ pair
-        id_vars = ("num_test", "pair", "lm_type")
 
     summaries: list[dict[str, float]] = []
     for seed in tqdm(seeds, total=len(seeds), desc=f"Samples {seeds[0]} - {seeds[-1]}"):
