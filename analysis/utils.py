@@ -10,7 +10,6 @@ import bambi as bmb
 from IPython.display import display
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
-import numpy as np
 import pandas as pd
 import polars as pl
 import seaborn as sns
@@ -254,8 +253,8 @@ def violin_plot_multiple_lms(accuracy_df: pl.DataFrame, num_test: int, num_train
     )
     xlim = (-0.5, 0.5)
     axes: list[plt.Axes] = [axes] if isinstance(axes, plt.Axes) else axes
-    for subplot_idx, (lm_type, accuracy_df_lm) in enumerate(
-        accuracy_df.group_by("lm_type", maintain_order=True)
+    for subplot_idx, ((lm_type,), accuracy_df_lm) in enumerate(
+        accuracy_df.partition_by("lm_type", maintain_order=True, as_dict=True).items()
     ):
         ax = axes[subplot_idx]
         ax.set_xlim(xlim)
@@ -349,7 +348,7 @@ def melt_num_correct(
     treatment: str,
     control: str,
     id_vars: Sequence[str] = ("num_test", "pair", "dataset"),
-) -> pd.DataFrame:
+) -> pl.DataFrame:
     """
     Melt `num_correct_df` into a format which is compatible with Wilkinson notation.
     A pandas (not polars) dataframe is returned because `bambi` (and others) assume a
@@ -359,12 +358,13 @@ def melt_num_correct(
     if "num_test" not in id_vars:
         id_vars = ["num_test"] + id_vars
     return (
-        num_correct_df.with_columns(pl.Series("pair", range(len(num_correct_df))))
-        # pair indexes the subsample
+        num_correct_df.group_by("lm_type", maintain_order=True)
+        .map_groups(lambda df: df.with_columns(pl.Series("pair", range(len(df)))))
+        # pair indexes the subsample. It's common across LM types b/c seeds were set
+        # when subsampling.
         .select(id_vars + [control, treatment])
         .melt(id_vars=id_vars, variable_name="method", value_name="num_correct")
-        .sort("pair")
-        .to_pandas()
+        .sort("lm_type", "pair")
     )
 
 
@@ -422,7 +422,7 @@ def stat_model(
     """
     num_correct_df_melted = melt_num_correct(
         num_correct_df, treatment, control, id_vars=id_vars
-    )
+    ).to_pandas()
 
     # Fit model
     model = create_model(
@@ -463,6 +463,8 @@ def stat_model(
 def num_correct_df_from_predicions(
     num_correct_df: pl.DataFrame,
     predictions: Sequence[float],
+    treatment: str,
+    control: str,
     id_vars: Sequence[str] = ("num_test", "pair", "lm_type", "dataset"),
 ) -> pl.DataFrame:
     """
@@ -470,37 +472,25 @@ def num_correct_df_from_predicions(
     by `predictions`.
 
     `predictions` is assumed to come from an `InferenceData` xarray. So `predictions` is
-    melted while `num_correct_df` is not.
+    from the melted version of `num_correct_df`.
     """
-    # Some data we'll need to populated the simulated DF
-    num_test: int = num_correct_df.select("num_test")[0].item()
-    datasets = num_correct_df["dataset"].unique(maintain_order=True)
-    num_subsamples = _num_subsamples(num_correct_df)
-    lm_types = num_correct_df["lm_type"].unique(maintain_order=True)
-    # Inverse of melt is pivot
-    # The number 2 in the code below refers to treatment and control
     return (
-        pl.DataFrame(
-            {
-                "pair": np.repeat(np.arange(len(num_correct_df)), 2),
-                "lm_type": (
-                    lm_types.to_numpy().repeat(datasets.len() * num_subsamples * 2)
-                ),
-                "dataset": np.tile(
-                    datasets.to_numpy().repeat(num_subsamples * 2), reps=lm_types.len()
-                ),
-                "method": np.tile(["control", "treatment"], reps=len(num_correct_df)),
-                "num_correct": predictions,
-                "num_test": num_test,
-            }
+        melt_num_correct(num_correct_df, treatment, control, id_vars=id_vars)
+        .with_columns(pl.Series(predictions).alias("num_correct"))
+        .pivot(
+            values="num_correct",
+            index=id_vars,
+            on="method",
         )
-        .pivot(values="num_correct", index=id_vars, columns="method")
         .drop("pair")
     )
 
 
 def _marginal_mean_diffs(
-    num_correct_df: pl.DataFrame, predictions: xr.DataArray
+    num_correct_df: pl.DataFrame,
+    predictions: xr.DataArray,
+    treatment: str,
+    control: str,
 ) -> list[float]:
     """
     Distribution for the expected accuracy difference between the treatment and control.
@@ -512,11 +502,11 @@ def _marginal_mean_diffs(
         range(predictions.shape[1]), desc=f"Marginalizing each draw (n = {num_test})"
     ):
         num_correct_df_simulated = num_correct_df_from_predicions(
-            num_correct_df, predictions[:, draw].to_numpy()
+            num_correct_df, predictions[:, draw].to_numpy(), treatment, control
         )
         mean_diffs.append(
             num_correct_df_simulated.select(
-                (pl.col("treatment") - pl.col("control")) / num_test
+                (pl.col(treatment) - pl.col(control)) / num_test
             )
             .mean()
             .item()
@@ -525,10 +515,16 @@ def _marginal_mean_diffs(
 
 
 def posterior_marginal_mean_diffs(
-    summary: az.InferenceData, num_correct_df: pl.DataFrame
+    summary: az.InferenceData,
+    num_correct_df: pl.DataFrame,
+    treatment: str,
+    control: str,
 ) -> list[float]:
     posterior_predictive = az.extract(summary, group="posterior_predictive")
     mean_diffs = _marginal_mean_diffs(
-        num_correct_df, posterior_predictive["p(num_correct, num_test)"]
+        num_correct_df,
+        posterior_predictive["p(num_correct, num_test)"],
+        treatment,
+        control,
     )
     return mean_diffs

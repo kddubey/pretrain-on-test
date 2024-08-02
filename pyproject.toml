@@ -33,7 +33,7 @@ gcp = [
 stat = [
     "bambi>=0.13.0",
     "jupyter>=1.0.0",
-    "polars>=0.18.0",
+    "polars>=1.0.0",
     "seaborn>=0.13.0",
     "statsmodels>=0.14.0",
 ]
