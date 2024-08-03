@@ -124,8 +124,8 @@ class ArgParser(Tap):
     num_test: Literal[50, 100, 200, 500] = 500
     "The number of test observations in the accuracy data."
 
-    comparison: Literal["control", "treatment"] = "treatment"
-    "control: acc_extra - acc_base. treatment: acc_test - acc_extra"
+    comparison: Literal["boost", "bias"] = "bias"
+    "boost: acc_extra - acc_base. bias: acc_test - acc_extra"
 
     num_samples: int = 500
     """
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     num_correct_df = utils.load_all_num_correct(
         os.path.join(args.accuracies_home_dir, f"m{args.num_train}"), args.num_test
     )
-    if args.comparison == "control":
+    if args.comparison == "boost":
         treatment, control = "extra", "base"
     else:
         treatment, control = "test", "extra"

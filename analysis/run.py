@@ -113,12 +113,12 @@ def run(
             cores=analysis.cores,
             plot=False,
         )
-        logger.info("Writing control inference data")
+        logger.info("Writing pretraining boost inference data")
         os.mkdir(analysis_id)
         summary_control.to_netcdf(
             filename=os.path.join(
                 analysis_id,
-                f"main_m{analysis.num_train}_n{analysis.num_test}_control.nc",
+                f"main_m{analysis.num_train}_n{analysis.num_test}_boost.nc",
             )
         )
         upload_directory(analysis_id, logger)
@@ -138,11 +138,11 @@ def run(
             cores=analysis.cores,
             plot=False,
         )
-        logger.info("Writing treatment inference data")
+        logger.info("Writing evaluation bias inference data")
         summary_bias.to_netcdf(
             filename=os.path.join(
                 analysis_id,
-                f"main_m{analysis.num_train}_n{analysis.num_test}_treatment.nc",
+                f"main_m{analysis.num_train}_n{analysis.num_test}_bias.nc",
             )
         )
         upload_directory(analysis_id, logger)

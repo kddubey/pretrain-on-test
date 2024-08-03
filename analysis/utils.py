@@ -29,6 +29,16 @@ lm_type_to_name = {
 }
 
 
+effect_to_name: dict[str, str] = {
+    "boost": "pretraining boost",
+    "bias": "evaluation bias",
+}
+effect_to_treatment_and_control: dict[str, tuple[str, str]] = {
+    "boost": ("extra", "base"),
+    "bias": ("test", "extra"),
+}
+
+
 def load_accuracies(accuracies_dir: str) -> pl.DataFrame:
     """
     Load a DataFrame of accuracies from a directory structured like so::
