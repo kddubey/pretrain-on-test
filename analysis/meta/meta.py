@@ -75,7 +75,7 @@ def _sample_posterior_mean(
     for seed in tqdm(seeds, total=len(seeds), desc=f"Samples {seeds[0]} - {seeds[-1]}"):
         # TODO: parallelization is messing up the seeds somehow. For now, not setting it
         num_correct_df_sample = _down_sample(num_correct_df, seed=None).drop("dataset")
-        _, _, az_summary = utils.stat_model(
+        _, _, az_summary = utils.fit_model(
             num_correct_df_sample,
             treatment,
             control,

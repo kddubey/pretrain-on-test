@@ -408,7 +408,7 @@ def create_model(
     )
 
 
-def stat_model(
+def fit_model(
     num_correct_df: pl.DataFrame,
     treatment: str,
     control: str,
@@ -424,8 +424,6 @@ def stat_model(
     tune: int = 500,
 ) -> tuple[bmb.Model, az.InferenceData, pl.DataFrame]:
     """
-    See the README for the specification of the model.
-
     Note about `equation`: pairs/subsamples were formed from the dataset. So it's
     nested, not crossed. Technically, crossed notation—(1|dataset) + (1|pair)—would
     still result in a # nested inference b/c pair is uniquely coded across datasets.

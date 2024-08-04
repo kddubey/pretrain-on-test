@@ -104,7 +104,7 @@ def run(
         )
 
         logger.info("Analyzing extra - base")
-        _, summary_control, _ = utils.stat_model(
+        _, summary_control, _ = utils.fit_model(
             num_correct_df,
             treatment="extra",
             control="base",
@@ -129,7 +129,7 @@ def run(
         print("\n" + ("#" * 50) + "\n")
 
         logger.info("Analyzing test - extra")
-        _, summary_bias, _ = utils.stat_model(
+        _, summary_bias, _ = utils.fit_model(
             num_correct_df,
             treatment="test",
             control="extra",
