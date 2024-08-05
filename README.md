@@ -88,7 +88,7 @@ from 50-80%. The experiment will take ~5 days to finish. I ran experiments in pa
 through [Google
 Cloud](https://github.com/kddubey/pretrain-on-test/tree/main/cloud_scripts/gcp).
 
-The full set of accuracy data used in the paper, including observation-level per-class
+The set of accuracy data used in the paper, including observation-level per-class
 probability scores, can be downloaded at [this Google Drive
 link](https://drive.google.com/file/d/1n7N4uTKgcUJZ7hjAbZYGTpGEPoYxQVGx/view?usp=sharing)
 (3.29 GB unzipped, just a bunch of CSVs).
@@ -123,7 +123,7 @@ Experiment files are in
 Run on an L4 GPU. Takes around 10 hours. Batch sizes can be reduced to run experiments
 on a T4 GPU, but it'll take much longer.
 
-The full set of accuracy data used in the paper, including observation-level per-class
+The set of accuracy data used in the paper, including observation-level per-class
 probability scores, can be downloaded at [this Google Drive
 link](https://drive.google.com/file/d/1tccOFyQHJgqmFeRoulQiaJgItEXzN1Xx/view?usp=sharing)
 (53.4 MB unzipped, just a bunch of CSVs).

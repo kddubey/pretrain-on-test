@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# BERT and GPT-2 experiments. Section 7 of the paper. See the README
+
+
 # experiments/m100/n100/bert/bert_1.sh
 TQDM_DISABLE=1 python run.py \
 --lm_type bert \
@@ -1774,5 +1777,3 @@ TQDM_DISABLE=1 python run.py \
 --per_device_eval_batch_size_classification 64 \
 --num_train_epochs_classification 3 \
 --num_train_epochs_pretrain 1
-
-
