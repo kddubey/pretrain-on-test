@@ -1,6 +1,7 @@
 # Run the experiment in Google Cloud
 
-Note that, in total, the experiment will cost around $200 in compute credits.
+Note that, in total, running the experiments in the paper will cost around $250 in
+compute credits. You'll get $300 of compute credits when you make a GCP account.
 
 
 ## Setup
