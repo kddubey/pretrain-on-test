@@ -211,8 +211,9 @@ def _experiment(
             try:
                 trained_model, train_output = module.train(*data, **kwargs)
             finally:
-                _rmtree_if_exists(config.model_path_pretrained)
-                _rmtree_if_exists(config.model_path_classification)
+                if config.rm_model:
+                    _rmtree_if_exists(config.model_path_pretrained)
+                    _rmtree_if_exists(config.model_path_classification)
         train_type_split_train_output.append(
             dict(
                 split=split,

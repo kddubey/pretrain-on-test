@@ -205,6 +205,15 @@ class Experiment(BaseModel):
     num_train_epochs_pretrain: int = _field_for_config(
         default=2, description="Number of epochs for pretraining"
     )
+    rm_model: bool = _field_for_config(
+        default=True,
+        description=(
+            "Whether to delete the saved models (base, extra, test) after completing a "
+            "subsample. Currently, only the last subsample's models are saved. So this "
+            "only makes sense when num_subsamples=1"
+        ),
+        # TODO: this trade-off isn't needed for LoRA
+    )
 
 
 def _check_dataset_names(dataset_names: Collection[str] | None) -> list[str]:
