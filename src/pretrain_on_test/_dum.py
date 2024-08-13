@@ -233,16 +233,18 @@ def train(
     is_pretrained_fresh: bool = False,
     device_map: str = "auto",
     chat_text_post_processor: Callable[[str], str] | None = None,
-    pack: bool = False,
+    pack: bool = True,
 ) -> tuple[tuple[PreTrainedModel, PreTrainedTokenizerBase], TrainOutput]:
     """
     Returns a finetuned model and its tokenizer.
     """
     if pack:
+        instruction = _instruction_formatter(class_names_unique, task_description)
         dataset = Dataset.from_dict(
             {
                 "chat": [
-                    "\n\n".join([_query_formatter(text) for text in batch])
+                    instruction
+                    + "\n\n".join([_query_formatter(text) for text in batch])
                     for batch in _batch(texts, per_device_train_batch_size)
                 ]
             }
