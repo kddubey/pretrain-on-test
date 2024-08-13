@@ -28,4 +28,7 @@ each dataset.
 [`./results/`](./results/) visualizes the marginal effects of interest. This is the main
 result.
 
+[`./contamination/`](./contamination/) sees if a particular contamination test raises an
+arguably false alarm.
+
 [`test.ipynb`](./test.ipynb) tests that the inference code statistically works.

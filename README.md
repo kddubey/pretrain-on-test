@@ -131,6 +131,24 @@ link](https://drive.google.com/file/d/1tccOFyQHJgqmFeRoulQiaJgItEXzN1Xx/view?usp
 </details>
 
 
+<details>
+<summary>QLoRA + zero-shot Mistral 7B + packing</summary>
+
+Section 9.1 in the paper.
+
+Experiment files are in
+[`./cloud_scripts/gcp/experiments/zero-shot-packing/`](./cloud_scripts/gcp/experiments/zero-shot-packing/).
+Run on an L4 GPU. Takes around 10 hours. Batch sizes can be reduced to run experiments
+on a T4 GPU, but it'll take much longer.
+
+The set of accuracy data used in the paper, including observation-level per-class
+probability scores, can be downloaded at [this Google Drive
+link](https://drive.google.com/file/d/13BLC7wjlkiuK7tG_s9Ilvj4x8grhTBM0/view?usp=sharing)
+(53.3 MB unzipped, just a bunch of CSVs).
+
+</details>
+
+
 ## Analysis
 
 After finishing the experiment, follow the [instructions
