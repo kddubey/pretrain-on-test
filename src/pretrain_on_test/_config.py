@@ -39,7 +39,7 @@ class Config:
     model_path_pretrained: str = "_pretrained"
     model_path_classification: str = "_classifier"
     requires_hf_login: bool = False
-    rm_model: bool = True
+    keep_models: bool = False
 
     def __post_init__(self):
         if self.requires_hf_login:

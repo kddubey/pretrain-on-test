@@ -205,8 +205,8 @@ class Experiment(BaseModel):
     num_train_epochs_pretrain: int = _field_for_config(
         default=2, description="Number of epochs for pretraining"
     )
-    rm_model: bool = _field_for_config(
-        default=True,
+    keep_models: bool = _field_for_config(
+        default=False,
         description=(
             "Whether to delete the saved models (base, extra, test) after completing a "
             "subsample. Currently, only the last subsample's models are saved. So this "
