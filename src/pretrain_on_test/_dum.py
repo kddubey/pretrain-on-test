@@ -150,7 +150,6 @@ def _formatter(
 
 
 def _formatter_nothing(texts: list[str], *args, **kwargs):
-    breakpoint()
     return texts
 
 
