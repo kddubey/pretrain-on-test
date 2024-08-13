@@ -365,6 +365,8 @@ def melt_num_correct(
     pandas dataframe.
     """
     id_vars = list(id_vars)
+    if "lm_type" not in id_vars:
+        id_vars = ["lm_type"] + id_vars
     if "num_test" not in id_vars:
         id_vars = ["num_test"] + id_vars
     return (
