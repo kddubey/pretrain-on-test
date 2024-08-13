@@ -182,13 +182,6 @@ class Experiment(BaseModel):
         default=200,
         description="Number of observations for pretraining and for evaluation",
     )
-    max_length: int | None = Field(
-        default=256,
-        description=(
-            "Number of context tokens for pretraining. Set to None to use the model's "
-            "default"
-        ),
-    )
     # Model-independent arguments which are passed to the config
     per_device_train_batch_size_pretrain: int = _field_for_config(
         default=16, description="Batch size for pretraining"
