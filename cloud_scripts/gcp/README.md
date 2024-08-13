@@ -99,7 +99,8 @@ uploaded to GCP. Note that the instance will stop even if there's an error.
 
    If you're getting an error with code `ZONE_RESOURCE_POOL_EXHAUSTED` (b/c there aren't
    any T4 GPUs available in the requested zone), then consider adding the flag
-   `--any_zone`, which will automatically try to find a zone with availability.
+   `--any_zone` to the `launch.py` command. This flag causes the script to automatically
+   try to find a zone with availability.
 
 2. Check that stuff was logged (search for the latest log group with the name `run-`)
    and that data was uploaded to the bucket `pretrain-on-test-accuracies`.
