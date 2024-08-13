@@ -69,7 +69,7 @@ lm_type_to_config_creator: dict[LMType, Callable[[Any], pretrain_on_test.Config]
         lora_pretrain=True,
         qlora=True,
         classification_method="zero-shot",
-        max_length=2048,
+        max_length=None,
         **model_independent_kwargs,
     ),
     "mistral-qlora-sft": lambda **model_independent_kwargs: pretrain_on_test.Config(
