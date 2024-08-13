@@ -47,5 +47,6 @@ def train(
         chat_text_post_processor=partial(
             _dum.chat_text_post_processor, config.tokenizer
         ),
+        pack=config.pack,
     )
     return train_output

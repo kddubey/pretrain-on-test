@@ -1,5 +1,5 @@
 {
-    "lm_type": "mistral-qlora-zero-shot",
+    "lm_type": "mistral-qlora-zero-shot-packing",
     "run_name": "n500_contamination",
     "dataset_names": [
         "ag_news"

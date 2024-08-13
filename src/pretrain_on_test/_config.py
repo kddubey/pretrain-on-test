@@ -61,3 +61,8 @@ class Config:
         if self.max_length is None:  # be explicit about the default
             default_max_length = self.tokenizer.model_max_length
             object.__setattr__(self, "max_length", default_max_length)
+        if self.pack and self.pretrain_method != "instructions-with-text":
+            raise ValueError(
+                "Currently, packing is only enabled for pretraining on instructions "
+                "with text"
+            )

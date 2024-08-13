@@ -1,6 +1,6 @@
 #!/bin/bash
 TQDM_DISABLE=1 python run.py \
-    --lm_type mistral-qlora-zero-shot \
+    --lm_type mistral-qlora-zero-shot-packing \
     --run_name n100_mistral-qlora-zero-shot-packing_3 \
     --dataset_names \
         app_reviews \
