@@ -233,7 +233,7 @@ def train(
     is_pretrained_fresh: bool = False,
     device_map: str = "auto",
     chat_text_post_processor: Callable[[str], str] | None = None,
-    pack: bool = False,
+    pack: bool = True,
 ) -> tuple[tuple[PreTrainedModel, PreTrainedTokenizerBase], TrainOutput]:
     """
     Returns a finetuned model and its tokenizer.
