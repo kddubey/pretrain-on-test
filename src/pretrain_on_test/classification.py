@@ -125,6 +125,6 @@ def predict_proba(
     logits: np.ndarray = trained_classifier.predict(eval_dataset).predictions
     # predictions are logits, not log-probs. (I checked that some are positive)
     probs: torch.Tensor = torch.softmax(
-        torch.tensor(logits, device=trained_classifier.model.device), axis=-1
+        torch.tensor(logits, device=trained_classifier.model.device), dim=-1
     )
     return probs.numpy(force=True)

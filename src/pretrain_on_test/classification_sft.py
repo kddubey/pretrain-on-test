@@ -29,7 +29,7 @@ def train(
     class_names = [class_names_unique[label] for label in labels]
     response_template_ids = config.tokenizer.encode(
         _dum.RESPONSE_TEMPLATE, add_special_tokens=False
-    )[1:]  # is correct b/c RESPONSE_TEMPLATE starts with a whitespace
+    )[1:]  # BOS token
     data_collator = DataCollatorForCompletionOnlyLM(
         response_template_ids, tokenizer=config.tokenizer
     )
