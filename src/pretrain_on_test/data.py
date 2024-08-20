@@ -7,8 +7,7 @@ from functools import partial
 from typing import Annotated, Callable
 
 from datasets import load_dataset
-from pydantic import Field, BaseModel, ConfigDict
-from pydantic.functional_validators import AfterValidator
+from pydantic import AfterValidator, Field, BaseModel, ConfigDict
 import numpy as np
 import pandas as pd
 

@@ -6,9 +6,9 @@ import json
 import os
 from datetime import datetime
 from functools import partial
-from typing import Any, Callable, Collection, Literal
+from typing import Annotated, Any, Callable, Collection, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from tap import tapify
 import torch
 from transformers import AutoModelForCausalLM, BertForMaskedLM, GPT2LMHeadModel
@@ -29,7 +29,7 @@ LMType = Literal[
     "gpt2",  # section 7 and 8
     "mistral-qlora-zero-shot",  # section 9
     "mistral-qlora-zero-shot-packing",  # section 9.1
-    "mistral-qlora-sft",
+    "mistral-qlora-sft",  # causes OOMs. Maybe it's b/c merge_and_unload dequantizes?
     # For quick CPU tests
     "bert-tiny",
     "gpt2-tiny",
@@ -165,6 +165,29 @@ lm_type_to_config_creator: dict[LMType, Callable[[Any], pretrain_on_test.Config]
 }
 
 
+def _check_dataset_names(dataset_names: Collection[str] | None) -> list[str]:
+    if dataset_names is None:
+        dataset_names = list(
+            pretrain_on_test.data.hf_dataset_name_to_classification_dataset_info.keys()
+        )
+
+    def remove_owner(dataset_name: str) -> str:
+        return dataset_name.split("/")[-1]
+
+    dataset_names_without_owners = [
+        remove_owner(dataset_name) for dataset_name in dataset_names
+    ]
+    if len(set(dataset_names_without_owners)) < len(dataset_names_without_owners):
+        raise ValueError(
+            "Some datasets have the same name. They may have different owners. But "
+            "that's still not allowed."
+        )
+    return sorted(dataset_names, key=remove_owner)
+
+
+DatasetNames = Annotated[list[str] | None, AfterValidator(_check_dataset_names)]
+
+
 _field_for_config = partial(Field, json_schema_extra={"is_for_config": True})
 
 
@@ -179,7 +202,7 @@ class Experiment(BaseModel):
     lm_type: LMType = Field(
         description=(
             "Type of language model. *-tiny models have random weights and should only "
-            "be used for testing."
+            "be used for testing"
         )
     )
     run_name: str = Field(
@@ -189,7 +212,7 @@ class Experiment(BaseModel):
             "this name gets appended to the run ID string: run-{timestamp}-{run_name}"
         ),
     )
-    dataset_names: list[str] | None = Field(
+    dataset_names: DatasetNames = Field(
         default=None,
         description=(
             "Space-separated list of HuggingFace datasets, e.g., "
@@ -201,11 +224,16 @@ class Experiment(BaseModel):
         default=50, description="Number of subsamples to draw from the dataset"
     )
     num_train: int = Field(
-        default=100, description="Number of observations for classification training"
+        default=100,
+        description=(
+            "Number of observations for classification training, i.e., m in the paper"
+        ),
     )
     num_test: int = Field(
         default=200,
-        description="Number of observations for pretraining and for evaluation",
+        description=(
+            "Number of observations for pretraining and eval, i.e., n in the paper"
+        ),
     )
     # Model-independent arguments which are passed to the config
     per_device_train_batch_size_pretrain: int = _field_for_config(
@@ -232,26 +260,6 @@ class Experiment(BaseModel):
         ),
         # TODO: this trade-off isn't needed for LoRA
     )
-
-
-def _check_dataset_names(dataset_names: Collection[str] | None) -> list[str]:
-    if dataset_names is None:
-        dataset_names = list(
-            pretrain_on_test.data.hf_dataset_name_to_classification_dataset_info.keys()
-        )
-
-    def remove_owner(dataset_name: str) -> str:
-        return dataset_name.split("/")[-1]
-
-    dataset_names_without_owners = [
-        remove_owner(dataset_name) for dataset_name in dataset_names
-    ]
-    if len(set(dataset_names_without_owners)) < len(dataset_names_without_owners):
-        raise ValueError(
-            "Some datasets have the same name. (They may have different owners. "
-            "But that's still not allowed.)"
-        )
-    return sorted(dataset_names, key=remove_owner)
 
 
 def run(
@@ -312,8 +320,7 @@ def run(
         )
 
         # Upload experiment settings
-        if not os.path.exists(run_id):
-            os.makedirs(run_id)
+        os.makedirs(run_id)
         with open(os.path.join(run_id, "experiment.json"), "w") as json_file:
             experiment_as_dict = experiment.model_dump()
             json.dump(experiment_as_dict, json_file, indent=4)
@@ -334,13 +341,10 @@ def run(
             **model_independent_kwargs
         )
 
-        # Check that the dataset names don't conflict w/ each other
-        dataset_names = _check_dataset_names(experiment.dataset_names)
-
         # Run experiment on each dataset
         _ = torch.manual_seed(123)
         torch.cuda.manual_seed_all(123)
-        for dataset_name in dataset_names:
+        for dataset_name in experiment.dataset_names:
             classification_dataset_info = (
                 pretrain_on_test.data.hf_dataset_name_to_classification_dataset_info[
                     dataset_name
