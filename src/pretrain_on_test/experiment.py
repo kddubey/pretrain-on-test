@@ -177,7 +177,7 @@ def _experiment(
     train_type_to_split_to_data: dict[str, dict[str, tuple[list, ...]]] = {
         "pretrain": {
             "extra": (df_extra["text"].tolist(),),
-            "test": (df_test["text"].tolist(),),
+            "test": (test_data,),
         },
         "classification": {
             "base": _classification_data,
