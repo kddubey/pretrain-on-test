@@ -26,6 +26,7 @@ lm_type_to_name = {
     "gpt2": "GPT-2",
     "gpt2-epochs-2": "GPT-2 (2 epochs)",
     "mistral-qlora-zero-shot": "Mistral-7B, zero-shot",
+    "mistral-qlora-zero-shot-packing": "Mistral-7B, zero-shot with packing",
 }
 
 
@@ -37,6 +38,10 @@ effect_to_treatment_and_control: dict[str, tuple[str, str]] = {
     "boost": ("extra", "base"),
     "bias": ("test", "extra"),
 }
+
+
+subsample_group = ("num_train", "num_test", "lm_type", "dataset")
+"Maximal set of columns which define a group of replicated subsample scores"
 
 
 def load_accuracies(accuracies_dir: str) -> pl.DataFrame:
@@ -286,12 +291,11 @@ def violin_plot_multiple_lms(accuracy_df: pl.DataFrame, num_test: int, num_train
 
 
 def _num_subsamples(df: pl.DataFrame) -> int:
-    group_for_subsample = ("dataset",)
-    if "lm_type" in df.columns:
-        group_for_subsample = ("lm_type",) + group_for_subsample
-    if "num_test" in df.columns:
-        group_for_subsample = ("num_test",) + group_for_subsample
-    return df.group_by(group_for_subsample).count().select("count").head(n=1).item()
+    group = [column for column in subsample_group if column in df.columns]
+    num = df.group_by(group).count().select("count").unique()
+    if num.shape[0] > 1:
+        raise ValueError("There are multiple sets of data aggregated here.")
+    return num.head(n=1).item()
 
 
 def _summarize_differences(
@@ -505,7 +509,7 @@ def _marginal_mean_diffs(
     """
     Distribution for the expected accuracy difference between the treatment and control.
     """
-    # This can be vectorized w/ some fancy stuff, but I don't want to risk incorrectness
+    # This can be vectorized, but I don't want to risk incorrectness
     num_test: int = num_correct_df.select("num_test")[0].item()
     mean_diffs = []
     for draw in tqdm(

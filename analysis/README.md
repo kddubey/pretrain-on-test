@@ -22,11 +22,9 @@ $\text{E}[\text{acc}\_\text{test} - \text{acc}\_\text{extra}] = 0$ for each data
 
 [`./fit_posteriors/`](./fit_posteriors/) fits the hierarchical models.
 
-[`./meta/`](./meta/) assesses the importance of subsampling / replicating within
-each dataset.
+[`./meta/`](./meta/) assesses the importance of repeated subsampling of each dataset.
 
-[`./results/`](./results/) visualizes the marginal effects of interest. This is the main
-result.
+[`./results/`](./results/) visualizes effects of interest. This is the main result.
 
 [`./contamination/`](./contamination/) sees if a particular contamination test raises an
 arguably false alarm.

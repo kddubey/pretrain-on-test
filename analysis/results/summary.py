@@ -9,6 +9,27 @@ sys.path.insert(1, os.path.join(sys.path[0], ".."))
 import utils
 
 
+def _sem(col: pl.Expr) -> pl.Expr:
+    # ty https://github.com/pola-rs/polars/issues/6175#issuecomment-1416846104
+    return col.std() / (col.count().sqrt())
+
+
+def _agg(accuracy_df: pl.DataFrame):
+    group = ("num_test", "lm_type")
+    return (
+        accuracy_df.group_by(group + ("dataset",))
+        .agg(pl.col("diff").mean().name.suffix("_subsample_mean"))
+        # Average across subsamples w/in each dataset b/c they're technical replicates
+        .group_by(group)
+        # Now compute the mean and SE across the 25 datasets
+        .agg(
+            pl.col("diff_subsample_mean").mean().alias("mean"),
+            _sem(pl.col("diff_subsample_mean")).alias("se"),
+        )
+        .sort(group)
+    )
+
+
 def summarize(accuracies_home_dir: str = os.path.join("..", "accuracies_from_paper")):
     """
     Summarize all the results in two tables showing the sample means and SEs. Takes 1
@@ -50,18 +71,16 @@ def summarize(accuracies_home_dir: str = os.path.join("..", "accuracies_from_pap
 
         print("extra - base (pretraining boost)")
         print(
-            utils._summarize_differences(
-                accuracy_df.with_columns(diff=pl.col("extra") - pl.col("base")),
-                groups=("num_test", "lm_type"),
+            _agg(
+                accuracy_df.with_columns(diff=pl.col("extra") - pl.col("base"))
             ).rename({"num_test": "n (# test observations)"})
         )
         print()
 
         print("test - extra (evaluation bias)")
         print(
-            utils._summarize_differences(
-                accuracy_df.with_columns(diff=pl.col("test") - pl.col("extra")),
-                groups=("num_test", "lm_type"),
+            _agg(
+                accuracy_df.with_columns(diff=pl.col("test") - pl.col("extra"))
             ).rename({"num_test": "n (# test observations)"})
         )
 
