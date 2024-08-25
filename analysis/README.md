@@ -1,7 +1,6 @@
 # analysis
 
-Notebooks which do dataset-level, model/LM-level, and overall analysis of the accuracy
-scores in `./accuracies_from_paper`.
+Notebooks which analyze the accuracy scores in `./accuracies_*/`.
 
 ## Setup
 
@@ -30,3 +29,21 @@ $\text{E}[\text{acc}\_\text{test} - \text{acc}\_\text{extra}] = 0$ for each data
 arguably false alarm.
 
 [`test.ipynb`](./test.ipynb) tests that the inference code statistically works.
+
+<details>
+<summary>Why is m 100 in the zero-shot experiments?</summary>
+
+The `./accuracies_zero_shot*/` data were run from
+[experiments](../cloud_scripts/gcp/experiments/) with `--num_train 100` (the default
+value), but the training dataset is
+[unused](https://github.com/kddubey/pretrain-on-test/blob/32c06e3278e6206410966e607f3d7637841f2775/src/pretrain_on_test/classification_zero_shot.py#L13).
+`--num_train 100` is supplied to keep every subsample's test split identical across
+few-shot and zero-shot experiments, in case we ever want to compare them. The
+[subsampling
+code](https://github.com/kddubey/pretrain-on-test/blob/32c06e3278e6206410966e607f3d7637841f2775/src/pretrain_on_test/experiment.py#L62)
+works by stratify-sampling (by the label) $m$ train observations, and then it randomly
+draws $n$ extra and $n$ test observations from the rest of the data. The seed is the
+subsample number, which is universal across experiment configurations. Changing $m$
+would cause the test split to be different, which makes comparisons less controlled.
+
+</details>
