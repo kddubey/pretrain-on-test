@@ -47,3 +47,20 @@ subsample number, which is universal across experiment configurations. Changing 
 would cause the test split to be different, which makes comparisons less controlled.
 
 </details>
+
+
+<details>
+<summary>Why do this fancy stuff?</summary>
+
+A small evaluation bias is noteworthy. We need to say how confident we are in our
+measurement. The paper explains why naively computing standard errors is not great for
+the confidence part. (It usually is great and sufficient.)
+
+The paper also motivates the estimation of task-level effects. When picking lemons or
+cherries from a big tree, the magnitude of effects are overestimated due to selection
+bias. Priors shift them towards 0 to improve estimation.
+
+All in all, I want to expose and communicate the considerable variance involved in this
+research, and reduce estimation bias.
+
+</details>
