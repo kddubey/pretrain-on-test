@@ -1,15 +1,16 @@
-# Is pretraining on test set texts (without labels) ok?
+# Can I pretrain on unlabeled test data?
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg?logo=python&style=for-the-badge)](https://www.python.org/downloads/release/python-3100/)
 
 There are more training runs than there are [jelly beans in this vat right
 here](https://www.youtube.com/watch?v=CCvVEszRiDI&t=225s).
 
+[Paper](https://arxiv.org/abs/2410.00179).
+
 [Slides](https://docs.google.com/presentation/d/1WiaTOMplciOHM3qp6FTu5BYRlDdlrRI5A5ayOLaBEUA/edit?usp=sharing)
 (please play the slideshow instead of scrolling through slides).
 
-[Paper](https://arxiv.org/abs/2410.00179).
-
+[Poster](https://docs.google.com/presentation/d/1RKS0scvabb92GZngEpJ3KQoNbhch6kj_uv2p87kxyZU/edit?usp=sharing).
 
 ## Question
 
