@@ -12,6 +12,7 @@ here](https://www.youtube.com/watch?v=CCvVEszRiDI&t=225s).
 
 [Poster](https://docs.google.com/presentation/d/1RKS0scvabb92GZngEpJ3KQoNbhch6kj_uv2p87kxyZU/edit?usp=sharing).
 
+
 ## Question
 
 <details>
@@ -53,6 +54,7 @@ score is valid. Who is right, Alice or Bob?
 > Barbie: 🤔
 
 </details>
+
 
 ## Setup
 
@@ -282,3 +284,14 @@ for cloud runs. Note that it assumes that the bucket name is
 ```
 
 </details>
+
+
+## Related work
+
+A complement to this paper are the results around **text contamination** in [*Does Data
+Contamination Make a Difference? Insights from Intentionally Contaminating Pre-training
+Data For Language
+Models*](https://openreview.net/forum?id=wSpwj7xab9&referrer=%5Bthe%20profile%20of%20Sanmi%20Koyejo%5D(%2Fprofile%3Fid%3D~Sanmi_Koyejo1)).
+This paper directly addresses the limitation in my paper that I don't study the initial
+pretraining stage of an LM. (Unfortunately I didn't see this paper until a few weeks
+after I presented the poster. So it's not cited in my paper or the poster.)
