@@ -31,7 +31,7 @@ score is valid. Who is right, Alice or Bob?
 <details>
 <summary>In engineer terms</summary>
 
-> Andy: Hey team, I'm lookin at the notebook for our new model by @Barbie, and I see:
+If I deploy `llm`, will `test_set_accuracy` be higher than what we'll see in production?
 
 ```python
     test_set_accuracy = (
@@ -41,17 +41,6 @@ score is valid. Who is right, Alice or Bob?
         .evaluate(df_test["text"], df_test["label"])
     )
 ```
-
-> Barbie: it should be fine bc i didnt do:
-
-```python
-    llm.train(df_test["text"], df_test["label"])
-```
-
-> Andy: Interesting. I'm not sure if it's ok to pretrain on unlabeled test set
-> text like that. Could `test_set_accuracy` be higher than what we'll see in production?
-
-> Barbie: 🤔
 
 </details>
 
